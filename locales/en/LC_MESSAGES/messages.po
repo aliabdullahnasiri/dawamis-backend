@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-28 20:33+0430\n"
-"PO-Revision-Date: 2026-08-28 20:34+0430\n"
+"POT-Creation-Date: 2026-09-04 08:33+0430\n"
+"PO-Revision-Date: 2026-09-04 08:33+0430\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
 "Language-Team: en <LL@li.org>\n"
@@ -18,18 +18,79 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: src/app/api/routers/health.py:15
+#: src/app/api/routers/auth.py:47
+msgid "auth:registration_successful"
+msgstr ""
+
+#: src/app/api/routers/auth.py:80
+msgid "auth:authentication_successful"
+msgstr ""
+
+#: src/app/api/routers/auth.py:122
+msgid "auth:logout_successful"
+msgstr ""
+
+#: src/app/api/routers/auth.py:143
+msgid "auth:invalid_refresh_token"
+msgstr ""
+
+#: src/app/api/routers/auth.py:151 src/app/errors/exceptions.py:106
+msgid "auth:token_revoked"
+msgstr ""
+
+#: src/app/api/routers/auth.py:158 src/app/errors/exceptions.py:97
+msgid "auth:invalid_token"
+msgstr ""
+
+#: src/app/api/routers/auth.py:166
+msgid "auth:access_token_refreshed"
+msgstr ""
+
+#: src/app/api/routers/health.py:34
+msgid "health.database_unavailable"
+msgstr ""
+
+#: src/app/api/routers/health.py:37
 msgid "health.ok"
-msgstr "OK"
+msgstr ""
 
-#: src/app/core/settings.py:26
-msgid "language.english"
-msgstr "English"
+#: src/app/errors/exceptions.py:11
+msgid "errors:internal_error"
+msgstr ""
 
-#: src/app/core/settings.py:27
-msgid "language.persian"
-msgstr "Persian"
+#: src/app/errors/exceptions.py:36
+msgid "request:bad_request"
+msgstr ""
 
-#: src/app/core/settings.py:28
-msgid "language.pashto"
-msgstr "Pashto"
+#: src/app/errors/exceptions.py:46
+msgid "auth:authentication_failed"
+msgstr ""
+
+#: src/app/errors/exceptions.py:57
+msgid "auth:permission_denied"
+msgstr ""
+
+#: src/app/errors/exceptions.py:67
+msgid "errors:not_found"
+msgstr ""
+
+#: src/app/errors/exceptions.py:78
+msgid "errors:conflict"
+msgstr ""
+
+#: src/app/errors/exceptions.py:88
+msgid "validation:failed"
+msgstr ""
+
+#: src/app/schemas/user/request.py:42
+msgid "auth.username_exists"
+msgstr ""
+
+#: src/app/schemas/user/request.py:47
+msgid "auth.email_exists"
+msgstr ""
+
+#: src/app/services/auth.py:60
+msgid "auth:invalid_credentials"
+msgstr ""
+
