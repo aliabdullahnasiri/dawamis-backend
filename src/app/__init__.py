@@ -1,10 +1,13 @@
 from typing import Self, Union
 
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 
 from app.api.middleware import register_middleware
-from app.api.routers import health
+from app.api.routers import auth, health
 from app.core.config import settings
+from app.errors import AppError
+from app.errors.handlers import app_error_handler, request_validation_error_handler
 
 
 class App:
@@ -29,6 +32,16 @@ class App:
         )
 
         App.register_routers(app)
+
+        app.add_exception_handler(
+            RequestValidationError, request_validation_error_handler
+        )
+
+        app.add_exception_handler(
+            AppError,
+            app_error_handler,
+        )
+
         register_middleware(app)
 
         return app
@@ -36,6 +49,7 @@ class App:
     @staticmethod
     def register_routers(app: FastAPI) -> None:
         app.include_router(health.router, prefix="/api/v1")
+        app.include_router(auth.router, prefix="/api/v1")
 
 
 def main() -> FastAPI:
