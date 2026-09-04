@@ -1,10 +1,10 @@
 import json
 import uuid
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any, Self
 from uuid import UUID
 
-from sqlalchemy import inspect
+from sqlalchemy import DateTime, func, inspect
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import Uuid
 
@@ -35,6 +35,20 @@ class DeclarativeBaseMeta(type(DeclarativeBase)):
 class Base(DeclarativeBase, metaclass=DeclarativeBaseMeta):
     id: Mapped[int] = mapped_column(primary_key=True)
     uuid: Mapped[UUID] = mapped_column(Uuid, unique=True, default=lambda: uuid.uuid4())
+
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
 
     __hidden_fields__: set[str] = set()
 
