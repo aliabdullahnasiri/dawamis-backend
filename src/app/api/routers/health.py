@@ -1,11 +1,8 @@
-from typing import Union
-
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
 
 from app.api.dependencies import DBSession
-from app.core.i18n.types import LazyStr
-from app.models import user
+from app.core.i18n.types import T
 
 router = APIRouter(
     prefix="/health",
@@ -31,7 +28,7 @@ def health_check(db: DBSession) -> dict[str, str]:
     except Exception:
         raise HTTPException(
             status_code=503,
-            detail=LazyStr("health.database_unavailable"),
+            detail=T("health.database_unavailable"),
         )
 
-    return {"status": LazyStr("health.ok")}
+    return {"status": T("health.ok")}
