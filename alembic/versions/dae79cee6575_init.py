@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 618cff354642
+Revision ID: dae79cee6575
 Revises: 
-Create Date: 2026-08-30 09:51:44.130067
+Create Date: 2026-09-03 15:53:25.815463
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '618cff354642'
+revision: str = 'dae79cee6575'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -27,15 +27,29 @@ def upgrade() -> None:
     sa.Column('code', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('uuid')
     )
     op.create_index(op.f('ix_permissions_name'), 'permissions', ['name'], unique=True)
+    op.create_table('revoked_tokens',
+    sa.Column('jti', sa.String(length=36), nullable=False),
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('uuid', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('uuid')
+    )
+    op.create_index(op.f('ix_revoked_tokens_jti'), 'revoked_tokens', ['jti'], unique=True)
     op.create_table('roles',
     sa.Column('name', sa.String(length=50), nullable=False),
     sa.Column('description', sa.String(length=255), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('uuid')
     )
@@ -50,12 +64,14 @@ def upgrade() -> None:
     sa.Column('birthday', sa.Date(), nullable=True),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email', name='uc_user_email'),
     sa.UniqueConstraint('user_name', name='uc_user_username'),
     sa.UniqueConstraint('uuid')
     )
-    op.create_index('ix_users_email', 'users', ['email'], unique=False)
+    op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_index(op.f('ix_users_user_name'), 'users', ['user_name'], unique=True)
     op.create_index('ix_users_username', 'users', ['user_name'], unique=False)
     op.create_table('role_permissions',
@@ -63,6 +79,8 @@ def upgrade() -> None:
     sa.Column('permission_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['permission_id'], ['permissions.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
@@ -74,6 +92,8 @@ def upgrade() -> None:
     sa.Column('role_id', sa.Integer(), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.Uuid(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.ForeignKeyConstraint(['role_id'], ['roles.id'], ondelete='CASCADE'),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
@@ -90,10 +110,12 @@ def downgrade() -> None:
     op.drop_table('role_permissions')
     op.drop_index('ix_users_username', table_name='users')
     op.drop_index(op.f('ix_users_user_name'), table_name='users')
-    op.drop_index('ix_users_email', table_name='users')
+    op.drop_index(op.f('ix_users_email'), table_name='users')
     op.drop_table('users')
     op.drop_index(op.f('ix_roles_name'), table_name='roles')
     op.drop_table('roles')
+    op.drop_index(op.f('ix_revoked_tokens_jti'), table_name='revoked_tokens')
+    op.drop_table('revoked_tokens')
     op.drop_index(op.f('ix_permissions_name'), table_name='permissions')
     op.drop_table('permissions')
     # ### end Alembic commands ###
