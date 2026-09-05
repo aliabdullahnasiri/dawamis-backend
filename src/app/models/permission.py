@@ -2,7 +2,12 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm.session import Session
 
+from app.api.dependencies.db import DBSession
+from app.core.config import settings
+from app.core.context.database import get_current_db
+from app.extensions.redis import redis
 from app.models.base import Base
 
 if TYPE_CHECKING:
@@ -16,6 +21,7 @@ class Permission(Base):
     """
 
     __tablename__ = "permissions"
+    __redis_key__ = "app:permissions"
 
     name: Mapped[str] = mapped_column(
         String(100),
