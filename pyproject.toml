@@ -19,6 +19,7 @@ dependencies = [
     "pyjwt>=2.13.0",
     "pymysql>=1.2.0",
     "python-multipart>=0.0.32",
+    "redis>=8.1.0",
     "sqlalchemy>=2.0.52",
     "uvicorn[standard]>=0.52.4",
 ]
