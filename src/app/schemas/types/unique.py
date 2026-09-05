@@ -1,5 +1,7 @@
 from pydantic_core import PydanticCustomError
 
+from app.core.context.database import get_current_db
+
 
 class Unique:
     """Validate that a value is unique in the database."""
@@ -10,10 +12,13 @@ class Unique:
         self.msg = msg
 
     def __call__(self, value):
-        return value
-        exists = self.model.query.filter(
-            getattr(self.model, self.field) == value
-        ).first()
+        db = get_current_db()
+
+        exists = (
+            db.query(self.model)
+            .filter(getattr(self.model, self.field) == value)
+            .first()
+        )
 
         if exists:
             raise PydanticCustomError(
