@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     APP_DEBUG: bool = True
 
     DATABASE_URL: str = "sqlite:///dev.db"
+    REDIS_URL: str = "redis://localhost:6379/0"
 
     SECRET_KEY: str = "your-secret-key"
 
@@ -27,6 +28,8 @@ class Settings(BaseSettings):
     }
 
     DEFAULT_LANGUAGE: str = SUPPORTED_LANGUAGES["en"]
+
+    DEFAULT_ROLES: tuple = ("ADMIN", "USER")
 
     LOCALES_DIR: Path = Path(__file__).resolve().parents[3] / "locales"
 
