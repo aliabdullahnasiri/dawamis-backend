@@ -4,7 +4,7 @@ from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.core.context.database import reset_db, set_db
-from app.core.database import SessionLocal
+from app.extensions.db import SessionLocal
 
 
 class DatabaseMiddleware(BaseHTTPMiddleware):
