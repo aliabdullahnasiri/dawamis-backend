@@ -95,7 +95,7 @@ def me(
     """
     user = UserService.get_by_uuid(
         db=db,
-        user_uuid=UUID(user_uuid),
+        user_uuid=user_uuid,
     )
 
     return UserData.model_validate(user)
