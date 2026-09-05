@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -29,6 +29,8 @@ class Role(Base):
         String(255),
         nullable=True,
     )
+
+    is_system = mapped_column(Boolean, default=False, nullable=False)
 
     user_roles: Mapped[list["UserRole"]] = relationship(
         "UserRole",
