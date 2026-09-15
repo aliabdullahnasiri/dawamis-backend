@@ -23,6 +23,10 @@ class Permission(Base):
     __tablename__ = "permissions"
     __redis_key__ = "app:permissions"
 
+    __redis_flush_on_startup__ = True
+
+    names = set()
+
     name: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
@@ -35,7 +39,7 @@ class Permission(Base):
         nullable=True,
     )
 
-    code: Mapped[int | None] = mapped_column(
+    code: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
@@ -52,3 +56,8 @@ class Permission(Base):
         back_populates="permissions",
         viewonly=True,
     )
+
+    def __class_getitem__(cls, name: str):
+        cls.names.add(name)
+
+        return name

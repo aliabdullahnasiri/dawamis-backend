@@ -8,6 +8,8 @@ from sqlalchemy import DateTime, func, inspect
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.types import Uuid
 
+from app.extensions import redis
+
 
 class DeclarativeBaseMeta(type(DeclarativeBase)):
     """
@@ -21,6 +23,11 @@ class DeclarativeBaseMeta(type(DeclarativeBase)):
         namespace: dict[str, Any],
         **kwargs: Any,
     ) -> type:
+        if namespace.get("__redis_flush_on_startup__", False) and (
+            redis_key := namespace.get("__redis_key__")
+        ):
+            redis.delete(redis_key)
+
         model = super().__new__(
             cls,
             name,

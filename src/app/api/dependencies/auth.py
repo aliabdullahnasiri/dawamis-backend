@@ -33,9 +33,11 @@ CurrentUserUUID = Annotated[
 ]
 
 
-class CurrentUserCan:
+class PermissionRequired:
     def __class_getitem__(cls, permissions: str | tuple) -> Annotated:
         if isinstance(permissions, str):
             permissions = (permissions,)
 
-        return Annotated[None, Depends(current_user_can(*permissions))]
+        return Annotated[
+            None, Depends(current_user_can(*[Permission[p] for p in permissions]))
+        ]

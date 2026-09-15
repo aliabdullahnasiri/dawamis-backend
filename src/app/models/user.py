@@ -1,5 +1,5 @@
 from datetime import date
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 import bcrypt
 from sqlalchemy import Date, Index, String, UniqueConstraint
@@ -9,6 +9,8 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.associations import UserRole
+    from app.models.associations.organization_user import OrganizationUser
+    from app.models.organization import Organization
     from app.models.permission import Permission
     from app.models.role import Role
 
@@ -70,6 +72,11 @@ class User(Base):
         viewonly=True,
     )
 
+    organization_memberships: Mapped[list["OrganizationUser"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
     __table_args__ = (
         Index("ix_users_email", "email"),
         Index("ix_users_username", "user_name"),
@@ -88,6 +95,15 @@ class User(Base):
             permissions.extend(role.permissions)
 
         return permissions
+
+    @property
+    def permissions_mask(self: Self) -> int:
+        mask = 0x0
+
+        for permission in self.permissions:
+            mask |= permission.code
+
+        return mask
 
     def set_password(self, password: str) -> None:
         password_bytes = password.encode("utf-8")

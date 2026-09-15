@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from redis import Redis
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 

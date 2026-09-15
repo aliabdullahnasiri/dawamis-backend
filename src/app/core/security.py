@@ -1,11 +1,17 @@
-from typing import Any
+from typing import Any, List
+from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
+from app.core.context.database import get_current_db
+from app.extensions import redis
+from app.models.permission import Permission
+from app.models.user import User
 from app.services.jwt import JWTService
+from app.services.user import UserService
 
 
 def get_current_token(
@@ -24,13 +30,6 @@ def get_current_token(
     """
     try:
         claims = JWTService.decode(token)
-
-        if claims.get("type") != "access":
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid access token.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
 
         if JWTService.is_revoked(token, db):
             raise HTTPException(
@@ -63,7 +62,7 @@ def get_current_claims(
 
 def get_current_user_uuid(
     claims: dict[str, Any] = Depends(get_current_claims),
-) -> str:
+) -> UUID:
     """
     Return the authenticated user's UUID from the JWT subject claim.
 
@@ -79,7 +78,7 @@ def get_current_user_uuid(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    return user_uuid
+    return UUID(user_uuid)
 
 
 def get_current_refresh_token(
@@ -120,3 +119,23 @@ def get_current_refresh_token(
             detail="Invalid or expired refresh token.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+def get_current_user(
+    db: DBSession, uuid: UUID = Depends(get_current_user_uuid)
+) -> User | None:
+    return UserService.get_by_uuid(db, uuid)
+
+
+def current_user_can(*permissions):
+    def dependency(db: DBSession, user: User = Depends(get_current_user)) -> None:
+        mask = 0x0
+
+        for name in permissions:
+            try:
+                mask |= int(redis.hget(Permission.__redis_key__, name) or 0x0)
+
+            except ValueError:
+                pass
+
+    return dependency

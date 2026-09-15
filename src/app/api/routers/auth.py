@@ -3,7 +3,12 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.auth import CurrentRefreshToken, CurrentToken, CurrentUserUUID
+from app.api.dependencies.auth import (
+    CurrentRefreshToken,
+    CurrentToken,
+    CurrentUserUUID,
+    PermissionRequired,
+)
 from app.api.dependencies.db import DBSession
 from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
