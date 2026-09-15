@@ -53,8 +53,6 @@ class Startup:
         for name in Permission.names:
             if self.db and self.redis:
                 try:
-                    code = int(self.redis.hget(Permission.__redis_key__, name) or 0x0)
-
                     p: Permission | None = (
                         self.db.query(Permission)
                         .filter(Permission.name == name)

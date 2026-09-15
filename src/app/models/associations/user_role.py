@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
+from app.models.organization import Organization
 
 if TYPE_CHECKING:
     from app.models.role import Role
@@ -36,6 +37,14 @@ class UserRole(Base):
         nullable=False,
     )
 
+    organization_id: Mapped[int] = mapped_column(
+        ForeignKey(
+            "organizations.id",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+    )
+
     user: Mapped["User"] = relationship(
         "User",
         back_populates="user_roles",
@@ -46,10 +55,15 @@ class UserRole(Base):
         back_populates="user_roles",
     )
 
+    organization: Mapped["Organization"] = relationship(
+        "Organization",
+    )
+
     __table_args__ = (
         UniqueConstraint(
             "user_id",
             "role_id",
-            name="uq_user_role",
+            "organization_id",
+            name="uq_user_role_organization",
         ),
     )

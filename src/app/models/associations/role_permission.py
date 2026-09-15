@@ -37,14 +37,6 @@ class RolePermission(Base):
         nullable=False,
     )
 
-    organization_id: Mapped[int] = mapped_column(
-        ForeignKey(
-            "organizations.id",
-            ondelete="CASCADE",
-        ),
-        nullable=False,
-    )
-
     role: Mapped["Role"] = relationship(
         "Role",
         back_populates="role_permissions",
@@ -53,10 +45,6 @@ class RolePermission(Base):
     permission: Mapped["Permission"] = relationship(
         "Permission",
         back_populates="role_permissions",
-    )
-
-    organization: Mapped["Organization"] = relationship(
-        "Organization",
     )
 
     __table_args__ = (
