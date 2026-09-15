@@ -1,13 +1,20 @@
+from contextlib import asynccontextmanager
 from typing import Self, Union
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from sqlalchemy.orm import Session
 
 from app.api.middleware import register_middleware
 from app.api.routers import auth, health
 from app.core.config import settings
+from app.core.context.database import get_current_db
+from app.core.startup import Startup
 from app.errors import AppError
 from app.errors.handlers import app_error_handler, request_validation_error_handler
+from app.extensions import redis
+from app.extensions.db import SessionLocal
+from app.models.base import Base
 
 
 class App:
@@ -24,11 +31,33 @@ class App:
     def __init__(self: Self) -> None:
         self.app: FastAPI = self.create()
 
+    @asynccontextmanager
+    async def lifespan(self, app: FastAPI):
+        with SessionLocal() as db:
+            # Startup
+            await self.startup(db)
+
+        yield
+
+        # Shutdown
+        await self.shutdown()
+
+    async def startup(self, db: Session) -> None:
+        startup: Startup = Startup(db, redis)
+
+        with startup:
+            pass
+
+    async def shutdown(self) -> None:
+        # Cleanup here
+        pass
+
     def create(self) -> FastAPI:
         app = FastAPI(
             title=settings.APP_NAME,
             description=settings.APP_DESCRIPTION,
             version=settings.APP_VERSION,
+            lifespan=self.lifespan,
         )
 
         App.register_routers(app)
