@@ -40,7 +40,7 @@ class MailtrapService:
         return jinja_template.render(**context)
 
     @staticmethod
-    def send(
+    async def send(
         *,
         to: str,
         subject: str,
@@ -84,7 +84,7 @@ class MailtrapService:
         return client.send(mail)
 
     @classmethod
-    def send_template(
+    async def send_template(
         cls,
         *,
         to: str,
@@ -119,7 +119,7 @@ class MailtrapService:
         )
 
     @classmethod
-    def send_verification_email(
+    async def send_verification_email(
         cls,
         *,
         to: str,
@@ -138,7 +138,7 @@ class MailtrapService:
         )
 
     @classmethod
-    def send_password_reset_email(
+    async def send_password_reset_email(
         cls,
         *,
         to: str,
@@ -157,7 +157,7 @@ class MailtrapService:
         )
 
     @classmethod
-    def send_welcome_email(
+    async def send_welcome_email(
         cls,
         *,
         to: str,
