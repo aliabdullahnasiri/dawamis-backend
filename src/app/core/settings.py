@@ -15,7 +15,10 @@ class Settings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
 
     SECRET_KEY: str = "your-secret-key"
-    MAILTRAP_TOKEN: str = "your-mailtrap-token"
+
+    MAIL_FROM_EMAIL: str = "hello@demomailtrap.com"
+    MAIL_FROM_NAME: str = "Mailtrap Test"
+    MAILTRAP_API_TOKEN: str = "your-mailtrap-api-token"
 
     JWT_SECRET_KEY: str = "dev-jwt-secret"
     JWT_ALGORITHM: str = "HS256"
