@@ -2,8 +2,12 @@ from uuid import UUID
 
 from redis import Redis
 from sqlalchemy import select
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
+from app.core.decorators import handle_exception
+from app.core.i18n.types import T
+from app.errors.exceptions import NotFoundError, UserNotFound
 from app.models import User
 from app.schemas.user import CreateUserRequest
 
@@ -42,38 +46,37 @@ class UserService:
         return user
 
     @staticmethod
+    @handle_exception(NoResultFound, _raise=UserNotFound)
     def get_by_uuid(
         db: Session,
         user_uuid: UUID,
-    ) -> User | None:
+    ) -> User:
         """
         Return a user by UUID.
         """
-        return db.execute(
-            select(User).where(User.uuid == user_uuid)
-        ).scalar_one_or_none()
+        return db.execute(select(User).where(User.uuid == user_uuid)).scalar_one()
 
     @staticmethod
+    @handle_exception(NoResultFound, _raise=UserNotFound)
     def get_by_username(
         db: Session,
         user_name: str,
-    ) -> User | None:
+    ) -> User:
         """
         Return a user by username.
         """
-        return db.execute(
-            select(User).where(User.user_name == user_name)
-        ).scalar_one_or_none()
+        return db.execute(select(User).where(User.user_name == user_name)).scalar_one()
 
     @staticmethod
+    @handle_exception(NoResultFound, _raise=UserNotFound)
     def get_by_email(
         db: Session,
         email: str,
-    ) -> User | None:
+    ) -> User:
         """
         Return a user by email.
         """
-        return db.execute(select(User).where(User.email == email)).scalar_one_or_none()
+        return db.execute(select(User).where(User.email == email)).scalar_one()
 
     @staticmethod
     def get_all(
