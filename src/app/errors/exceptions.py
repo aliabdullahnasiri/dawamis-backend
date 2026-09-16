@@ -104,3 +104,9 @@ class TokenRevokedError(TokenError):
 
     code = "token_revoked"
     message = T("auth:token_revoked")
+
+
+class UserNotFound(AppError):
+    status_code: int = 404
+    code: str = "user_not_found"
+    message: str = T("user:not_found")
