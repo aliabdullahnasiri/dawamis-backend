@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     APP_ENV: str = "development"
     APP_DEBUG: bool = True
 
+    TIMEZONE: str = "Asia/Kabul"
+
     DATABASE_URL: str = "sqlite:///dev.db"
     REDIS_URL: str = "redis://localhost:6379/0"
 
