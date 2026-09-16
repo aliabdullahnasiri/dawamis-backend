@@ -1,2 +1,0 @@
-class PermissionCache:
-    pass
