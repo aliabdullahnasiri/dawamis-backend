@@ -85,17 +85,16 @@ class UserService:
         ).scalar_one_or_none()
 
         if user is None:
-            raise AppError(
-                message=T("errors:invalid_email_verification_token"),
-            )
+            raise UserNotFound(message=T("errors:invalid_email_verification_token"))
 
         if (
             user.email_verification_expires_at is None
-            or user.email_verification_expires_at
-            < datetime.now(UTC)
+            or user.email_verification_expires_at < datetime.now(UTC)
         ):
             raise AppError(
                 message=T("errors:email_verification_token_expired"),
+                status_code=400,
+                code="email_verification_token_expired",
             )
 
         return user

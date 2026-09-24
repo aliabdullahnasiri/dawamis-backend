@@ -70,7 +70,7 @@ class User(Base):
     )
 
     email_verification_expires_at: Mapped[datetime | None] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=True,
     )
 
