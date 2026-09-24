@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Skill(git-commit)",
-      "Bash(git add *)",
-      "Bash(git commit -m 'fix: resolve critical issues from code review *)"
-    ]
-  }
-}
