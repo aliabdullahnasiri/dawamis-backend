@@ -1,17 +1,10 @@
-from uuid import UUID
+from fastapi import APIRouter, status
 
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
-
-from app.api.dependencies.auth import (
-    CurrentRefreshToken,
-    CurrentToken,
-    CurrentUserUUID,
-    PermissionRequired,
-)
+from app.api.dependencies.auth import CurrentRefreshToken, CurrentToken, CurrentUserUUID
 from app.api.dependencies.db import DBSession
 from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
+from app.models.user import User
 from app.schemas.auth import (
     LoginRequest,
     LoginResponse,
@@ -19,9 +12,16 @@ from app.schemas.auth import (
     RegisterResponse,
 )
 from app.schemas.auth.data import LoginData, RefreshData
-from app.schemas.auth.response import LogoutResponse, RefreshResponse
+from app.schemas.auth.request import ResendVerificationEmailRequest, VerifyEmailRequest
+from app.schemas.auth.response import (
+    EmailVerificationResponse,
+    LogoutResponse,
+    RefreshResponse,
+    ResendVerificationEmailResponse,
+)
 from app.schemas.user.data import UserData
 from app.services.auth import AuthService
+from app.services.email_verification import EmailVerificationService
 from app.services.jwt import JWTService
 from app.services.user import UserService
 
@@ -47,6 +47,8 @@ def register(
         db=db,
         data=data,
     )
+
+    AuthService.send_welcome_email(user)
 
     return RegisterResponse(
         message=T("auth:registration_successful"),
@@ -172,4 +174,40 @@ def refresh(
         data=RefreshData(
             access_token=access_token,
         ),
+    )
+
+
+@router.post(
+    "/email/verify",
+    response_model=EmailVerificationResponse,
+)
+def verify_email(
+    data: VerifyEmailRequest,
+    db: DBSession,
+) -> EmailVerificationResponse:
+    EmailVerificationService.verify(
+        db=db,
+        token=data.token,
+    )
+
+    return EmailVerificationResponse(
+        message=T("messages:email_verified_successfully"),
+    )
+
+
+@router.post(
+    "/email/resend",
+    response_model=ResendVerificationEmailResponse,
+)
+def resend_verification_email(
+    data: ResendVerificationEmailRequest,
+    db: DBSession,
+) -> ResendVerificationEmailResponse:
+    user: User = UserService.get_by_email(db=db, email=data.email)
+
+    if not user.is_email_verified:
+        EmailVerificationService.send(db=db, user=user)
+
+    return ResendVerificationEmailResponse(
+        message=T("messages:verification_email_sent")
     )

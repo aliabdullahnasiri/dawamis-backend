@@ -1,4 +1,3 @@
-import re
 from typing import Self
 
 from redis import Redis
@@ -6,7 +5,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
-from app.models.base import Base
 from app.models.permission import Permission
 from app.models.role import Role
 

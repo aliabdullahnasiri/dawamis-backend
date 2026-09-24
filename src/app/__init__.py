@@ -18,7 +18,7 @@ from app.models.base import Base
 
 
 class App:
-    __object__: Union[App, None] = None
+    __object__: App | None = None
 
     def __new__(cls, *args, **kwargs) -> App:
         if cls.__object__ is not None:

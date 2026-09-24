@@ -45,17 +45,17 @@ class UserRole(Base):
         nullable=False,
     )
 
-    user: Mapped["User"] = relationship(
+    user: Mapped[User] = relationship(
         "User",
         back_populates="user_roles",
     )
 
-    role: Mapped["Role"] = relationship(
+    role: Mapped[Role] = relationship(
         "Role",
         back_populates="user_roles",
     )
 
-    organization: Mapped["Organization"] = relationship(
+    organization: Mapped[Organization] = relationship(
         "Organization",
     )
 

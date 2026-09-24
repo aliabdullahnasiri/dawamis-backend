@@ -32,26 +32,26 @@ class Role(Base):
 
     is_system = mapped_column(Boolean, default=False, nullable=False)
 
-    user_roles: Mapped[list["UserRole"]] = relationship(
+    user_roles: Mapped[list[UserRole]] = relationship(
         "UserRole",
         back_populates="role",
         cascade="all, delete-orphan",
     )
 
-    users: Mapped[list["User"]] = relationship(
+    users: Mapped[list[User]] = relationship(
         "User",
         secondary="user_roles",
         back_populates="roles",
         viewonly=True,
     )
 
-    role_permissions: Mapped[list["RolePermission"]] = relationship(
+    role_permissions: Mapped[list[RolePermission]] = relationship(
         "RolePermission",
         back_populates="role",
         cascade="all, delete-orphan",
     )
 
-    permissions: Mapped[list["Permission"]] = relationship(
+    permissions: Mapped[list[Permission]] = relationship(
         "Permission",
         secondary="role_permissions",
         back_populates="roles",

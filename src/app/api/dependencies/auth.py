@@ -1,4 +1,4 @@
-from typing import Annotated, Any, Generic, Type, TypeVar
+from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends

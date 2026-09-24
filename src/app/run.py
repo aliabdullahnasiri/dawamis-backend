@@ -1,7 +1,5 @@
 import uvicorn
 
-import app
-
 
 def main() -> None:
     uvicorn.run(

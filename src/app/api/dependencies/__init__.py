@@ -7,9 +7,9 @@ from app.api.dependencies.auth import (
 from app.api.dependencies.db import DBSession
 
 __all__ = [
-    "DBSession",
-    "CurrentToken",
-    "CurrentRefreshToken",
     "CurrentClaims",
+    "CurrentRefreshToken",
+    "CurrentToken",
     "CurrentUserUUID",
+    "DBSession",
 ]

@@ -1,13 +1,13 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
-from redis import Redis
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import Session
 
 from app.core.decorators import handle_exception
 from app.core.i18n.types import T
-from app.errors.exceptions import NotFoundError, UserNotFound
+from app.errors.exceptions import AppError, UserNotFound
 from app.models import User
 from app.schemas.user import CreateUserRequest
 
@@ -77,6 +77,28 @@ class UserService:
         Return a user by email.
         """
         return db.execute(select(User).where(User.email == email)).scalar_one()
+
+    @staticmethod
+    def get_by_verification_token(db: Session, token: str) -> User:
+        user: User | None = db.execute(
+            select(User).where(User.email_verification_token_hash == token)
+        ).scalar_one_or_none()
+
+        if user is None:
+            raise AppError(
+                message=T("errors:invalid_email_verification_token"),
+            )
+
+        if (
+            user.email_verification_expires_at is None
+            or user.email_verification_expires_at
+            < datetime.now(UTC).replace(tzinfo=None)
+        ):
+            raise AppError(
+                message=T("errors:email_verification_token_expired"),
+            )
+
+        return user
 
     @staticmethod
     def get_all(

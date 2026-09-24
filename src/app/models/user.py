@@ -1,8 +1,8 @@
-from datetime import date
-from typing import TYPE_CHECKING, Any, Self
+from datetime import date, datetime
+from typing import TYPE_CHECKING, Self
 
 import bcrypt
-from sqlalchemy import Date, Index, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, Index, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -10,7 +10,6 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.associations import UserRole
     from app.models.associations.organization_user import OrganizationUser
-    from app.models.organization import Organization
     from app.models.permission import Permission
     from app.models.role import Role
 
@@ -59,20 +58,36 @@ class User(Base):
         nullable=True,
     )
 
-    user_roles: Mapped[list["UserRole"]] = relationship(
+    is_email_verified: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+
+    email_verification_token_hash: Mapped[str | None] = mapped_column(
+        String(64),
+        nullable=True,
+    )
+
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(
+        DateTime,
+        nullable=True,
+    )
+
+    user_roles: Mapped[list[UserRole]] = relationship(
         "UserRole",
         back_populates="user",
         cascade="all, delete-orphan",
     )
 
-    roles: Mapped[list["Role"]] = relationship(
+    roles: Mapped[list[Role]] = relationship(
         "Role",
         secondary="user_roles",
         back_populates="users",
         viewonly=True,
     )
 
-    organization_memberships: Mapped[list["OrganizationUser"]] = relationship(
+    organization_memberships: Mapped[list[OrganizationUser]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )
@@ -85,11 +100,11 @@ class User(Base):
     )
 
     @property
-    def permissions(self) -> list["Permission"]:
+    def permissions(self) -> list[Permission]:
         """
         Return all permissions granted to this user through their roles.
         """
-        permissions: list["Permission"] = []
+        permissions: list[Permission] = []
 
         for role in self.roles:
             permissions.extend(role.permissions)

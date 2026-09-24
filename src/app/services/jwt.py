@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import uuid4
 
@@ -40,7 +40,7 @@ class JWTService:
         claims: dict[str, Any],
     ) -> str:
         """Create a JWT with standard and custom claims."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         payload = {
             "sub": str(identity),

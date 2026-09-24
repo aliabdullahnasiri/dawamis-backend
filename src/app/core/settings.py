@@ -18,15 +18,23 @@ class Settings(BaseSettings):
 
     SECRET_KEY: str = "your-secret-key"
 
-    MAIL_FROM_EMAIL: str = "hello@demomailtrap.com"
-    MAIL_FROM_NAME: str = "Mailtrap Test"
-    MAILTRAP_API_TOKEN: str = "your-mailtrap-api-token"
+    # Email / SMTP
+    SMTP_HOST: str = "smtp.example.com"
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str = "username@example.com"
+    SMTP_PASSWORD: str = "your-smtp-password"
+    SMTP_USE_TLS: bool = True
 
+    MAIL_FROM_EMAIL: str = "noreply@dawamis.com"
+    MAIL_FROM_NAME: str = "Dawamis"
+
+    # JWT
     JWT_SECRET_KEY: str = "dev-jwt-secret"
     JWT_ALGORITHM: str = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    # Internationalization
     SUPPORTED_LANGUAGES: dict[str, str] = {
         "en": "en_US",
         "fa": "fa_IR",
@@ -35,9 +43,13 @@ class Settings(BaseSettings):
 
     DEFAULT_LANGUAGE: str = SUPPORTED_LANGUAGES["en"]
 
+    # Roles
     DEFAULT_ROLES: tuple = ("ADMIN", "USER")
 
+    # Locales
     LOCALES_DIR: Path = Path(__file__).resolve().parents[3] / "locales"
+
+    FRONTEND_URL: str = "http://localhost:3000"
 
     model_config = SettingsConfigDict(
         env_file=".env",

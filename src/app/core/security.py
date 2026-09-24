@@ -1,12 +1,10 @@
-from typing import Any, List
+from typing import Any
 from uuid import UUID
 
 from fastapi import Depends, HTTPException, status
-from sqlalchemy.orm import Session
 
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
-from app.core.context.database import get_current_db
 from app.extensions import redis
 from app.models.permission import Permission
 from app.models.user import User

@@ -11,5 +11,8 @@
         "src"
       ]
     }
-  ]
+  ],
+  "typeCheckingMode": "basic",
+  "reportUnusedImport": "information",
+  "reportUnusedVariable": "information"
 }

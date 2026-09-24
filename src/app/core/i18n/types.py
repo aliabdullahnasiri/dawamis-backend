@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 from app.core.i18n.translator import gettext
 

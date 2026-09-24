@@ -1,17 +1,18 @@
-# Translations template for PROJECT.
+# English translations for PROJECT.
 # Copyright (C) 2026 ORGANIZATION
 # This file is distributed under the same license as the PROJECT project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
 "POT-Creation-Date: 2026-09-22 21:02+0430\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2026-09-22 21:03+0430\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: en\n"
+"Language-Team: en <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,162 +20,161 @@ msgstr ""
 
 #: src/app/api/routers/auth.py:54
 msgid "auth:registration_successful"
-msgstr ""
+msgstr "Registration successful."
 
 #: src/app/api/routers/auth.py:87
 msgid "auth:authentication_successful"
-msgstr ""
+msgstr "Authentication successful."
 
 #: src/app/api/routers/auth.py:129
 msgid "auth:logout_successful"
-msgstr ""
+msgstr "Logout successful."
 
 #: src/app/api/routers/auth.py:150
 msgid "auth:invalid_refresh_token"
-msgstr ""
+msgstr "Invalid refresh token."
 
 #: src/app/api/routers/auth.py:158 src/app/errors/exceptions.py:106
 msgid "auth:token_revoked"
-msgstr ""
+msgstr "Token has been revoked."
 
 #: src/app/api/routers/auth.py:165 src/app/errors/exceptions.py:97
 msgid "auth:invalid_token"
-msgstr ""
+msgstr "Invalid token."
 
 #: src/app/api/routers/auth.py:173
 msgid "auth:access_token_refreshed"
-msgstr ""
+msgstr "Access token refreshed successfully."
 
 #: src/app/api/routers/auth.py:194
 msgid "messages:email_verified_successfully"
-msgstr ""
+msgstr "Email verified successfully."
 
 #: src/app/api/routers/auth.py:212
 msgid "messages:verification_email_sent"
-msgstr ""
+msgstr "Verification email sent successfully."
 
 #: src/app/api/routers/health.py:37
 msgid "health.database_unavailable"
-msgstr ""
+msgstr "Database is currently unavailable."
 
 #: src/app/api/routers/health.py:40
 msgid "health.ok"
-msgstr ""
+msgstr "Service is healthy."
 
 #: src/app/errors/exceptions.py:11
 msgid "errors:internal_error"
-msgstr ""
+msgstr "An internal server error occurred."
 
 #: src/app/errors/exceptions.py:36
 msgid "request:bad_request"
-msgstr ""
+msgstr "Bad request."
 
 #: src/app/errors/exceptions.py:46
 msgid "auth:authentication_failed"
-msgstr ""
+msgstr "Authentication failed."
 
 #: src/app/errors/exceptions.py:57
 msgid "auth:permission_denied"
-msgstr ""
+msgstr "Permission denied."
 
 #: src/app/errors/exceptions.py:67
 msgid "errors:not_found"
-msgstr ""
+msgstr "Resource not found."
 
 #: src/app/errors/exceptions.py:78
 msgid "errors:conflict"
-msgstr ""
+msgstr "A conflict occurred."
 
 #: src/app/errors/exceptions.py:88
 msgid "validation:failed"
-msgstr ""
+msgstr "Validation failed."
 
 #: src/app/errors/exceptions.py:112
 msgid "user:not_found"
-msgstr ""
+msgstr "User not found."
 
 #: src/app/schemas/user/request.py:42
 msgid "auth.username_exists"
-msgstr ""
+msgstr "Username already exists."
 
 #: src/app/schemas/user/request.py:47
 msgid "auth.email_exists"
-msgstr ""
+msgstr "Email address already exists."
 
 #: src/app/services/auth.py:63
 msgid "auth:invalid_credentials"
-msgstr ""
+msgstr "Invalid username or password."
 
 #: src/app/services/auth.py:97
 msgid "emails:welcome_subject"
-msgstr ""
+msgstr "Welcome to Dawamis"
 
 #: src/app/services/auth.py:98
 msgid "emails:welcome_text"
-msgstr ""
+msgstr "Welcome to Dawamis. Your account has been created successfully."
 
 #: src/app/services/email_verification.py:45
 msgid "emails:verify_email_subject"
-msgstr ""
+msgstr "Verify Your Email"
 
 #: src/app/services/mail.py:31
 msgid "errors:email_must_contain_text_or_html_content"
-msgstr ""
+msgstr "Email must contain either text or HTML content."
 
 #: src/app/services/user.py:89
 msgid "errors:invalid_email_verification_token"
-msgstr ""
+msgstr "Invalid email verification token."
 
 #: src/app/services/user.py:98
 msgid "errors:email_verification_token_expired"
-msgstr ""
+msgstr "Email verification token has expired."
 
 #: src/app/templates/emails/base.html:7 src/app/templates/emails/base.html:52
 msgid "brand:name"
-msgstr ""
+msgstr "Dawamis"
 
 #: src/app/templates/emails/base.html:56
 msgid "brand:description"
-msgstr ""
+msgstr "Pharmacy Management System"
 
 #: src/app/templates/emails/base.html:80
 msgid "email:all_rights_reserved"
-msgstr ""
+msgstr "All rights reserved."
 
 #: src/app/templates/emails/base.html:84
 msgid "email:automated_email_do_not_reply"
-msgstr ""
+msgstr "This is an automated email. Please do not reply to this message."
 
 #: src/app/templates/emails/auth/verify_email.html:3
 #: src/app/templates/emails/auth/verify_email.html:14
 msgid "auth:verify_your_email"
-msgstr ""
+msgstr "Verify Your Email"
 
 #: src/app/templates/emails/auth/verify_email.html:25
 msgid "auth:thank_you_for_creating_dawamis_account"
-msgstr ""
+msgstr "Thank you for creating your Dawamis account."
 
 #: src/app/templates/emails/auth/verify_email.html:26
 msgid "auth:please_verify_your_email_to_activate_account"
-msgstr ""
+msgstr "Please verify your email address to activate your account."
 
 #: src/app/templates/emails/auth/verify_email.html:37
 msgid "auth:click_button_to_verify_email"
-msgstr ""
+msgstr "Click the button below to verify your email address."
 
 #: src/app/templates/emails/auth/verify_email.html:38
 msgid "auth:verification_link_expires_in_30_minutes"
-msgstr ""
+msgstr "This verification link will expire in 30 minutes."
 
 #: src/app/templates/emails/auth/verify_email.html:68
 msgid "auth:verify_email"
-msgstr ""
+msgstr "Verify Email"
 
 #: src/app/templates/emails/auth/verify_email.html:82
 msgid "auth:if_button_does_not_work_copy_link"
-msgstr ""
+msgstr "If the button above does not work, copy and paste the following link into your browser:"
 
 #: src/app/templates/emails/auth/verify_email.html:108
 msgid "auth:if_did_not_create_account_ignore_email"
-msgstr ""
-
+msgstr "If you did not create this account, you can safely ignore this email."

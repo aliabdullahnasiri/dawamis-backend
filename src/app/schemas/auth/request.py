@@ -26,3 +26,11 @@ class RegisterRequest(CreateUserRequest):
     """
 
     accept_terms: bool
+
+
+class VerifyEmailRequest(BaseRequestModel):
+    token: str = Field(min_length=1)
+
+
+class ResendVerificationEmailRequest(BaseRequestModel):
+    email: EmailStr

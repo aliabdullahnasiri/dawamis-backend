@@ -4,8 +4,8 @@ from app.schemas.base.request import BaseRequestModel
 from app.schemas.base.response import BaseResponseModel
 
 __all__ = [
-    "Model",
     "BaseDataModel",
     "BaseRequestModel",
     "BaseResponseModel",
+    "Model",
 ]

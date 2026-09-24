@@ -1,4 +1,3 @@
-from functools import wraps
 
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
@@ -6,7 +5,6 @@ from sqlalchemy import text
 from app.api.dependencies import DBSession
 from app.api.dependencies.auth import CurrentUserUUID, PermissionRequired
 from app.core.i18n.types import T
-from app.services.user import UserService
 
 router = APIRouter(
     prefix="/health",

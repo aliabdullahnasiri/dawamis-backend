@@ -1,8 +1,6 @@
-import langcodes
 from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.core.config import settings
 from app.core.i18n.context import locale_context
 from app.core.i18n.locale import get_locale
 

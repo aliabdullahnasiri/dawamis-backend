@@ -5,9 +5,12 @@ from sqlalchemy.orm import Session
 from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
 from app.models import User
+from app.models.user import User
 from app.schemas.auth.request import RegisterRequest
 from app.services.jwt import JWTService
+from app.services.mail import MailService
 from app.services.user import UserService
+from app.workers.email import EmailWorker
 
 
 class AuthService:
@@ -85,3 +88,14 @@ class AuthService:
         )
 
         return access_token, refresh_token
+
+    @staticmethod
+    def send_welcome_email(user: User) -> None:
+        EmailWorker.send(
+            MailService.send_template,
+            to=user.email,
+            subject=T("emails:welcome_subject"),
+            text=T("emails:welcome_text"),
+            template="emails/auth/welcome.html",
+            user=user,
+        )

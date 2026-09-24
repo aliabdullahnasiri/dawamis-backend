@@ -8,12 +8,12 @@ from app.schemas.auth.response import (
 )
 
 __all__ = [
-    "LoginRequest",
     "LoginData",
-    "RegisterRequest",
+    "LoginRequest",
     "LoginResponse",
-    "RegisterResponse",
     "LogoutResponse",
     "RefreshData",
     "RefreshResponse",
+    "RegisterRequest",
+    "RegisterResponse",
 ]

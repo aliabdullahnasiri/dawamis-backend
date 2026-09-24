@@ -1,0 +1,87 @@
+{% extends "emails/base.html" %}
+
+{% block title %}Welcome to Dawamis{% endblock %}
+
+{% block content %}
+
+<h2
+    style="
+        margin: 0 0 20px;
+        font-size: 24px;
+        color: #111827;
+    "
+>
+    Welcome{% if user.user_name %}, {{ user.user_name }}{% endif %}!
+</h2>
+
+<p
+    style="
+        margin: 0 0 16px;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #4b5563;
+    "
+>
+    Thank you for creating your Dawamis account.
+    We're happy to have you with us.
+</p>
+
+<p
+    style="
+        margin: 0 0 24px;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #4b5563;
+    "
+>
+    Dawamis helps you manage your pharmacy operations,
+    including medicines, inventory, purchases, sales,
+    customers, employees, and more.
+</p>
+
+<table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    style="margin: 0 auto 24px;"
+>
+    <tr>
+        <td
+            align="center"
+            style="
+                border-radius: 6px;
+                background-color: #111827;
+            "
+        >
+            <a
+                href="{{ app_url }}"
+                style="
+                    display: inline-block;
+                    padding: 14px 28px;
+                    font-size: 16px;
+                    font-weight: bold;
+                    color: #ffffff;
+                    text-decoration: none;
+                    border-radius: 6px;
+                "
+            >
+                Get Started
+            </a>
+        </td>
+    </tr>
+</table>
+
+<p
+    style="
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #6b7280;
+    "
+>
+    If you did not create this account, you can safely ignore
+    this email.
+</p>
+
+{% endblock %}

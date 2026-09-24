@@ -2,12 +2,7 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.orm.session import Session
 
-from app.api.dependencies.db import DBSession
-from app.core.config import settings
-from app.core.context.database import get_current_db
-from app.extensions.redis import redis
 from app.models.base import Base
 
 if TYPE_CHECKING:
@@ -44,13 +39,13 @@ class Permission(Base):
         nullable=False,
     )
 
-    role_permissions: Mapped[list["RolePermission"]] = relationship(
+    role_permissions: Mapped[list[RolePermission]] = relationship(
         "RolePermission",
         back_populates="permission",
         cascade="all, delete-orphan",
     )
 
-    roles: Mapped[list["Role"]] = relationship(
+    roles: Mapped[list[Role]] = relationship(
         "Role",
         secondary="role_permissions",
         back_populates="permissions",

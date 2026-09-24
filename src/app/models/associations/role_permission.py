@@ -6,7 +6,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base
 
 if TYPE_CHECKING:
-    from app.models.organization import Organization
     from app.models.permission import Permission
     from app.models.role import Role
 
@@ -37,12 +36,12 @@ class RolePermission(Base):
         nullable=False,
     )
 
-    role: Mapped["Role"] = relationship(
+    role: Mapped[Role] = relationship(
         "Role",
         back_populates="role_permissions",
     )
 
-    permission: Mapped["Permission"] = relationship(
+    permission: Mapped[Permission] = relationship(
         "Permission",
         back_populates="role_permissions",
     )

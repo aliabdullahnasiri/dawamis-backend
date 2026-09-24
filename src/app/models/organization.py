@@ -1,7 +1,6 @@
-from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, DateTime, String, func
+from sqlalchemy import Boolean, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -32,12 +31,12 @@ class Organization(Base):
         nullable=False,
     )
 
-    memberships: Mapped[list["OrganizationUser"]] = relationship(
+    memberships: Mapped[list[OrganizationUser]] = relationship(
         back_populates="organization",
         cascade="all, delete-orphan",
     )
 
-    branches: Mapped[list["Branch"]] = relationship(
+    branches: Mapped[list[Branch]] = relationship(
         back_populates="organization",
         cascade="all, delete-orphan",
     )

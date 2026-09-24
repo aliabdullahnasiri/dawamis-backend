@@ -25,3 +25,11 @@ class RefreshResponse(BaseResponseModel[RefreshData]):
     """
     Response schema for successful access-token refresh.
     """
+
+
+class EmailVerificationResponse(BaseResponseModel[None]):
+    pass
+
+
+class ResendVerificationEmailResponse(BaseResponseModel[None]):
+    pass

@@ -1,14 +1,12 @@
 from functools import lru_cache
 from gettext import GNUTranslations, NullTranslations
-from pathlib import Path
-from typing import Union
 
 from app.core.config import settings
 from app.core.i18n.context import locale_context
 
 
 @lru_cache
-def get_translator(locale: str) -> Union[GNUTranslations, NullTranslations]:
+def get_translator(locale: str) -> GNUTranslations | NullTranslations:
     path = settings.LOCALES_DIR / locale / "LC_MESSAGES" / "messages.mo"
 
     if not path.exists():

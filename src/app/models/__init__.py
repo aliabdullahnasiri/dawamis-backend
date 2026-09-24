@@ -8,11 +8,11 @@ from app.models.user import User
 
 __all__ = [
     "Base",
-    "User",
-    "Role",
-    "Permission",
-    "UserRole",
-    "RolePermission",
-    "Organization",
     "Branch",
+    "Organization",
+    "Permission",
+    "Role",
+    "RolePermission",
+    "User",
+    "UserRole",
 ]

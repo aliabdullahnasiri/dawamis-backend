@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any, Self
+from typing import Any
 
 from app.types import AsyncService
 from app.workers.base import BaseWorker
