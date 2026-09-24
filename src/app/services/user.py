@@ -89,7 +89,8 @@ class UserService:
 
         if (
             user.email_verification_expires_at is None
-            or user.email_verification_expires_at < datetime.now(UTC)
+            or user.email_verification_expires_at
+            < datetime.now(UTC).replace(tzinfo=None)
         ):
             raise AppError(
                 message=T("errors:email_verification_token_expired"),
