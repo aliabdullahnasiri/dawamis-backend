@@ -203,7 +203,13 @@ def resend_verification_email(
     data: ResendVerificationEmailRequest,
     db: DBSession,
 ) -> ResendVerificationEmailResponse:
-    user: User = UserService.get_by_email(db=db, email=data.email)
+    try:
+        user: User = UserService.get_by_email(db=db, email=data.email)
+    except Exception:
+        # In a real app, we might return 404 or a generic message for security
+        return ResendVerificationEmailResponse(
+            message=T("messages:verification_email_sent")
+        )
 
     if not user.is_email_verified:
         EmailVerificationService.send(db=db, user=user)

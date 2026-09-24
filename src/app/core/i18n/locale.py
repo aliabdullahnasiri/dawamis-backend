@@ -3,6 +3,11 @@ from fastapi import Request
 from app.core.config import settings
 
 
+def _normalize_lang(lang: str) -> str:
+    """Normalize language code to base language (e.g., 'en-US' -> 'en')."""
+    normalized_lang = lang.strip().lower().replace("-", "_")
+    return normalized_lang.split("_", 1)[0]
+
 def get_locale(request: Request) -> str:
     """
     Resolve the user's locale.
@@ -20,15 +25,7 @@ def get_locale(request: Request) -> str:
     lang = request.query_params.get("lang")
 
     if lang:
-        lang = lang.strip().lower()
-
-        if lang in supported_languages:
-            request.session["lang"] = lang
-            return supported_languages[lang]
-
-        # Support values such as ?lang=fa-IR or ?lang=fa_AF.
-        normalized_lang = lang.replace("-", "_")
-        base_lang = normalized_lang.split("_", 1)[0]
+        base_lang = _normalize_lang(lang)
 
         if base_lang in supported_languages:
             request.session["lang"] = base_lang
@@ -44,14 +41,11 @@ def get_locale(request: Request) -> str:
     accept_language = request.headers.get("Accept-Language", "")
 
     for language in accept_language.split(","):
-        language = language.split(";", 1)[0].strip().lower()
-
-        normalized_lang = language.replace("-", "_")
-        base_lang = normalized_lang.split("_", 1)[0]
+        base_lang = _normalize_lang(language)
 
         if base_lang in supported_languages:
             request.session["lang"] = base_lang
             return supported_languages[base_lang]
 
     # 4. Default
-    return supported_languages[settings.DEFAULT_LANGUAGE]
+    return supported_languages.get(settings.DEFAULT_LANGUAGE, supported_languages.get("en", "en_US"))

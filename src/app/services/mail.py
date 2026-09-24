@@ -45,21 +45,26 @@ class MailService:
                 subtype="html",
             )
 
-        with smtplib.SMTP(
-            settings.SMTP_HOST,
-            settings.SMTP_PORT,
-        ) as smtp:
+        from fastapi.concurrency import run_in_threadpool
 
-            if settings.SMTP_USE_TLS:
-                smtp.starttls()
+        def sync_send(message):
+            with smtplib.SMTP(
+                settings.SMTP_HOST,
+                settings.SMTP_PORT,
+            ) as smtp:
 
-            if settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
-                smtp.login(
-                    settings.SMTP_USERNAME,
-                    settings.SMTP_PASSWORD,
-                )
+                if settings.SMTP_USE_TLS:
+                    smtp.starttls()
 
-            smtp.send_message(message)
+                if settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
+                    smtp.login(
+                        settings.SMTP_USERNAME,
+                        settings.SMTP_PASSWORD,
+                    )
+
+                smtp.send_message(message)
+
+        await run_in_threadpool(sync_send, message)
 
     @classmethod
     async def send_template(
