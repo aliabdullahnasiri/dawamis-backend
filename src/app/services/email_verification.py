@@ -3,6 +3,7 @@ import secrets
 from datetime import UTC, datetime, timedelta
 
 from app.api.dependencies.db import DBSession
+from app.core.config import settings
 from app.core.i18n.types import T
 from app.models.user import User
 from app.services.mail import MailService
@@ -64,3 +65,12 @@ class EmailVerificationService:
         user.email_verification_expires_at = None
 
         db.commit()
+
+        EmailWorker.send(
+            MailService.send_template,
+            to=user.email,
+            subject=T("emails:email_verified_success_subject"),
+            template="emails/auth/email_verified.html",
+            user=user,
+            app_url=settings.FRONTEND_URL,
+        )
