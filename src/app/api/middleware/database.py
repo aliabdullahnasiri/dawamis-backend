@@ -21,20 +21,19 @@ class DatabaseMiddleware(BaseHTTPMiddleware):
         Create a database session and make it available
         through the request context.
         """
-        db = SessionLocal()
-        token = set_db(db)
+        async with SessionLocal() as db:
+            token = set_db(db)
 
-        try:
-            response = await call_next(request)
+            try:
+                response = await call_next(request)
 
-            db.commit()
+                await db.commit()
 
-            return response
+                return response
 
-        except Exception:
-            db.rollback()
-            raise
+            except Exception:
+                await db.rollback()
+                raise
 
-        finally:
-            reset_db(token)
-            db.close()
+            finally:
+                reset_db(token)

@@ -3,7 +3,7 @@ from typing import Self, Union
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.middleware import register_middleware
 from app.api.routers import auth, health
@@ -33,7 +33,7 @@ class App:
 
     @asynccontextmanager
     async def lifespan(self, app: FastAPI):
-        with SessionLocal() as db:
+        async with SessionLocal() as db:
             # Startup
             await self.startup(db)
 
@@ -42,10 +42,10 @@ class App:
         # Shutdown
         await self.shutdown()
 
-    async def startup(self, db: Session) -> None:
+    async def startup(self, db: AsyncSession) -> None:
         startup: Startup = Startup(db, redis)
 
-        with startup:
+        async with startup:
             pass
 
     async def shutdown(self) -> None:
