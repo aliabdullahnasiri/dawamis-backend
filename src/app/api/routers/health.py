@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
 
@@ -29,7 +28,7 @@ def health_check(
     """
 
     try:
-        db.execute(text("SELECT version()"))
+        db.execute(text("SELECT 1"))
 
     except Exception:
         raise HTTPException(
