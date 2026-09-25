@@ -1,7 +1,6 @@
 from typing import Generator
 from unittest.mock import patch
 
-import bcrypt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import StaticPool, create_engine
@@ -9,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app import main as fastapi_app
 from app.api.dependencies.db import get_db
+from app.core.context.database import set_db
 from app.models.base import Base
 
 # --- Configuration ---
@@ -21,7 +21,6 @@ def db_engine():
         TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
-        echo=True,
     )
     Base.metadata.create_all(bind=engine)
     return engine
@@ -32,6 +31,7 @@ def db_session(db_engine) -> Generator:
     connection = db_engine.connect()
     transaction = connection.begin()
     session = sessionmaker(bind=connection)(autoflush=False, autocommit=False)
+    set_db(session)
     yield session
     session.close()
     transaction.rollback()
