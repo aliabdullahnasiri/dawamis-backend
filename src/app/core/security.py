@@ -5,8 +5,6 @@ from fastapi import Depends, HTTPException, status
 
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
-from app.extensions import redis
-from app.models.permission import Permission
 from app.models.user import User
 from app.services.jwt import JWTService
 from app.services.user import UserService
@@ -27,7 +25,7 @@ def get_current_token(
             has an invalid type, or has been revoked.
     """
     try:
-        claims = JWTService.decode(token)
+        JWTService.decode(token)
 
         if JWTService.is_revoked(token, db):
             raise HTTPException(
@@ -126,14 +124,6 @@ def get_current_user(
 
 
 def current_user_can(*permissions):
-    def dependency(db: DBSession, user: User = Depends(get_current_user)) -> None:
-        mask = 0x0
-
-        for name in permissions:
-            try:
-                mask |= int(redis.hget(Permission.__redis_key__, name) or 0x0)
-
-            except ValueError:
-                pass
+    def dependency(db: DBSession, user: User = Depends(get_current_user)) -> None: ...
 
     return dependency
