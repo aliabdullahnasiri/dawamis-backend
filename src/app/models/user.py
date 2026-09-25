@@ -103,8 +103,6 @@ class User(Base):
     )
 
     __table_args__ = (
-        Index("ix_users_email", "email"),
-        Index("ix_users_username", "user_name"),
         UniqueConstraint("email", name="uc_user_email"),
         UniqueConstraint("user_name", name="uc_user_username"),
     )
