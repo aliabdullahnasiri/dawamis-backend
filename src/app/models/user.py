@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Self
 
 import bcrypt
-from sqlalchemy import Boolean, Date, DateTime, Index, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from app.models.associations.organization_user import OrganizationUser
     from app.models.permission import Permission
     from app.models.role import Role
+    from app.models.user_session import UserSession
 
 
 class User(Base):
@@ -95,6 +96,11 @@ class User(Base):
         secondary="user_roles",
         back_populates="users",
         viewonly=True,
+    )
+
+    sessions: Mapped[list["UserSession"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     organization_memberships: Mapped[list[OrganizationUser]] = relationship(
