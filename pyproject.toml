@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.14"
 dependencies = [
     "alembic>=1.19.1",
+    "asyncmy>=0.2.15",
     "babel>=2.18.0",
     "bcrypt>=5.0.0",
     "celery>=5.6.3",
@@ -36,6 +37,7 @@ build-backend = "uv_build"
 
 [dependency-groups]
 dev = [
+    "aiosqlite>=0.22.1",
     "fakeredis>=2.38.0",
     "httpx>=0.28.1",
     "httpx2>=2.13.1",
