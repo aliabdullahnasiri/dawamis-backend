@@ -101,6 +101,30 @@ class UserService:
         return user
 
     @staticmethod
+    def get_by_reset_token(db: Session, token_hash: str) -> User:
+        """
+        Return a user by their password reset token hash.
+        """
+        user: User | None = db.execute(
+            select(User).where(User.password_reset_token_hash == token_hash)
+        ).scalar_one_or_none()
+
+        if user is None:
+            raise UserNotFound(message=T("errors:invalid_password_reset_token"))
+
+        if (
+            user.password_reset_expires_at is None
+            or user.password_reset_expires_at < datetime.now(UTC).replace(tzinfo=None)
+        ):
+            raise AppError(
+                message=T("errors:password_reset_token_expired"),
+                status_code=400,
+                code="password_reset_token_expired",
+            )
+
+        return user
+
+    @staticmethod
     def get_all(
         db: Session,
     ) -> list[User]:

@@ -99,3 +99,20 @@ class AuthService:
             template="emails/auth/welcome.html",
             user=user,
         )
+
+    @staticmethod
+    def change_password(
+        db: Session,
+        user: User,
+        current_password: str,
+        new_password: str,
+    ) -> None:
+        """
+        Change the password for an authenticated user.
+        """
+        if not user.check_password(current_password):
+            raise AuthenticationError(T("auth:invalid_current_password"))
+
+        user.set_password(new_password)
+        db.commit()
+
