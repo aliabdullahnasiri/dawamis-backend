@@ -1,4 +1,3 @@
-import asyncio
 from typing import Any
 
 from app.types import AsyncService
@@ -9,14 +8,12 @@ class EmailWorker(BaseWorker):
     name = "email.send"
 
     @staticmethod
-    def send(
+    async def send(
         service: AsyncService,
         *args: Any,
         **kwargs: Any,
     ) -> None:
-        asyncio.run(
-            service(
-                *args,
-                **kwargs,
-            )
+        await service(
+            *args,
+            **kwargs,
         )
