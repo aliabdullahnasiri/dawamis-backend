@@ -13,19 +13,18 @@ from app.schemas.auth import (
 )
 from app.schemas.auth.data import LoginData, RefreshData
 from app.schemas.auth.request import (
+    ChangePasswordRequest,
     ForgotPasswordRequest,
     ResendVerificationEmailRequest,
-    VerifyEmailRequest,
     ResetPasswordRequest,
-    ChangePasswordRequest,
+    VerifyEmailRequest,
 )
 from app.schemas.auth.response import (
-
     EmailVerificationResponse,
     LogoutResponse,
+    PasswordResetResponse,
     RefreshResponse,
     ResendVerificationEmailResponse,
-    PasswordResetResponse,
 )
 from app.schemas.user.data import UserData
 from app.services.auth import AuthService
@@ -33,7 +32,6 @@ from app.services.email_verification import EmailVerificationService
 from app.services.jwt import JWTService
 from app.services.password_reset import PasswordResetService
 from app.services.user import UserService
-
 
 router = APIRouter(
     prefix="/auth",
@@ -46,19 +44,19 @@ router = APIRouter(
     response_model=RegisterResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def register(
+async def register(
     data: RegisterRequest,
     db: DBSession,
 ) -> RegisterResponse:
     """
     Register a new user account.
     """
-    user = AuthService.register(
+    user = await AuthService.register(
         db=db,
         data=data,
     )
 
-    AuthService.send_welcome_email(user)
+    await AuthService.send_welcome_email(user)
 
     return RegisterResponse(
         message=T("auth:registration_successful"),
@@ -71,14 +69,14 @@ def register(
     response_model=LoginResponse,
     status_code=status.HTTP_200_OK,
 )
-def login(
+async def login(
     data: LoginRequest,
     db: DBSession,
 ) -> LoginResponse:
     """
     Authenticate a user and generate access and refresh tokens.
     """
-    user = AuthService.authenticate(
+    user = await AuthService.authenticate(
         db=db,
         email=data.email,
         password=data.password,
@@ -103,14 +101,14 @@ def login(
     "/me",
     response_model=UserData,
 )
-def me(
+async def me(
     user_uuid: CurrentUserUUID,
     db: DBSession,
 ) -> UserData:
     """
     Return the currently authenticated user.
     """
-    user = UserService.get_by_uuid(
+    user = await UserService.get_by_uuid(
         db=db,
         user_uuid=user_uuid,
     )
@@ -123,14 +121,14 @@ def me(
     response_model=LogoutResponse,
     status_code=status.HTTP_200_OK,
 )
-def logout(
+async def logout(
     token: CurrentToken,
     db: DBSession,
 ) -> LogoutResponse:
     """
     Revoke the current access token.
     """
-    JWTService.revoke(
+    await JWTService.revoke(
         token=token,
         db=db,
     )
@@ -145,7 +143,7 @@ def logout(
     response_model=RefreshResponse,
     status_code=status.HTTP_200_OK,
 )
-def refresh(
+async def refresh(
     token: CurrentRefreshToken,
     db: DBSession,
 ) -> RefreshResponse:
@@ -160,7 +158,7 @@ def refresh(
             T("auth:invalid_refresh_token"),
         )
 
-    if JWTService.is_revoked(
+    if await JWTService.is_revoked(
         token=token,
         db=db,
     ):
@@ -191,11 +189,11 @@ def refresh(
     "/email/verify",
     response_model=EmailVerificationResponse,
 )
-def verify_email(
+async def verify_email(
     data: VerifyEmailRequest,
     db: DBSession,
 ) -> EmailVerificationResponse:
-    EmailVerificationService.verify(
+    await EmailVerificationService.verify(
         db=db,
         token=data.token,
     )
@@ -209,12 +207,12 @@ def verify_email(
     "/email/resend",
     response_model=ResendVerificationEmailResponse,
 )
-def resend_verification_email(
+async def resend_verification_email(
     data: ResendVerificationEmailRequest,
     db: DBSession,
 ) -> ResendVerificationEmailResponse:
     try:
-        user: User = UserService.get_by_email(db=db, email=data.email)
+        user: User = await UserService.get_by_email(db=db, email=data.email)
     except Exception:
         # In a real app, we might return 404 or a generic message for security
         return ResendVerificationEmailResponse(
@@ -222,7 +220,7 @@ def resend_verification_email(
         )
 
     if not user.is_email_verified:
-        EmailVerificationService.send(db=db, user=user)
+        await EmailVerificationService.send(db=db, user=user)
 
     return ResendVerificationEmailResponse(
         message=T("messages:verification_email_sent")
@@ -233,14 +231,14 @@ def resend_verification_email(
     "/password/forgot",
     response_model=PasswordResetResponse,
 )
-def password_forgot(
+async def password_forgot(
     data: ForgotPasswordRequest,
     db: DBSession,
 ) -> PasswordResetResponse:
     """
     Request a password reset email.
     """
-    PasswordResetService.send_reset_email(
+    await PasswordResetService.send_reset_email(
         db=db,
         email=data.email,
     )
@@ -254,14 +252,14 @@ def password_forgot(
     "/password/reset",
     response_model=PasswordResetResponse,
 )
-def password_reset(
+async def password_reset(
     data: ResetPasswordRequest,
     db: DBSession,
 ) -> PasswordResetResponse:
     """
     Reset password using a secure token.
     """
-    PasswordResetService.reset_password(
+    await PasswordResetService.reset_password(
         db=db,
         token=data.token,
         new_password=data.new_password,
@@ -276,7 +274,7 @@ def password_reset(
     "/password/change",
     response_model=PasswordResetResponse,
 )
-def password_change(
+async def password_change(
     data: ChangePasswordRequest,
     user_uuid: CurrentUserUUID,
     db: DBSession,
@@ -284,12 +282,12 @@ def password_change(
     """
     Change password while authenticated.
     """
-    user = UserService.get_by_uuid(
+    user = await UserService.get_by_uuid(
         db=db,
         user_uuid=user_uuid,
     )
 
-    AuthService.change_password(
+    await AuthService.change_password(
         db=db,
         user=user,
         current_password=data.current_password,
@@ -299,4 +297,3 @@ def password_change(
     return PasswordResetResponse(
         message=T("auth:password_change_successful"),
     )
-

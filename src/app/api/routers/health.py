@@ -12,7 +12,7 @@ router = APIRouter(
 
 
 @router.get("/")
-def health_check(
+async def health_check(
     db: DBSession,
     user_uuid: CurrentUserUUID,
     _: PermissionRequired["check:health"],
@@ -28,7 +28,7 @@ def health_check(
     """
 
     try:
-        db.execute(text("SELECT 1"))
+        await db.execute(text("SELECT 1"))
 
     except Exception:
         raise HTTPException(
