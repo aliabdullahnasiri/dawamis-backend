@@ -33,3 +33,11 @@ class EmailVerificationResponse(BaseResponseModel[None]):
 
 class ResendVerificationEmailResponse(BaseResponseModel[None]):
     pass
+
+
+class PasswordResetResponse(BaseResponseModel[None]):
+    """
+    Response schema for password management operations.
+    """
+    pass
+
