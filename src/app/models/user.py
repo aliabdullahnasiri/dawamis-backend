@@ -98,7 +98,7 @@ class User(Base):
         viewonly=True,
     )
 
-    sessions: Mapped[list["UserSession"]] = relationship(
+    sessions: Mapped[list[UserSession]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )

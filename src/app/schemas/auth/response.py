@@ -39,5 +39,4 @@ class PasswordResetResponse(BaseResponseModel[None]):
     """
     Response schema for password management operations.
     """
-    pass
 

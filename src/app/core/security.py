@@ -10,7 +10,7 @@ from app.services.jwt import JWTService
 from app.services.user import UserService
 
 
-def get_current_token(
+async def get_current_token(
     db: DBSession,
     token: OAuth2Token,
 ) -> str:
@@ -27,7 +27,7 @@ def get_current_token(
     try:
         JWTService.decode(token)
 
-        if JWTService.is_revoked(token, db):
+        if await JWTService.is_revoked(token, db):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Token has been revoked.",
@@ -47,7 +47,7 @@ def get_current_token(
         )
 
 
-def get_current_claims(
+async def get_current_claims(
     token: str = Depends(get_current_token),
 ) -> dict[str, Any]:
     """
@@ -56,7 +56,7 @@ def get_current_claims(
     return JWTService.claims(token)
 
 
-def get_current_user_uuid(
+async def get_current_user_uuid(
     claims: dict[str, Any] = Depends(get_current_claims),
 ) -> UUID:
     """
@@ -77,7 +77,7 @@ def get_current_user_uuid(
     return UUID(user_uuid)
 
 
-def get_current_refresh_token(
+async def get_current_refresh_token(
     token: RefreshToken,
     db: DBSession,
 ) -> str:
@@ -94,7 +94,7 @@ def get_current_refresh_token(
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
-        if JWTService.is_revoked(
+        if await JWTService.is_revoked(
             token=token,
             db=db,
         ):
@@ -117,10 +117,10 @@ def get_current_refresh_token(
         )
 
 
-def get_current_user(
+async def get_current_user(
     db: DBSession, uuid: UUID = Depends(get_current_user_uuid)
 ) -> User | None:
-    return UserService.get_by_uuid(db, uuid)
+    return await UserService.get_by_uuid(db, uuid)
 
 
 def current_user_can(*permissions):

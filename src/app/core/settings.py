@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     TIMEZONE: str = "Asia/Kabul"
 
-    DATABASE_URL: str = "sqlite:///dev.db"
+    DATABASE_URL: str = "sqlite+aiosqlite:///dev.db"
     REDIS_URL: str = "redis://localhost:6379/0"
 
     SECRET_KEY: str = "your-secret-key"
