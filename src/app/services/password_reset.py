@@ -1,11 +1,13 @@
 import hashlib
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
-from app.api.dependencies.db import DBSession
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.core.i18n.types import T
 from app.models.user import User
+from app.services.datetime import DateTimeService
 from app.services.mail import MailService
 from app.services.url import URLService
 from app.services.user import UserService
@@ -26,16 +28,16 @@ class PasswordResetService:
         return secrets.token_urlsafe(32)
 
     @classmethod
-    def send_reset_email(
+    async def send_reset_email(
         cls: type[PasswordResetService],
-        db: DBSession,
+        db: AsyncSession,
         email: str,
     ) -> None:
         """
         Generate a reset token and send it via email.
         """
         try:
-            user: User = UserService.get_by_email(db=db, email=email)
+            user: User = await UserService.get_by_email(db=db, email=email)
         except Exception:
             # Generic failure for security to prevent email enumeration
             return
@@ -44,13 +46,13 @@ class PasswordResetService:
         token_hash = cls._hash_token(token)
 
         user.password_reset_token_hash = token_hash
-        user.password_reset_expires_at = datetime.now(UTC) + timedelta(
+        user.password_reset_expires_at = DateTimeService.utc_now() + timedelta(
             minutes=cls.TOKEN_EXPIRE_MINUTES
         )
 
-        db.commit()
+        await db.commit()
 
-        EmailWorker.send(
+        await EmailWorker.send(
             MailService.send_template,
             to=user.email,
             subject=T("emails:password_reset_subject"),
@@ -61,9 +63,9 @@ class PasswordResetService:
         )
 
     @classmethod
-    def reset_password(
+    async def reset_password(
         cls: type[PasswordResetService],
-        db: DBSession,
+        db: AsyncSession,
         token: str,
         new_password: str,
     ) -> None:
@@ -72,15 +74,15 @@ class PasswordResetService:
         """
         token_hash = cls._hash_token(token)
 
-        user: User = UserService.get_by_reset_token(db=db, token_hash=token_hash)
+        user: User = await UserService.get_by_reset_token(db=db, token_hash=token_hash)
 
         user.set_password(new_password)
         user.password_reset_token_hash = None
         user.password_reset_expires_at = None
 
-        db.commit()
+        await db.commit()
 
-        EmailWorker.send(
+        await EmailWorker.send(
             MailService.send_template,
             to=user.email,
             subject=T("emails:password_reset_success_subject"),

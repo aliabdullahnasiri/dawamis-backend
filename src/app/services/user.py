@@ -1,15 +1,15 @@
-from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.decorators import handle_exception
 from app.core.i18n.types import T
 from app.errors.exceptions import AppError, UserNotFound
 from app.models import User
 from app.schemas.user import CreateUserRequest
+from app.services.datetime import DateTimeService
 
 
 class UserService:
@@ -21,8 +21,8 @@ class UserService:
     """
 
     @staticmethod
-    def create(
-        db: Session,
+    async def create(
+        db: AsyncSession,
         data: CreateUserRequest,
     ) -> User:
         """
@@ -40,48 +40,54 @@ class UserService:
         user.set_password(data.password)
 
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
 
         return user
 
     @staticmethod
     @handle_exception(NoResultFound, _raise=UserNotFound)
-    def get_by_uuid(
-        db: Session,
+    async def get_by_uuid(
+        db: AsyncSession,
         user_uuid: UUID,
     ) -> User:
         """
         Return a user by UUID.
         """
-        return db.execute(select(User).where(User.uuid == user_uuid)).scalar_one()
+        return (
+            await db.execute(select(User).where(User.uuid == user_uuid))
+        ).scalar_one()
 
     @staticmethod
     @handle_exception(NoResultFound, _raise=UserNotFound)
-    def get_by_username(
-        db: Session,
+    async def get_by_username(
+        db: AsyncSession,
         user_name: str,
     ) -> User:
         """
         Return a user by username.
         """
-        return db.execute(select(User).where(User.user_name == user_name)).scalar_one()
+        return (
+            await db.execute(select(User).where(User.user_name == user_name))
+        ).scalar_one()
 
     @staticmethod
     @handle_exception(NoResultFound, _raise=UserNotFound)
-    def get_by_email(
-        db: Session,
+    async def get_by_email(
+        db: AsyncSession,
         email: str,
     ) -> User:
         """
         Return a user by email.
         """
-        return db.execute(select(User).where(User.email == email)).scalar_one()
+        return (await db.execute(select(User).where(User.email == email))).scalar_one()
 
     @staticmethod
-    def get_by_verification_token(db: Session, token: str) -> User:
-        user: User | None = db.execute(
-            select(User).where(User.email_verification_token_hash == token)
+    async def get_by_verification_token(db: AsyncSession, token: str) -> User:
+        user: User | None = (
+            await db.execute(
+                select(User).where(User.email_verification_token_hash == token)
+            )
         ).scalar_one_or_none()
 
         if user is None:
@@ -89,8 +95,7 @@ class UserService:
 
         if (
             user.email_verification_expires_at is None
-            or user.email_verification_expires_at
-            < datetime.now(UTC).replace(tzinfo=None)
+            or user.email_verification_expires_at < DateTimeService.utc_now()
         ):
             raise AppError(
                 message=T("errors:email_verification_token_expired"),
@@ -101,12 +106,14 @@ class UserService:
         return user
 
     @staticmethod
-    def get_by_reset_token(db: Session, token_hash: str) -> User:
+    async def get_by_reset_token(db: AsyncSession, token_hash: str) -> User:
         """
         Return a user by their password reset token hash.
         """
-        user: User | None = db.execute(
-            select(User).where(User.password_reset_token_hash == token_hash)
+        user: User | None = (
+            await db.execute(
+                select(User).where(User.password_reset_token_hash == token_hash)
+            )
         ).scalar_one_or_none()
 
         if user is None:
@@ -114,7 +121,7 @@ class UserService:
 
         if (
             user.password_reset_expires_at is None
-            or user.password_reset_expires_at < datetime.now(UTC).replace(tzinfo=None)
+            or user.password_reset_expires_at < DateTimeService.utc_now()
         ):
             raise AppError(
                 message=T("errors:password_reset_token_expired"),
@@ -125,13 +132,13 @@ class UserService:
         return user
 
     @staticmethod
-    def get_all(
-        db: Session,
+    async def get_all(
+        db: AsyncSession,
     ) -> list[User]:
         """
         Return all users.
         """
-        return list(db.execute(select(User)).scalars().all())
+        return list((await db.execute(select(User))).scalars().all())
 
     @staticmethod
     def verify_password(
@@ -144,12 +151,12 @@ class UserService:
         return user.check_password(password)
 
     @staticmethod
-    def delete(
-        db: Session,
+    async def delete(
+        db: AsyncSession,
         user: User,
     ) -> None:
         """
         Delete a user.
         """
-        db.delete(user)
-        db.commit()
+        await db.delete(user)
+        await db.commit()

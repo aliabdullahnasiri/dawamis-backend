@@ -1,11 +1,13 @@
 import hashlib
 import secrets
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 
-from app.api.dependencies.db import DBSession
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.core.i18n.types import T
 from app.models.user import User
+from app.services.datetime import DateTimeService
 from app.services.mail import MailService
 from app.services.url import URLService
 from app.services.user import UserService
@@ -25,22 +27,22 @@ class EmailVerificationService:
         return secrets.token_urlsafe(32)
 
     @classmethod
-    def send(
+    async def send(
         cls: type[EmailVerificationService],
-        db: DBSession,
+        db: AsyncSession,
         user: User,
     ) -> None:
         token = cls._generate_token()
         token_hash = cls._hash_token(token)
 
         user.email_verification_token_hash = token_hash
-        user.email_verification_expires_at = datetime.now(UTC) + timedelta(
+        user.email_verification_expires_at = DateTimeService.utc_now() + timedelta(
             minutes=cls.TOKEN_EXPIRE_MINUTES
         )
 
-        db.commit()
+        await db.commit()
 
-        EmailWorker.send(
+        await EmailWorker.send(
             MailService.send_template,
             to=user.email,
             subject=T("emails:verify_email_subject"),
@@ -51,22 +53,24 @@ class EmailVerificationService:
         )
 
     @classmethod
-    def verify(
+    async def verify(
         cls: type[EmailVerificationService],
-        db: DBSession,
+        db: AsyncSession,
         token: str,
     ) -> None:
         token_hash = cls._hash_token(token)
 
-        user: User = UserService.get_by_verification_token(db=db, token=token_hash)
+        user: User = await UserService.get_by_verification_token(
+            db=db, token=token_hash
+        )
 
         user.is_email_verified = True
         user.email_verification_token_hash = None
         user.email_verification_expires_at = None
 
-        db.commit()
+        await db.commit()
 
-        EmailWorker.send(
+        await EmailWorker.send(
             MailService.send_template,
             to=user.email,
             subject=T("emails:email_verified_success_subject"),

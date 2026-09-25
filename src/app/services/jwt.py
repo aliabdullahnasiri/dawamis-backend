@@ -1,12 +1,14 @@
-from datetime import UTC, datetime, timedelta
+from datetime import timedelta
 from typing import Any
 from uuid import uuid4
 
 import jwt
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.models.revoked_token import RevokedToken
+from app.services.datetime import DateTimeService
 
 
 class JWTService:
@@ -40,7 +42,7 @@ class JWTService:
         claims: dict[str, Any],
     ) -> str:
         """Create a JWT with standard and custom claims."""
-        now = datetime.now(UTC)
+        now = DateTimeService.utc_now()
 
         payload = {
             "sub": str(identity),
@@ -78,7 +80,7 @@ class JWTService:
         return JWTService.decode(token)
 
     @staticmethod
-    def revoke(token: str, db: Session) -> None:
+    async def revoke(token: str, db: AsyncSession) -> None:
         """Revoke a JWT."""
         claims = JWTService.decode(token)
 
@@ -87,15 +89,14 @@ class JWTService:
         revoked_token = RevokedToken(jti=jti)
 
         db.add(revoked_token)
-        db.commit()
+        await db.commit()
 
     @staticmethod
-    def is_revoked(token: str, db: Session) -> bool:
+    async def is_revoked(token: str, db: AsyncSession) -> bool:
         """Check whether a JWT has been revoked."""
         claims = JWTService.decode(token)
 
         jti = claims["jti"]
 
-        return (
-            db.query(RevokedToken).filter(RevokedToken.jti == jti).first() is not None
-        )
+        result = await db.execute(select(RevokedToken).where(RevokedToken.jti == jti))
+        return result.scalar_one_or_none() is not None

@@ -1,11 +1,10 @@
 from uuid import UUID
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
 from app.models import User
-from app.models.user import User
 from app.schemas.auth.request import RegisterRequest
 from app.services.jwt import JWTService
 from app.services.mail import MailService
@@ -17,34 +16,34 @@ class AuthService:
     """Authentication related business logic."""
 
     @staticmethod
-    def current_user(
-        db: Session,
+    async def current_user(
+        db: AsyncSession,
         user_uuid: UUID,
     ) -> User | None:
         """
         Return the currently authenticated user.
         """
-        return UserService.get_by_uuid(
+        return await UserService.get_by_uuid(
             db=db,
             user_uuid=user_uuid,
         )
 
     @staticmethod
-    def register(
-        db: Session,
+    async def register(
+        db: AsyncSession,
         data: RegisterRequest,
     ) -> User:
         """
         Register a new user account.
         """
-        return UserService.create(
+        return await UserService.create(
             db=db,
             data=data,
         )
 
     @staticmethod
-    def authenticate(
-        db: Session,
+    async def authenticate(
+        db: AsyncSession,
         email: str,
         password: str,
     ) -> User:
@@ -54,7 +53,7 @@ class AuthService:
         Raises:
             AuthenticationError: If the credentials are invalid.
         """
-        user = UserService.get_by_email(
+        user = await UserService.get_by_email(
             db=db,
             email=email,
         )
@@ -65,15 +64,15 @@ class AuthService:
         return user
 
     @staticmethod
-    def login(
-        db: Session,
+    async def login(
+        db: AsyncSession,
         email: str,
         password: str,
     ) -> tuple[str, str]:
         """
         Authenticate a user and create access and refresh tokens.
         """
-        user = AuthService.authenticate(
+        user = await AuthService.authenticate(
             db=db,
             email=email,
             password=password,
@@ -90,8 +89,8 @@ class AuthService:
         return access_token, refresh_token
 
     @staticmethod
-    def send_welcome_email(user: User) -> None:
-        EmailWorker.send(
+    async def send_welcome_email(user: User) -> None:
+        await EmailWorker.send(
             MailService.send_template,
             to=user.email,
             subject=T("emails:welcome_subject"),
@@ -101,8 +100,8 @@ class AuthService:
         )
 
     @staticmethod
-    def change_password(
-        db: Session,
+    async def change_password(
+        db: AsyncSession,
         user: User,
         current_password: str,
         new_password: str,
@@ -114,5 +113,4 @@ class AuthService:
             raise AuthenticationError(T("auth:invalid_current_password"))
 
         user.set_password(new_password)
-        db.commit()
-
+        await db.commit()
