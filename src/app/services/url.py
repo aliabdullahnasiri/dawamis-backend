@@ -9,3 +9,10 @@ class URLService:
         query = urlencode({"token": token})
 
         return f"{settings.FRONTEND_URL}/verify-email?{query}"
+
+    @staticmethod
+    def password_reset(token: str) -> str:
+        query = urlencode({"token": token})
+
+        return f"{settings.FRONTEND_URL}/reset-password?{query}"
+
