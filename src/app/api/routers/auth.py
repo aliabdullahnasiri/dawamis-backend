@@ -12,18 +12,28 @@ from app.schemas.auth import (
     RegisterResponse,
 )
 from app.schemas.auth.data import LoginData, RefreshData
-from app.schemas.auth.request import ResendVerificationEmailRequest, VerifyEmailRequest
+from app.schemas.auth.request import (
+    ForgotPasswordRequest,
+    ResendVerificationEmailRequest,
+    VerifyEmailRequest,
+    ResetPasswordRequest,
+    ChangePasswordRequest,
+)
 from app.schemas.auth.response import (
+
     EmailVerificationResponse,
     LogoutResponse,
     RefreshResponse,
     ResendVerificationEmailResponse,
+    PasswordResetResponse,
 )
 from app.schemas.user.data import UserData
 from app.services.auth import AuthService
 from app.services.email_verification import EmailVerificationService
 from app.services.jwt import JWTService
+from app.services.password_reset import PasswordResetService
 from app.services.user import UserService
+
 
 router = APIRouter(
     prefix="/auth",
@@ -217,3 +227,76 @@ def resend_verification_email(
     return ResendVerificationEmailResponse(
         message=T("messages:verification_email_sent")
     )
+
+
+@router.post(
+    "/password/forgot",
+    response_model=PasswordResetResponse,
+)
+def password_forgot(
+    data: ForgotPasswordRequest,
+    db: DBSession,
+) -> PasswordResetResponse:
+    """
+    Request a password reset email.
+    """
+    PasswordResetService.send_reset_email(
+        db=db,
+        email=data.email,
+    )
+
+    return PasswordResetResponse(
+        message=T("auth:password_reset_email_sent"),
+    )
+
+
+@router.post(
+    "/password/reset",
+    response_model=PasswordResetResponse,
+)
+def password_reset(
+    data: ResetPasswordRequest,
+    db: DBSession,
+) -> PasswordResetResponse:
+    """
+    Reset password using a secure token.
+    """
+    PasswordResetService.reset_password(
+        db=db,
+        token=data.token,
+        new_password=data.new_password,
+    )
+
+    return PasswordResetResponse(
+        message=T("auth:password_reset_successful"),
+    )
+
+
+@router.post(
+    "/password/change",
+    response_model=PasswordResetResponse,
+)
+def password_change(
+    data: ChangePasswordRequest,
+    user_uuid: CurrentUserUUID,
+    db: DBSession,
+) -> PasswordResetResponse:
+    """
+    Change password while authenticated.
+    """
+    user = UserService.get_by_uuid(
+        db=db,
+        user_uuid=user_uuid,
+    )
+
+    AuthService.change_password(
+        db=db,
+        user=user,
+        current_password=data.current_password,
+        new_password=data.new_password,
+    )
+
+    return PasswordResetResponse(
+        message=T("auth:password_change_successful"),
+    )
+
