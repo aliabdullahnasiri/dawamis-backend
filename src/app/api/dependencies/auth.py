@@ -10,7 +10,6 @@ from app.core.security import (
     get_current_token,
     get_current_user_uuid,
 )
-from app.models.permission import Permission
 
 CurrentToken = Annotated[
     str,
@@ -38,6 +37,4 @@ class PermissionRequired:
         if isinstance(permissions, str):
             permissions = (permissions,)
 
-        return Annotated[
-            None, Depends(current_user_can(*[Permission[p] for p in permissions]))
-        ]
+        return Annotated[None, Depends(current_user_can(*[p for p in permissions]))]
