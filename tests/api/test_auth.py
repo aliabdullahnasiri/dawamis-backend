@@ -11,7 +11,7 @@ from app.schemas.auth.request import (
 
 
 @pytest.mark.asyncio
-async def test_register(client):
+async def test_register(client, mock_mail):
     data = RegisterRequest(
         email="newuser@example.com",
         password="password123",
@@ -25,7 +25,7 @@ async def test_register(client):
 
 
 @pytest.mark.asyncio
-async def test_login(client):
+async def test_login(client, mock_mail):
     # First register a user
     data = RegisterRequest(
         email="loginuser@example.com",
@@ -84,7 +84,7 @@ async def test_verify_email(client, db_session, mock_mail):
         user_name="verifyuser",
         accept_terms=True,
     )
-    client.post("api/v1/auth/register", json=data.model_dump())
+    response = client.post("api/v1/auth/register", json=data.model_dump())
 
     # 1. Request verification email to generate token
     resend_data = ResendVerificationEmailRequest(email="verify@example.com")
@@ -95,7 +95,7 @@ async def test_verify_email(client, db_session, mock_mail):
     # We find the call where 'token' was passed.
     token = None
     for call in mock_mail["send_template"].call_args_list:
-        args, kwargs = call
+        _, kwargs = call
         if "token" in kwargs:
             token = kwargs["token"]
             break
