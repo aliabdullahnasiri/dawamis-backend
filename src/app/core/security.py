@@ -1,12 +1,16 @@
 from typing import Any
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
+from app.core.i18n.types import T
+from app.errors.exceptions import AuthenticationError
 from app.models.user import User
+from app.models.user_session import UserSession
 from app.services.jwt import JWTService
+from app.services.session import SessionService
 from app.services.user import UserService
 
 
@@ -30,7 +34,7 @@ async def get_current_token(
         if await JWTService.is_revoked(token, db):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has been revoked.",
+                detail=T("auth:token_revoked"),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -42,7 +46,7 @@ async def get_current_token(
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token.",
+            detail=T("auth:invalid_token"),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -70,7 +74,7 @@ async def get_current_user_uuid(
     if not user_uuid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token identity.",
+            detail=T("auth:invalid_token_identity"),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -90,7 +94,7 @@ async def get_current_refresh_token(
         if claims.get("type") != "refresh":
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid refresh token.",
+                detail=T("auth:invalid_refresh_token"),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -100,7 +104,7 @@ async def get_current_refresh_token(
         ):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token has been revoked.",
+                detail=T("auth:token_revoked"),
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
@@ -112,7 +116,7 @@ async def get_current_refresh_token(
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired refresh token.",
+            detail=T("auth:invalid_refresh_token"),
             headers={"WWW-Authenticate": "Bearer"},
         )
 
@@ -127,3 +131,24 @@ def current_user_can(*permissions):
     def dependency(db: DBSession, user: User = Depends(get_current_user)) -> None: ...
 
     return dependency
+
+
+async def get_current_active_session(
+    db: DBSession,
+    request: Request,
+    user: User = Depends(get_current_user),
+) -> UserSession:
+    session = await SessionService.get_active_session_for_request(
+        db=db,
+        user_id=user.id,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
+    )
+
+    if not session:
+        raise AuthenticationError(
+            message=T("auth:session_expired_or_revoked"),
+            status_code=401,
+        )
+
+    return session
