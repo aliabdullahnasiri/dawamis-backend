@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy import text
 
 from app.api.dependencies import DBSession
-from app.api.dependencies.auth import CurrentUserUUID, PermissionRequired
+from app.api.dependencies.auth import CurrentActiveSession
 from app.core.i18n.types import T
 
 router = APIRouter(
@@ -14,8 +14,7 @@ router = APIRouter(
 @router.get("/")
 async def health_check(
     db: DBSession,
-    user_uuid: CurrentUserUUID,
-    _: PermissionRequired["check:health"],
+    session: CurrentActiveSession,
 ) -> dict[str, str]:
     """
     Check whether the application and database are healthy.
