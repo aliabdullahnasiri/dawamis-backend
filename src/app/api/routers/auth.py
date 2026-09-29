@@ -1,6 +1,13 @@
-from fastapi import APIRouter, status
+from uuid import UUID
 
-from app.api.dependencies.auth import CurrentRefreshToken, CurrentToken, CurrentUserUUID
+from fastapi import APIRouter, Request, status
+
+from app.api.dependencies.auth import (
+    CurrentRefreshToken,
+    CurrentToken,
+    CurrentUser,
+    CurrentUserUUID,
+)
 from app.api.dependencies.db import DBSession
 from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
@@ -25,12 +32,15 @@ from app.schemas.auth.response import (
     PasswordResetResponse,
     RefreshResponse,
     ResendVerificationEmailResponse,
+    RevokeSessionResponse,
+    SessionsResponse,
 )
 from app.schemas.user.data import UserData
 from app.services.auth import AuthService
 from app.services.email_verification import EmailVerificationService
 from app.services.jwt import JWTService
 from app.services.password_reset import PasswordResetService
+from app.services.session import SessionService
 from app.services.user import UserService
 
 router = APIRouter(
@@ -72,6 +82,7 @@ async def register(
 async def login(
     data: LoginRequest,
     db: DBSession,
+    request: Request,
 ) -> LoginResponse:
     """
     Authenticate a user and generate access and refresh tokens.
@@ -80,6 +91,13 @@ async def login(
         db=db,
         email=data.email,
         password=data.password,
+    )
+
+    await SessionService.get_or_create_session(
+        db=db,
+        user_id=user.id,
+        ip_address=request.client.host if request.client else None,
+        user_agent=request.headers.get("user-agent"),
     )
 
     login_data = LoginData(
@@ -182,6 +200,75 @@ async def refresh(
         data=RefreshData(
             access_token=access_token,
         ),
+    )
+
+
+@router.get(
+    "/sessions",
+    response_model=SessionsResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def get_sessions(
+    db: DBSession,
+    user: CurrentUser,
+) -> SessionsResponse:
+    """
+    List all active sessions for the currently authenticated user.
+    """
+    sessions = await SessionService.get_user_sessions(
+        db=db,
+        user_id=user.id,
+    )
+
+    return SessionsResponse(
+        message=T("auth:sessions_listed_successfully"),
+        data=sessions,
+    )
+
+
+@router.delete(
+    "/sessions/{session_uuid}",
+    response_model=RevokeSessionResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def revoke_session(
+    db: DBSession,
+    user: CurrentUser,
+    session_uuid: UUID,
+) -> RevokeSessionResponse:
+    """
+    Revoke a specific session for the currently authenticated user.
+    """
+    await SessionService.revoke_session(
+        db=db,
+        user_id=user.id,
+        session_uuid=session_uuid,
+    )
+
+    return RevokeSessionResponse(
+        message=T("auth:session_revoked_successfully"),
+    )
+
+
+@router.post(
+    "/sessions/revoke-all",
+    response_model=RevokeSessionResponse,
+    status_code=status.HTTP_200_OK,
+)
+async def revoke_all_sessions(
+    db: DBSession,
+    user: CurrentUser,
+) -> RevokeSessionResponse:
+    """
+    Revoke all sessions for the currently authenticated user.
+    """
+    await SessionService.revoke_all_sessions(
+        db=db,
+        user_id=user.id,
+    )
+
+    return RevokeSessionResponse(
+        message=T("auth:all_sessions_revoked_successfully"),
     )
 
 
