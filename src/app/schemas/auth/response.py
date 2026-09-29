@@ -1,4 +1,5 @@
-from app.schemas.auth.data import LoginData, RefreshData
+from typing import List
+from app.schemas.auth.data import LoginData, RefreshData, SessionData
 from app.schemas.base import BaseResponseModel
 from app.schemas.user.data import UserData
 
@@ -40,3 +41,14 @@ class PasswordResetResponse(BaseResponseModel[None]):
     Response schema for password management operations.
     """
 
+
+class SessionsResponse(BaseResponseModel[List[SessionData]]):
+    """
+    Response schema for listing user sessions.
+    """
+
+
+class RevokeSessionResponse(BaseResponseModel[None]):
+    """
+    Response schema for successful session revocation.
+    """
