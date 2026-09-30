@@ -26,17 +26,10 @@ async def get_current_token(
 
     Raises:
         HTTPException: If the token is invalid, expired,
-            has an invalid type, or has been revoked.
+            has an invalid type.
     """
     try:
         JWTService.decode(token)
-
-        if await JWTService.is_revoked(token, db):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail=T("auth:token_revoked"),
-                headers={"WWW-Authenticate": "Bearer"},
-            )
 
         return token
 
