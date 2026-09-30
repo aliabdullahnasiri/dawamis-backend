@@ -2,12 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Request, status
 
-from app.api.dependencies.auth import (
-    CurrentRefreshToken,
-    CurrentToken,
-    CurrentUser,
-    CurrentUserUUID,
-)
+from app.api.dependencies.auth import CurrentActiveSession, CurrentRefreshToken
 from app.api.dependencies.db import DBSession
 from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
@@ -120,18 +115,13 @@ async def login(
     response_model=UserData,
 )
 async def me(
-    user_uuid: CurrentUserUUID,
+    session: CurrentActiveSession,
     db: DBSession,
 ) -> UserData:
     """
     Return the currently authenticated user.
     """
-    user = await UserService.get_by_uuid(
-        db=db,
-        user_uuid=user_uuid,
-    )
-
-    return UserData.model_validate(user)
+    return UserData.model_validate(session.user)
 
 
 @router.post(
@@ -140,15 +130,14 @@ async def me(
     status_code=status.HTTP_200_OK,
 )
 async def logout(
-    token: CurrentToken,
     db: DBSession,
+    session: CurrentActiveSession,
 ) -> LogoutResponse:
     """
     Revoke the current access token.
     """
-    await JWTService.revoke(
-        token=token,
-        db=db,
+    await SessionService.revoke_session(
+        db=db, user_id=session.user_id, session_uuid=session.uuid
     )
 
     return LogoutResponse(
@@ -162,8 +151,9 @@ async def logout(
     status_code=status.HTTP_200_OK,
 )
 async def refresh(
-    token: CurrentRefreshToken,
     db: DBSession,
+    token: CurrentRefreshToken,
+    session: CurrentActiveSession,
 ) -> RefreshResponse:
     """
     Create a new access token using a valid refresh token.
@@ -174,14 +164,6 @@ async def refresh(
     if claims.get("type") != "refresh":
         raise AuthenticationError(
             T("auth:invalid_refresh_token"),
-        )
-
-    if await JWTService.is_revoked(
-        token=token,
-        db=db,
-    ):
-        raise AuthenticationError(
-            T("auth:token_revoked"),
         )
 
     user_id = claims.get("sub")
@@ -210,14 +192,14 @@ async def refresh(
 )
 async def get_sessions(
     db: DBSession,
-    user: CurrentUser,
+    session: CurrentActiveSession,
 ) -> SessionsResponse:
     """
     List all active sessions for the currently authenticated user.
     """
     sessions = await SessionService.get_user_sessions(
         db=db,
-        user_id=user.id,
+        user_id=session.user.id,
     )
 
     return SessionsResponse(
@@ -233,7 +215,7 @@ async def get_sessions(
 )
 async def revoke_session(
     db: DBSession,
-    user: CurrentUser,
+    session: CurrentActiveSession,
     session_uuid: UUID,
 ) -> RevokeSessionResponse:
     """
@@ -241,7 +223,7 @@ async def revoke_session(
     """
     await SessionService.revoke_session(
         db=db,
-        user_id=user.id,
+        user_id=session.user.id,
         session_uuid=session_uuid,
     )
 
@@ -257,14 +239,14 @@ async def revoke_session(
 )
 async def revoke_all_sessions(
     db: DBSession,
-    user: CurrentUser,
+    session: CurrentActiveSession,
 ) -> RevokeSessionResponse:
     """
     Revoke all sessions for the currently authenticated user.
     """
     await SessionService.revoke_all_sessions(
         db=db,
-        user_id=user.id,
+        user_id=session.user.id,
     )
 
     return RevokeSessionResponse(
@@ -363,7 +345,7 @@ async def password_reset(
 )
 async def password_change(
     data: ChangePasswordRequest,
-    user_uuid: CurrentUserUUID,
+    session: CurrentActiveSession,
     db: DBSession,
 ) -> PasswordResetResponse:
     """
@@ -371,7 +353,7 @@ async def password_change(
     """
     user = await UserService.get_by_uuid(
         db=db,
-        user_uuid=user_uuid,
+        user_uuid=session.user.uuid,
     )
 
     await AuthService.change_password(
