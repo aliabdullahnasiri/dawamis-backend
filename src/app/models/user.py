@@ -85,6 +85,13 @@ class User(Base):
         nullable=True,
     )
 
+    failed_login_attempts: Mapped[int] = mapped_column(
+        default=0,
+        nullable=False,
+    )
+
+    locked_until: Mapped[datetime | None]
+
     user_roles: Mapped[list[UserRole]] = relationship(
         "UserRole",
         back_populates="user",
