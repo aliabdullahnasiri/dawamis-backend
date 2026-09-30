@@ -1501,7 +1501,7 @@ index 35ce406..7e614fb 100644
  from app.services.jwt import JWTService
 +from app.services.mail import MailService
  from app.services.user import UserService
-+from app.workers.email import EmailWorker
++from app.workers.email import EmailSendWorker
  
  
  class AuthService:
@@ -1512,7 +1512,7 @@ index 35ce406..7e614fb 100644
 +
 +    @staticmethod
 +    def send_welcome_email(user: User) -> None:
-+        EmailWorker.send(
++        EmailSendWorker.send(
 +            MailService.send_template,
 +            to=user.email,
 +            subject=T("emails:welcome_subject"),
