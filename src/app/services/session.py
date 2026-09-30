@@ -2,7 +2,7 @@ from datetime import timedelta
 from typing import Type
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.i18n.types import T
@@ -193,4 +193,13 @@ class SessionService:
             )
 
         await db.execute(stmt)
+        await db.commit()
+
+    @classmethod
+    async def cleanup(cls: Type[SessionService], *, db: AsyncSession) -> None:
+        now = DateTimeService.utc_now()
+        cutoff = now - timedelta(days=30)
+
+        await db.execute(delete(UserSession).where(UserSession.expires_at < cutoff))
+
         await db.commit()
