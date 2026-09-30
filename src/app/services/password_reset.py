@@ -8,10 +8,9 @@ from app.core.config import settings
 from app.core.i18n.types import T
 from app.models.user import User
 from app.services.datetime import DateTimeService
-from app.services.mail import MailService
 from app.services.url import URLService
 from app.services.user import UserService
-from app.workers.email import EmailWorker
+from app.workers.email import EmailSendWorker
 
 
 class PasswordResetService:
@@ -52,12 +51,11 @@ class PasswordResetService:
 
         await db.commit()
 
-        await EmailWorker.send(
-            MailService.send_template,
+        await EmailSendWorker.send_template(
             to=user.email,
             subject=T("emails:password_reset_subject"),
             template="emails/auth/password_reset.html",
-            user=user,
+            user=user.to_json(),
             token=token,
             reset_url=URLService.password_reset(token=token),
         )
@@ -82,11 +80,10 @@ class PasswordResetService:
 
         await db.commit()
 
-        await EmailWorker.send(
-            MailService.send_template,
+        await EmailSendWorker.send_template(
             to=user.email,
             subject=T("emails:password_reset_success_subject"),
             template="emails/auth/password_reset_success.html",
-            user=user,
+            user=user.to_json(),
             app_url=settings.FRONTEND_URL,
         )
