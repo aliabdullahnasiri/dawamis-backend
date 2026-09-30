@@ -1,3 +1,4 @@
-from app.workers.email import EmailWorker
+from app.workers.email import EmailSendWorker
+from app.workers.session import SessionCleanupWorker
 
-__all__ = ["EmailWorker"]
+__all__ = ["EmailSendWorker", "SessionCleanupWorker"]
