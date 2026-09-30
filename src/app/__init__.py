@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import Self, Union
+from typing import Self
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
@@ -8,13 +8,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.middleware import register_middleware
 from app.api.routers import auth, health
 from app.core.config import settings
-from app.core.context.database import get_current_db
 from app.core.startup import Startup
 from app.errors import AppError
 from app.errors.handlers import app_error_handler, request_validation_error_handler
 from app.extensions import redis
 from app.extensions.db import SessionLocal
-from app.models.base import Base
 
 
 class App:
