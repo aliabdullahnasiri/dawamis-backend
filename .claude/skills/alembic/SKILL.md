@@ -26,6 +26,7 @@ Before creating a migration, run:
 ```bash
 uv run alembic current
 uv run alembic heads
+uv run alembic check
 ```
 
 Check that the database and migration history are in a valid state.
