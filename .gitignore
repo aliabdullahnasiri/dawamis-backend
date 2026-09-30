@@ -42,3 +42,9 @@ dist/
 *.db
 *.sqlite
 *.sqlite3
+
+# Project specific
+full_diff.txt
+
+# Celery
+celerybeat-schedule*
