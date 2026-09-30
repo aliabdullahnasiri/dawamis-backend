@@ -8,10 +8,9 @@ from app.core.config import settings
 from app.core.i18n.types import T
 from app.models.user import User
 from app.services.datetime import DateTimeService
-from app.services.mail import MailService
 from app.services.url import URLService
 from app.services.user import UserService
-from app.workers.email import EmailWorker
+from app.workers.email import EmailSendWorker
 
 
 class EmailVerificationService:
@@ -42,12 +41,11 @@ class EmailVerificationService:
 
         await db.commit()
 
-        await EmailWorker.send(
-            MailService.send_template,
+        await EmailSendWorker.send_template(
             to=user.email,
             subject=T("emails:verify_email_subject"),
             template="emails/auth/verify_email.html",
-            user=user,
+            user=user.to_json(),
             token=token,
             verification_url=URLService.email_verification(token=token),
         )
@@ -70,11 +68,10 @@ class EmailVerificationService:
 
         await db.commit()
 
-        await EmailWorker.send(
-            MailService.send_template,
+        await EmailSendWorker.send_template(
             to=user.email,
             subject=T("emails:email_verified_success_subject"),
             template="emails/auth/email_verified.html",
-            user=user,
+            user=user.to_json(),
             app_url=settings.FRONTEND_URL,
         )
