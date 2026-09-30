@@ -24,4 +24,9 @@ class WorkerMeta(ABCMeta):
         if name != "BaseWorker":
             celery_app.register_task(cls())
 
+        beat_schedule = namespace.get("beat_schedule")
+
+        if beat_schedule:
+            celery_app.conf.beat_schedule.update(beat_schedule)
+
         return cls
