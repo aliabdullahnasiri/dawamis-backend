@@ -12,6 +12,8 @@ from app import main as fastapi_app
 from app.api.dependencies.db import get_db
 from app.core.context.database import set_db
 from app.models.base import Base
+from app.schemas.auth.request import LoginRequest, RegisterRequest
+from app.services.user_agent import UserAgentService
 
 # --- Configuration ---
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -71,7 +73,9 @@ def client(app, db_session):
 
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestClient(app) as c:
+    with TestClient(app, base_url="http://127.0.0.1") as c:
+        c.headers["User-Agent"] = UserAgentService().chrome()
+
         yield c
 
     app.dependency_overrides.clear()
@@ -80,8 +84,8 @@ def client(app, db_session):
 @pytest.fixture
 def mock_mail():
     with (
-        patch("app.services.mail.MailService.send") as mock_send,
-        patch("app.services.mail.MailService.send_template") as mock_template,
+        patch("app.workers.email.EmailSendWorker.send") as mock_send,
+        patch("app.workers.email.EmailSendWorker.send_template") as mock_template,
     ):
         yield {
             "send": mock_send,
@@ -107,30 +111,37 @@ def mock_redis(monkeypatch):
 
 
 @pytest_asyncio.fixture
-async def test_user(db_session: AsyncSession):
-    from app.models.user import User
-
-    user = User(
+async def test_user(client: TestClient, mock_mail):
+    # 1. Register a user
+    reg_data = RegisterRequest(
         email="test@example.com",
-        user_name="testuser",
-        is_email_verified=True,
+        password="password123",
+        user_name="sessionuser",
+        accept_terms=True,
     )
+    register_res = client.post("api/v1/auth/register", json=reg_data.model_dump())
+    assert register_res.status_code == 201
 
-    user.set_password("password123")
-
-    db_session.add(user)
-    await db_session.commit()
-    await db_session.refresh(user)
-
-    return user
+    return register_res.json()["data"]
 
 
 @pytest_asyncio.fixture
 async def auth_headers(client, test_user):
-    from app.services.jwt import JWTService
+    fake_useragent = UserAgentService().chrome()
 
-    access_token = JWTService.create_access_token(identity=str(test_user.uuid))
+    login_data = LoginRequest(
+        email="test@example.com",
+        password="password123",
+    )
 
-    return {
-        "Authorization": f"Bearer {access_token}",
-    }
+    login_res = client.post(
+        "api/v1/auth/login",
+        json=login_data.model_dump(),
+        headers={"User-Agent": fake_useragent},
+    )
+
+    assert login_res.status_code == 200
+
+    token = login_res.json()["data"]["access_token"]
+
+    return {"Authorization": f"Bearer {token}", "User-Agent": fake_useragent}
