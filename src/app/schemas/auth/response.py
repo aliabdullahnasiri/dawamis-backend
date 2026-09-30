@@ -1,4 +1,4 @@
-from typing import List
+
 from app.schemas.auth.data import LoginData, RefreshData, SessionData
 from app.schemas.base import BaseResponseModel
 from app.schemas.user.data import UserData
@@ -42,7 +42,7 @@ class PasswordResetResponse(BaseResponseModel[None]):
     """
 
 
-class SessionsResponse(BaseResponseModel[List[SessionData]]):
+class SessionsResponse(BaseResponseModel[list[SessionData]]):
     """
     Response schema for listing user sessions.
     """
