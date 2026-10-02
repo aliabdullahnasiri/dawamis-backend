@@ -3,7 +3,7 @@ from typing import Any, ClassVar, Self
 from celery.schedules import crontab
 
 from app.core.worker_database import get_worker_db
-from app.services.session import SessionService
+from app.services.auth.session import SessionService
 from app.workers.base import BaseWorker
 
 
