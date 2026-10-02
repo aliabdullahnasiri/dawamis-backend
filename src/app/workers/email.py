@@ -1,4 +1,3 @@
-import asyncio
 from typing import Self, Type
 
 from app.services.mail import MailService
@@ -9,12 +8,12 @@ from app.workers.base import BaseWorker
 class EmailSendWorker(BaseWorker):
     name = "email.send"
 
-    def run(self: Self, *args, **kwargs) -> None:
+    async def _run(self: Self, *args, **kwargs) -> None:
         service: AsyncService = (
             MailService.send_template if "template" in kwargs else MailService.send
         )
 
-        asyncio.run(service(*args, **kwargs))
+        await service(*args, **kwargs)
 
     @classmethod
     async def send(
