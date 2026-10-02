@@ -9,8 +9,8 @@ from app.core.i18n.types import T
 from app.errors.exceptions import AuthenticationError
 from app.models.user import User
 from app.models.user_session import UserSession
-from app.services.jwt import JWTService
-from app.services.session import SessionService
+from app.services.auth.jwt import JWTService
+from app.services.auth.session import SessionService
 from app.services.user import UserService
 
 
