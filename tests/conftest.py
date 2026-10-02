@@ -13,7 +13,7 @@ from app.api.dependencies.db import get_db
 from app.core.context.database import set_db
 from app.models.base import Base
 from app.schemas.auth.request import LoginRequest, RegisterRequest
-from app.services.user_agent import UserAgentService
+from app.services.auth.user_agent import UserAgentService
 
 # --- Configuration ---
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
