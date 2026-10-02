@@ -3,7 +3,7 @@ from celery import Celery
 from app.core.config import settings
 
 celery_app = Celery(
-    "dawamis",
+    settings.APP_NAME,
     broker=settings.REDIS_URL,
     backend=settings.REDIS_URL,
 )
@@ -15,3 +15,6 @@ celery_app.conf.update(
     timezone=settings.TIMEZONE,
     enable_utc=False,
 )
+
+# IMPORTANT:
+__import__("app.core.worker_database")  # noqa: F401
