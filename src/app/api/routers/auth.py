@@ -32,10 +32,10 @@ from app.schemas.auth.response import (
 )
 from app.schemas.user.data import UserData
 from app.services.auth import AuthService
-from app.services.email_verification import EmailVerificationService
-from app.services.jwt import JWTService
-from app.services.password_reset import PasswordResetService
-from app.services.session import SessionService
+from app.services.auth.email_verification import EmailVerificationService
+from app.services.auth.jwt import JWTService
+from app.services.auth.password_reset import PasswordResetService
+from app.services.auth.session import SessionService
 from app.services.user import UserService
 
 router = APIRouter(
