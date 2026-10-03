@@ -25,6 +25,7 @@ dependencies = [
     "pymysql>=1.2.0",
     "python-multipart>=0.0.32",
     "redis>=8.1.0",
+    "rich>=15.0.0",
     "sqlalchemy>=2.0.52",
     "uvicorn[standard]>=0.52.4",
 ]
