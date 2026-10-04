@@ -51,6 +51,12 @@ class Settings(BaseSettings):
 
     FRONTEND_URL: str = "http://localhost:3000"
 
+    AUTH_RATE_LIMIT_IP: int = 10
+    AUTH_RATE_LIMIT_IP_WINDOW: int = 300
+
+    AUTH_RATE_LIMIT_USER: int = 5
+    AUTH_RATE_LIMIT_USER_WINDOW: int = 900
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
