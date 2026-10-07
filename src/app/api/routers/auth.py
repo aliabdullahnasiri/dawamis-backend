@@ -4,8 +4,9 @@ from fastapi import APIRouter, Request, status
 
 from app.api.dependencies.auth import CurrentActiveSession, CurrentRefreshToken
 from app.api.dependencies.db import DBSession
+from app.api.dependencies.redis import RedisClient
 from app.core.i18n.types import T
-from app.errors.exceptions import AuthenticationError
+from app.errors.exceptions import AppError, AuthenticationError, RateLimitError
 from app.models.user import User
 from app.schemas.auth import (
     LoginRequest,
@@ -35,6 +36,8 @@ from app.services.auth import AuthService
 from app.services.auth.email_verification import EmailVerificationService
 from app.services.auth.jwt import JWTService
 from app.services.auth.password_reset import PasswordResetService
+from app.services.auth.rate_limit import AuthRateLimiter
+from app.services.auth.security import SecurityService
 from app.services.auth.session import SessionService
 from app.services.user import UserService
 
@@ -78,21 +81,75 @@ async def login(
     data: LoginRequest,
     db: DBSession,
     request: Request,
+    redis: RedisClient,
 ) -> LoginResponse:
     """
     Authenticate a user and generate access and refresh tokens.
     """
-    user = await AuthService.authenticate(
-        db=db,
-        email=data.email,
-        password=data.password,
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
+    # 1. IP Rate Limit Check
+    try:
+        if ip_address:
+            await AuthRateLimiter.check_ip(redis, ip_address)
+    except RateLimitError as e:
+        await SecurityService.rate_limit_exceeded(
+            db, ip_address=ip_address, user_agent=user_agent
+        )
+        raise e
+    except AppError as e:
+        raise e
+
+    # 2. Authentication Attempt
+    try:
+        user = await AuthService.authenticate(
+            db=db,
+            email=data.email,
+            password=data.password,
+        )
+    except AuthenticationError:
+        # 3. Failure Path
+        if ip_address:
+            await AuthRateLimiter.record_ip_failure(redis, ip_address)
+
+        # Record user failure if account exists
+        try:
+            user_to_limit = await UserService.get_by_email(db, email=data.email)
+            if user_to_limit:
+                attempts = await AuthRateLimiter.record_user_failure(
+                    redis, user_to_limit.uuid
+                )
+                if attempts >= 5:  # Matching settings.AUTH_RATE_LIMIT_USER
+                    await SecurityService.account_locked(
+                        db,
+                        user_id=user_to_limit.id,
+                        ip_address=ip_address,
+                        user_agent=user_agent,
+                        attempts=attempts,
+                    )
+        except Exception:
+            pass
+
+        await SecurityService.login_failed(
+            db,
+            user_id=None,  # User not authenticated
+            ip_address=ip_address,
+            user_agent=user_agent,
+        )
+        raise
+
+    # 4. Success Path
+    await AuthRateLimiter.reset_user(redis, user.uuid)
+    await SecurityService.login_success(
+        db, user_id=user.id, ip_address=ip_address, user_agent=user_agent
     )
 
     await SessionService.get_or_create_session(
         db=db,
         user_id=user.id,
-        ip_address=request.client.host if request.client else None,
-        user_agent=request.headers.get("user-agent"),
+        ip_address=ip_address,
+        user_agent=user_agent,
     )
 
     login_data = LoginData(
