@@ -106,6 +106,16 @@ class TokenRevokedError(TokenError):
     message = T("auth:token_revoked")
 
 
+class RateLimitError(AppError):
+    """
+    Raised when a rate limit is exceeded.
+    """
+
+    status_code = 429
+    code = "rate_limit_exceeded"
+    message = T("auth:too_many_attempts")
+
+
 class UserNotFound(AppError):
     status_code: int = 404
     code: str = "user_not_found"
