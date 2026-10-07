@@ -5,7 +5,7 @@ from uuid import UUID
 from redis.asyncio import Redis
 
 from app.core.config import settings
-from app.errors.exceptions import AppError
+from app.errors.exceptions import RateLimitError
 
 
 class AuthRateLimiter:
@@ -21,7 +21,7 @@ class AuthRateLimiter:
         attempts = await redis.get(key)
 
         if attempts is not None and int(attempts) >= settings.AUTH_RATE_LIMIT_IP:
-            raise AppError("auth:too_many_login_attempts")
+            raise RateLimitError()
 
     @classmethod
     async def check_user(
@@ -34,7 +34,7 @@ class AuthRateLimiter:
         attempts = await redis.get(key)
 
         if attempts is not None and int(attempts) >= settings.AUTH_RATE_LIMIT_USER:
-            raise AppError("auth:too_many_login_attempts")
+            raise RateLimitError()
 
     @classmethod
     async def record_ip_failure(
