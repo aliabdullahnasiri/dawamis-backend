@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any
-from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +16,7 @@ class SecurityService:
         db: AsyncSession,
         *,
         event_type: SecurityEventType,
-        user_id: UUID | None = None,
+        user_id: int | None = None,
         ip_address: str | None = None,
         user_agent: str | None = None,
         metadata: dict[str, Any] | None = None,
@@ -31,7 +30,6 @@ class SecurityService:
         )
 
         db.add(event)
-        await db.flush()
         await db.commit()
 
         return event
@@ -41,9 +39,9 @@ class SecurityService:
         cls: type[SecurityService],
         db: AsyncSession,
         *,
-        user_id: UUID,
-        ip_address: str | None,
-        user_agent: str | None,
+        user_id: int,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> None:
         await cls.log_event(
             db,
@@ -58,9 +56,9 @@ class SecurityService:
         cls: type[SecurityService],
         db: AsyncSession,
         *,
-        user_id: UUID | None,
-        ip_address: str | None,
-        user_agent: str | None,
+        user_id: int | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> None:
         await cls.log_event(
             db,
@@ -75,9 +73,9 @@ class SecurityService:
         cls: type[SecurityService],
         db: AsyncSession,
         *,
-        user_id: UUID,
-        ip_address: str | None,
-        user_agent: str | None,
+        user_id: int,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
         reason: str,
     ) -> None:
         await cls.log_event(
@@ -96,9 +94,9 @@ class SecurityService:
         cls: type[SecurityService],
         db: AsyncSession,
         *,
-        user_id: UUID,
-        ip_address: str | None,
-        user_agent: str | None,
+        user_id: int,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
         attempts: int,
     ) -> None:
         await cls.log_event(
@@ -117,9 +115,9 @@ class SecurityService:
         cls: type[SecurityService],
         db: AsyncSession,
         *,
-        user_id: UUID | None,
-        ip_address: str | None,
-        user_agent: str | None,
+        user_id: int | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> None:
         await cls.log_event(
             db,
