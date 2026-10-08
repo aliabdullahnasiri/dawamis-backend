@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Request, status
+from fastapi import Request, status
 
 from app.api.dependencies.auth import CurrentActiveSession, CurrentRefreshToken
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.redis import RedisClient
+from app.api.router import Router
 from app.core.i18n.types import T
 from app.errors.exceptions import AppError, AuthenticationError, RateLimitError
 from app.models.user import User
@@ -41,7 +42,7 @@ from app.services.auth.security import SecurityService
 from app.services.auth.session import SessionService
 from app.services.user import UserService
 
-router = APIRouter(
+router = Router(
     prefix="/auth",
     tags=["Authentication"],
 )

@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import HTTPException
 from sqlalchemy import text
 
 from app.api.dependencies import DBSession
 from app.api.dependencies.auth import CurrentActiveSession
+from app.api.router import Router
 from app.core.i18n.types import T
 
-router = APIRouter(
+router = Router(
     prefix="/health",
     tags=["Health"],
 )

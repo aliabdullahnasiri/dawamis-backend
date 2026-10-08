@@ -1,8 +1,10 @@
 from typing import cast
 
 from fastapi import Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 
 from app.errors import AppError
 
@@ -25,16 +27,19 @@ async def app_error_handler(
     )
 
 
-async def request_validation_error_handler(
+async def validation_error_handler(
     request: Request,
     exc: Exception,
 ) -> JSONResponse:
     """
-    Handle Pydantic request validation errors.
+    Handle Pydantic and FastAPI request validation errors.
     """
-    error = cast(RequestValidationError, exc)
-
-    errors = error.errors()
+    if isinstance(exc, RequestValidationError):
+        errors = exc.errors()
+    elif isinstance(exc, ValidationError):
+        errors = exc.errors()
+    else:
+        raise TypeError(f"Unsupported validation error: {type(exc)!r}")
 
     status_code = 422
 
@@ -48,6 +53,6 @@ async def request_validation_error_handler(
     return JSONResponse(
         status_code=status_code,
         content={
-            "errors": errors,
+            "errors": jsonable_encoder(errors),
         },
     )

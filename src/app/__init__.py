@@ -3,6 +3,7 @@ from typing import Self
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.middleware import register_middleware
@@ -10,7 +11,7 @@ from app.api.routers import auth, health
 from app.core.config import settings
 from app.core.startup import Startup
 from app.errors import AppError
-from app.errors.handlers import app_error_handler, request_validation_error_handler
+from app.errors.handlers import app_error_handler, validation_error_handler
 from app.extensions import redis
 from app.extensions.db import SessionLocal
 
@@ -60,9 +61,8 @@ class App:
 
         App.register_routers(app)
 
-        app.add_exception_handler(
-            RequestValidationError, request_validation_error_handler
-        )
+        app.add_exception_handler(RequestValidationError, validation_error_handler)
+        app.add_exception_handler(ValidationError, validation_error_handler)
 
         app.add_exception_handler(
             AppError,

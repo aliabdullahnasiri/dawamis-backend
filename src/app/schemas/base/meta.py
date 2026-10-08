@@ -1,11 +1,12 @@
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
+from pydantic_async_validation.mixins import AsyncValidationModelMixin
 
 T = TypeVar("T")
 
 
-class BaseModelMeta(type(BaseModel)):
+class BaseModelMeta(type(AsyncValidationModelMixin)):
     """
     Custom metaclass that controls model behavior.
     """

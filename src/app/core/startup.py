@@ -1,15 +1,16 @@
 from typing import Self
 
-from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.api.dependencies.redis import RedisClient
 
 
 class Startup:
     def __init__(
-        self: Self, db: AsyncSession | None = None, redis: Redis | None = None
+        self: Self, db: AsyncSession | None = None, redis: RedisClient | None = None
     ) -> None:
         self.db: AsyncSession | None = db
-        self.redis: Redis | None = redis
+        self.redis: RedisClient | None = redis
 
     async def __aenter__(self: Self) -> Self:
         if self.db is not None:

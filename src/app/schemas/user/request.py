@@ -42,11 +42,11 @@ class BaseUserRequest(BaseRequestModel):
 
     birthday: date | None = None
 
-    def _validate_email(self: Self, value: str) -> None:
-        Unique(User.email, T("email:email_already_exists")).validate(value)
+    async def _validate_email(self: Self, value: str) -> None:
+        await Unique(User.email, T("email:email_already_exists")).validate(self.email)
 
-    def _validate_user_name(self: Self, value: str) -> None:
-        Unique(
+    async def _validate_user_name(self: Self, value: str) -> None:
+        await Unique(
             User.user_name,
             T("user_name:user_name_already_exists"),
         ).validate(value)
