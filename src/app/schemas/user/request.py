@@ -1,13 +1,12 @@
 from datetime import date
-from typing import Annotated
+from typing import Self
 
 from pydantic import EmailStr, Field
-from pydantic.functional_validators import AfterValidator
 
 from app.core.i18n.types import T
 from app.models.user import User
 from app.schemas.base import BaseRequestModel
-from app.schemas.types import Unique
+from app.schemas.validators.unique import Unique
 
 
 class BaseUserRequest(BaseRequestModel):
@@ -37,17 +36,20 @@ class BaseUserRequest(BaseRequestModel):
         max_length=50,
     )
 
-    user_name: Annotated[
-        str,
-        AfterValidator(Unique(User, "user_name", T("auth.username_exists"))),
-    ]
+    user_name: str
 
-    email: Annotated[
-        EmailStr,
-        AfterValidator(Unique(User, "email", T("auth.email_exists"))),
-    ]
+    email: EmailStr
 
     birthday: date | None = None
+
+    def _validate_email(self: Self, value: str) -> None:
+        Unique(User.email, T("email:email_already_exists")).validate(value)
+
+    def _validate_user_name(self: Self, value: str) -> None:
+        Unique(
+            User.user_name,
+            T("user_name:user_name_already_exists"),
+        ).validate(value)
 
 
 class GetUserRequest(BaseUserRequest):
