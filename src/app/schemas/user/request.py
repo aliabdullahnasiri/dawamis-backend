@@ -2,6 +2,7 @@ from datetime import date
 from typing import Self
 
 from pydantic import EmailStr, Field
+from pydantic_async_validation.validators import async_field_validator
 
 from app.core.i18n.types import T
 from app.models.user import User
@@ -42,19 +43,6 @@ class BaseUserRequest(BaseRequestModel):
 
     birthday: date | None = None
 
-    async def _validate_email(self: Self, value: str) -> None:
-        await Unique(User.email, T("email:email_already_exists")).validate(self.email)
-
-    async def _validate_user_name(self: Self, value: str) -> None:
-        await Unique(
-            User.user_name,
-            T("user_name:user_name_already_exists"),
-        ).validate(value)
-
-
-class GetUserRequest(BaseUserRequest):
-    pass
-
 
 class CreateUserRequest(BaseUserRequest):
     """
@@ -68,3 +56,18 @@ class CreateUserRequest(BaseUserRequest):
         min_length=8,
         max_length=128,
     )
+
+    @async_field_validator("email")
+    async def _validate_email(self: Self) -> None:
+        await Unique(User.email, T("email:email_already_exists")).validate(self.email)
+
+    @async_field_validator("user_name")
+    async def _validate_user_name(self: Self) -> None:
+        await Unique(
+            User.user_name,
+            T("user_name:user_name_already_exists"),
+        ).validate(self.user_name)
+
+
+class UpdateUserRequest(BaseUserRequest):
+    pass
