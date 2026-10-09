@@ -1,7 +1,7 @@
 from typing import Any, Self
 
 from pydantic_core import PydanticCustomError
-from sqlalchemy import inspect, select, text
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import InstrumentedAttribute
 
@@ -50,7 +50,6 @@ class Unique:
                 "{message}",
                 {
                     "message": self.msg,
-                    "field": self.field.key,
                 },
             )
 
