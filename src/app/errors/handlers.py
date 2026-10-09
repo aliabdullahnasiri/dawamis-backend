@@ -43,13 +43,6 @@ async def validation_error_handler(
 
     status_code = 422
 
-    for item in errors:
-        ctx = item.get("ctx", {})
-
-        if ctx.get("status_code"):
-            status_code = ctx["status_code"]
-            break
-
     return JSONResponse(
         status_code=status_code,
         content={
