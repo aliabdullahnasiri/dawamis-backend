@@ -5,8 +5,7 @@ from uuid import UUID
 from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.i18n.types import T
-from app.errors.exceptions import AppError
+from app.core.exceptions import SessionNotFoundError
 from app.models.user_session import UserSession
 from app.services.datetime import DateTimeService
 
@@ -142,10 +141,7 @@ class SessionService:
         session = result.scalar_one_or_none()
 
         if session is None:
-            raise AppError(
-                message=T("auth:session_not_found"),
-                status_code=404,
-            )
+            raise SessionNotFoundError()
 
         return session
 
