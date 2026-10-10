@@ -1,9 +1,10 @@
 import pytest
 
-from app.schemas.auth import LoginRequest, RegisterRequest
+from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
+    LoginRequest,
     ResendVerificationEmailRequest,
     ResetPasswordRequest,
     VerifyEmailRequest,
@@ -18,7 +19,12 @@ async def test_register(client, mock_mail):
         user_name="newuser",
         accept_terms=True,
     )
-    response = client.post("api/v1/auth/register", json=data.model_dump())
+
+    response = await client.post(
+        "/api/v1/auth/register",
+        json=data.model_dump(),
+    )
+
     assert response.status_code == 201
     assert "data" in response.json()
     assert response.json()["data"]["email"] == "newuser@example.com"
@@ -26,48 +32,74 @@ async def test_register(client, mock_mail):
 
 @pytest.mark.asyncio
 async def test_login(client, mock_mail):
-    # First register a user
     data = RegisterRequest(
         email="loginuser@example.com",
         password="password123",
         user_name="loginuser",
         accept_terms=True,
     )
-    client.post("api/v1/auth/register", json=data.model_dump())
 
-    # Now login
+    register_response = await client.post(
+        "/api/v1/auth/register",
+        json=data.model_dump(),
+    )
+    assert register_response.status_code == 201
+
     login_data = LoginRequest(
         email="loginuser@example.com",
         password="password123",
     )
-    response = client.post("api/v1/auth/login", json=login_data.model_dump())
+
+    response = await client.post(
+        "/api/v1/auth/login",
+        json=login_data.model_dump(),
+    )
+
     assert response.status_code == 200
     assert "access_token" in response.json()["data"]
     assert "refresh_token" in response.json()["data"]
 
+    return response.json()["data"]
+
 
 @pytest.mark.asyncio
-async def test_get_sessions(client, auth_headers):
-    response = client.get(
-        "api/v1/auth/sessions",
-        headers=auth_headers,
-    )
+async def test_get_sessions(client, fake_session):
+    response = await client.get("/api/v1/auth/sessions")
 
     assert response.status_code == 200
 
     sessions = response.json()["data"]
-
     assert isinstance(sessions, list)
     assert len(sessions) > 0
 
 
 @pytest.mark.asyncio
-async def test_revoke_session(client, auth_headers):
-    # Get an existing session
-    response = client.get(
-        "api/v1/auth/sessions",
-        headers=auth_headers,
+async def test_me(client, fake_session):
+    response = await client.get("/api/v1/auth/me")
+
+    assert response.status_code == 200
+    assert response.json()["email"] == "test@example.com"
+
+
+@pytest.mark.asyncio
+async def test_refresh_token(client, fake_login):
+    # This endpoint may require a refresh token in the Authorization header.
+    # If so, use a test-specific dependency override instead of auth_headers.
+    refresh_token = fake_login["refresh_token"]
+    response = await client.post(
+        "/api/v1/auth/refresh",
+        headers={
+            "Authorization": f"Bearer {refresh_token}",
+        },
     )
+
+    assert response.status_code == 200
+    assert "access_token" in response.json()["data"]
+
+
+@pytest.mark.asyncio
+async def test_revoke_session(client, fake_login):
+    response = await client.get("/api/v1/auth/sessions")
 
     assert response.status_code == 200
 
@@ -76,91 +108,57 @@ async def test_revoke_session(client, auth_headers):
 
     session_uuid = sessions[0]["uuid"]
 
-    # Revoke session
-    response = client.delete(
-        f"api/v1/auth/sessions/{session_uuid}",
-        headers=auth_headers,
-    )
+    response = await client.delete(f"/api/v1/auth/sessions/{session_uuid}")
 
     assert response.status_code == 200
 
-    # Verify session is no longer active
-    response = client.get(
-        "api/v1/auth/sessions",
-        headers=auth_headers,
-    )
-
+    response = await client.get("/api/v1/auth/sessions")
     assert response.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_revoke_all_sessions(client, auth_headers):
-    # Revoke all sessions
-    response = client.post(
-        "api/v1/auth/sessions/revoke-all",
-        headers=auth_headers,
-    )
+async def test_revoke_all_sessions(client, fake_login):
+    response = await client.post("/api/v1/auth/sessions/revoke-all")
 
     assert response.status_code == 200
 
-    # Verify there are no active sessions
-    response = client.get(
-        "api/v1/auth/sessions",
-        headers=auth_headers,
-    )
-
+    response = await client.get("/api/v1/auth/sessions")
     assert response.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_me(client, auth_headers):
-    response = client.get("api/v1/auth/me", headers=auth_headers)
-    assert response.status_code == 200
-    assert response.json()["email"] == "test@example.com"
-
-
-@pytest.mark.asyncio
-async def test_logout(client, auth_headers):
-    response = client.post("api/v1/auth/logout", headers=auth_headers)
+async def test_logout(client, fake_login):
+    response = await client.post("/api/v1/auth/logout")
     assert response.status_code == 200
 
-    # Token should now be revoked
-    response = client.get("api/v1/auth/me", headers=auth_headers)
+    response = await client.get("/api/v1/auth/me")
     assert response.status_code == 401
-
-
-@pytest.mark.asyncio
-async def test_refresh_token(client, test_user):
-    return
-    from app.services.jwt import JWTService
-
-    refresh_token = JWTService.create_refresh_token(identity=str(test_user.uuid))
-    headers = {"Authorization": f"Bearer {refresh_token}"}
-
-    response = client.post("api/v1/auth/refresh", headers=headers)
-    assert response.status_code == 200
-    assert "access_token" in response.json()["data"]
 
 
 @pytest.mark.asyncio
 async def test_verify_email(client, db_session, mock_mail):
-    # Create a user that isn't verified
     data = RegisterRequest(
         email="verify@example.com",
         password="password123",
         user_name="verifyuser",
         accept_terms=True,
     )
-    response = client.post("api/v1/auth/register", json=data.model_dump())
 
-    # 1. Request verification email to generate token
+    response = await client.post(
+        "/api/v1/auth/register",
+        json=data.model_dump(),
+    )
+    assert response.status_code == 201
+
     resend_data = ResendVerificationEmailRequest(email="verify@example.com")
-    client.post("api/v1/auth/email/resend", json=resend_data.model_dump())
 
-    # 2. Extract token from the mocked mail call
-    # The EmailSendWorker calls MailService.send_template.
-    # We find the call where 'token' was passed.
+    await client.post(
+        "/api/v1/auth/email/resend",
+        json=resend_data.model_dump(),
+    )
+
     token = None
+
     for call in mock_mail["send_template"].call_args_list:
         _, kwargs = call
         if "token" in kwargs:
@@ -169,29 +167,42 @@ async def test_verify_email(client, db_session, mock_mail):
 
     assert token is not None, "Verification token was not sent via email"
 
-    # 3. Verify the email using the intercepted token
     verify_data = VerifyEmailRequest(token=token)
-    response = client.post("api/v1/auth/email/verify", json=verify_data.model_dump())
+
+    response = await client.post(
+        "/api/v1/auth/email/verify",
+        json=verify_data.model_dump(),
+    )
+
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_resend_verification_email(client, mock_mail):
     data = ResendVerificationEmailRequest(email="test@example.com")
-    response = client.post("api/v1/auth/email/resend", json=data.model_dump())
+
+    response = await client.post(
+        "/api/v1/auth/email/resend",
+        json=data.model_dump(),
+    )
+
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_password_forgot(client, mock_mail):
     data = ForgotPasswordRequest(email="test@example.com")
-    response = client.post("api/v1/auth/password/forgot", json=data.model_dump())
+
+    response = await client.post(
+        "/api/v1/auth/password/forgot",
+        json=data.model_dump(),
+    )
+
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
 async def test_password_reset(client, mock_mail):
-    # 1. Create a user
     data = RegisterRequest(
         email="reset@example.com",
         password="password123",
@@ -199,57 +210,55 @@ async def test_password_reset(client, mock_mail):
         accept_terms=True,
     )
 
-    response = client.post(
+    response = await client.post(
         "/api/v1/auth/register",
         json=data.model_dump(),
     )
 
     assert response.status_code == 201
 
-    # 2. Request password reset email
-    reset_data = ForgotPasswordRequest(
-        email="reset@example.com",
-    )
+    reset_request = ForgotPasswordRequest(email="reset@example.com")
 
-    response = client.post(
+    response = await client.post(
         "/api/v1/auth/password/forgot",
-        json=reset_data.model_dump(),
+        json=reset_request.model_dump(),
     )
 
     assert response.status_code == 200
 
-    # 3. Extract reset token from mocked email
     token = None
 
     for call in mock_mail["send_template"].call_args_list:
         _, kwargs = call
-
         if "token" in kwargs:
             token = kwargs["token"]
             break
 
     assert token is not None, "Password reset token was not sent via email"
 
-    # 4. Reset the password using the token
-    reset_confirm_data = ResetPasswordRequest(
+    reset_data = ResetPasswordRequest(
         token=token,
         new_password="newpassword123",
     )
 
-    response = client.post(
+    response = await client.post(
         "/api/v1/auth/password/reset",
-        json=reset_confirm_data.model_dump(),
+        json=reset_data.model_dump(),
     )
 
     assert response.status_code == 200
 
 
 @pytest.mark.asyncio
-async def test_password_change(client, auth_headers):
+async def test_password_change(client, fake_session):
     data = ChangePasswordRequest(
-        current_password="password123", new_password="newpassword123"
+        current_password="password123",
+        new_password="newpassword123",
     )
-    response = client.post(
-        "api/v1/auth/password/change", json=data.model_dump(), headers=auth_headers
+
+    response = await client.post(
+        "/api/v1/auth/password/change",
+        json=data.model_dump(),
     )
+
     assert response.status_code == 200
