@@ -2,8 +2,8 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import AuthenticationError
 from app.core.i18n.types import T
-from app.errors.exceptions import AuthenticationError
 from app.models import User
 from app.schemas.auth.request import RegisterRequest
 from app.services.auth.jwt import JWTService
