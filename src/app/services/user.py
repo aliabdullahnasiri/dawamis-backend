@@ -5,8 +5,13 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.decorators import handle_exception
+from app.core.exceptions import (
+    EmailVerificationTokenExpiredError,
+    PasswordResetTokenExpiredError,
+    UserNotFound,
+)
+from app.core.exceptions.authentication import InvalidPasswordResetTokenError
 from app.core.i18n.types import T
-from app.errors.exceptions import AppError, UserNotFound
 from app.models import User
 from app.schemas.user import CreateUserRequest
 from app.services.datetime import DateTimeService
@@ -97,11 +102,7 @@ class UserService:
             user.email_verification_expires_at is None
             or user.email_verification_expires_at < DateTimeService.utc_now()
         ):
-            raise AppError(
-                message=T("errors:email_verification_token_expired"),
-                status_code=400,
-                code="email_verification_token_expired",
-            )
+            raise EmailVerificationTokenExpiredError()
 
         return user
 
@@ -117,17 +118,13 @@ class UserService:
         ).scalar_one_or_none()
 
         if user is None:
-            raise UserNotFound(message=T("errors:invalid_password_reset_token"))
+            raise InvalidPasswordResetTokenError()
 
         if (
             user.password_reset_expires_at is None
             or user.password_reset_expires_at < DateTimeService.utc_now()
         ):
-            raise AppError(
-                message=T("errors:password_reset_token_expired"),
-                status_code=400,
-                code="password_reset_token_expired",
-            )
+            raise PasswordResetTokenExpiredError()
 
         return user
 
