@@ -5,8 +5,8 @@ from fastapi import Depends, HTTPException, Request, status
 
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
+from app.core.exceptions import AuthenticationError
 from app.core.i18n.types import T
-from app.errors.exceptions import AuthenticationError
 from app.models.user import User
 from app.models.user_session import UserSession
 from app.services.auth.jwt import JWTService
@@ -141,7 +141,7 @@ async def get_current_active_session(
     if not session:
         raise AuthenticationError(
             message=T("auth:session_expired_or_revoked"),
-            status_code=401,
+            code=401,
         )
 
     return session
