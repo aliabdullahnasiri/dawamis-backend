@@ -1,5 +1,10 @@
-
-from app.schemas.auth.data import LoginData, RefreshData, SessionData
+from app.schemas.auth.data import (
+    LoginData,
+    RecoveryCodesData,
+    RefreshData,
+    SessionData,
+    TwoFactorSetupData,
+)
 from app.schemas.base import BaseResponseModel
 from app.schemas.user.data import UserData
 
@@ -52,3 +57,17 @@ class RevokeSessionResponse(BaseResponseModel[None]):
     """
     Response schema for successful session revocation.
     """
+
+
+class TwoFactorSetupResponse(BaseResponseModel[TwoFactorSetupData]):
+    """
+    Response containing the two-factor authentication setup details.
+    """
+
+
+class RecoveryCodesResponse(BaseResponseModel[RecoveryCodesData]):
+    """
+    Response containing the user's two-factor authentication recovery codes.
+    """
+
+    __forbid__ = True
