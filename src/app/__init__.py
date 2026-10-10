@@ -9,9 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.middleware import register_middleware
 from app.api.routers import auth, health
 from app.core.config import settings
+from app.core.exceptions import AppError
+from app.core.exceptions.handlers import app_error_handler, validation_error_handler
 from app.core.startup import Startup
-from app.errors import AppError
-from app.errors.handlers import app_error_handler, validation_error_handler
 from app.extensions import redis
 from app.extensions.db import SessionLocal
 
