@@ -2,7 +2,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, Self
 
 import bcrypt
-from sqlalchemy import Boolean, Date, DateTime, String, UniqueConstraint
+from sqlalchemy import Boolean, Date, DateTime, String, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -91,6 +91,23 @@ class User(Base):
     )
 
     locked_until: Mapped[datetime | None]
+
+    totp_secret_encrypted: Mapped[str | None] = mapped_column(
+        String(512),
+        nullable=True,
+    )
+
+    totp_pending_secret_encrypted: Mapped[str | None] = mapped_column(
+        String(512),
+        nullable=True,
+    )
+
+    totp_enabled: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        server_default=false(),
+        nullable=False,
+    )
 
     user_roles: Mapped[list[UserRole]] = relationship(
         "UserRole",
