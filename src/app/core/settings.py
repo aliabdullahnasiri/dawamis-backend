@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     AUTH_RATE_LIMIT_USER: int = 5
     AUTH_RATE_LIMIT_USER_WINDOW: int = 900
 
+    TOTP_ENCRYPTION_KEY: str = "your-generated-key"
+    RECOVERY_CODE_COUNT: int = 10
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
