@@ -6,8 +6,8 @@ from app.api.dependencies.auth import CurrentActiveSession, CurrentRefreshToken
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.redis import RedisClient
 from app.api.router import Router
+from app.core.exceptions import AppError, AuthenticationError, RateLimitError
 from app.core.i18n.types import T
-from app.errors.exceptions import AppError, AuthenticationError, RateLimitError
 from app.models.user import User
 from app.schemas.auth import (
     LoginRequest,
