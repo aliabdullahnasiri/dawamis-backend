@@ -2,7 +2,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
 
-from app.errors.exceptions import AppError
+from app.core.exceptions import AppError
 
 F = TypeVar("F", bound=Callable[..., Any])
 
