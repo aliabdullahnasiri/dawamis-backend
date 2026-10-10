@@ -4,6 +4,7 @@ from app.models.base import Base
 from app.models.branch import Branch
 from app.models.organization import Organization
 from app.models.permission import Permission
+from app.models.recovery_code import RecoveryCode
 from app.models.role import Role
 from app.models.security_event import SecurityEvent
 from app.models.user import User
@@ -21,4 +22,5 @@ __all__ = [
     "UserRole",
     "UserSession",
     "SecurityEvent",
+    "RecoveryCode",
 ]
