@@ -5,7 +5,7 @@ from uuid import UUID
 from redis.asyncio import Redis
 
 from app.core.config import settings
-from app.errors.exceptions import RateLimitError
+from app.core.exceptions import RateLimitError
 
 
 class AuthRateLimiter:
