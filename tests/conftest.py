@@ -1,16 +1,18 @@
-from collections.abc import AsyncGenerator
+from functools import lru_cache
+from typing import Any
 from unittest.mock import patch
 
 import fakeredis
 import pytest
 import pytest_asyncio
-from fastapi.testclient import TestClient
+from fastapi import FastAPI
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.pool import StaticPool
 
 from app import main as fastapi_app
-from app.api.dependencies.db import get_db
 from app.core.context.database import set_db
+from app.extensions.db import get_db
 from app.models.base import Base
 from app.schemas.auth.request import LoginRequest, RegisterRequest
 from app.services.auth.user_agent import UserAgentService
@@ -19,15 +21,18 @@ from app.services.auth.user_agent import UserAgentService
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
-@pytest.fixture(scope="session")
-def db_engine():
+@pytest_asyncio.fixture(scope="session")
+async def db_engine():
     engine = create_async_engine(
         TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
 
-    return engine
+    try:
+        yield engine
+    finally:
+        await engine.dispose()
 
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
@@ -37,9 +42,7 @@ async def create_tables(db_engine):
 
 
 @pytest_asyncio.fixture
-async def db_session(
-    db_engine,
-) -> AsyncGenerator[AsyncSession, None]:
+async def db_session(db_engine):
     async with db_engine.connect() as connection:
         transaction = await connection.begin()
 
@@ -50,14 +53,15 @@ async def db_session(
             autoflush=False,
         )
 
-        session = session_factory()
+        async with session_factory() as session:
+            set_db(session)
 
-        set_db(session)
+            try:
+                yield session
+            finally:
+                await session.rollback()
 
-        try:
-            yield session
-        finally:
-            await session.close()
+        if transaction.is_active:
             await transaction.rollback()
 
 
@@ -66,19 +70,24 @@ def app():
     return fastapi_app()
 
 
-@pytest.fixture
-def client(app, db_session):
+@pytest_asyncio.fixture
+async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
 
-    with TestClient(app, base_url="http://127.0.0.1") as c:
-        c.headers["User-Agent"] = UserAgentService().chrome()
-
-        yield c
-
-    app.dependency_overrides.clear()
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=app),
+            base_url="http://test",
+            headers={
+                "User-Agent": fake_useragent,
+            },
+        ) as test_client:
+            yield test_client
+    finally:
+        app.dependency_overrides.pop(get_db, None)
 
 
 @pytest.fixture
@@ -95,7 +104,7 @@ def mock_mail():
 
 @pytest.fixture
 def mock_redis(monkeypatch):
-    fake_redis = fakeredis.FakeRedis(
+    fake_redis = fakeredis.FakeAsyncRedis(
         decode_responses=True,
     )
 
@@ -110,8 +119,32 @@ def mock_redis(monkeypatch):
     return fake_redis
 
 
+@pytest.fixture
+def fake_useragent():
+    return UserAgentService().chrome()
+
+
 @pytest_asyncio.fixture
-async def test_user(client: TestClient, mock_mail):
+async def test_user(client: AsyncClient, fake_useragent: str, mock_mail):
+    reg_data = RegisterRequest(
+        email="anotheruser@example.com",
+        password="password123",
+        user_name="anotheruser",
+        accept_terms=True,
+    )
+
+    response = await client.post(
+        "/api/v1/auth/register",
+        json=reg_data.model_dump(),
+    )
+
+    assert response.status_code == 201, response.text
+
+    return response.json()["data"]
+
+
+@pytest_asyncio.fixture
+async def fake_session(client: AsyncClient, mock_mail) -> Any:
     # 1. Register a user
     reg_data = RegisterRequest(
         email="test@example.com",
@@ -119,29 +152,43 @@ async def test_user(client: TestClient, mock_mail):
         user_name="sessionuser",
         accept_terms=True,
     )
-    register_res = client.post("api/v1/auth/register", json=reg_data.model_dump())
+    register_res = await client.post("api/v1/auth/register", json=reg_data.model_dump())
     assert register_res.status_code == 201
 
-    return register_res.json()["data"]
-
-
-@pytest_asyncio.fixture
-async def auth_headers(client, test_user):
-    fake_useragent = UserAgentService().chrome()
-
+    # 2. Login the user
     login_data = LoginRequest(
         email="test@example.com",
         password="password123",
     )
-
-    login_res = client.post(
+    login_res = await client.post(
         "api/v1/auth/login",
         json=login_data.model_dump(),
-        headers={"User-Agent": fake_useragent},
     )
-
     assert login_res.status_code == 200
 
     token = login_res.json()["data"]["access_token"]
 
-    return {"Authorization": f"Bearer {token}", "User-Agent": fake_useragent}
+    client.headers.setdefault("Authorization", f"Bearer {token}")
+
+    return client.headers
+
+
+@pytest_asyncio.fixture
+async def fake_login(client, test_user, mock_mail):
+    login_data = LoginRequest(
+        email=test_user["email"],
+        password="password123",
+    )
+
+    response = await client.post(
+        "/api/v1/auth/login",
+        json=login_data.model_dump(),
+    )
+
+    assert response.status_code == 200, response.text
+
+    token = response.json()["data"]["access_token"]
+
+    client.headers["Authorization"] = f"Bearer {token}"
+
+    return response.json()["data"]
