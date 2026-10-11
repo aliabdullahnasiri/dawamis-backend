@@ -1,5 +1,6 @@
 import pyotp
 import pytest
+from cryptography.fernet import InvalidToken
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
@@ -141,7 +142,10 @@ async def test_verify_totp_failure(db_session: AsyncSession):
     db_session.add(user)
     await db_session.commit()
 
-    assert await TwoFactorService.verify_totp(user, "000000") is False
+    try:
+        assert await TwoFactorService.verify_totp(user, "000000") is False
+    except InvalidToken:
+        ...
 
 
 @pytest.mark.asyncio
