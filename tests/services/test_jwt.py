@@ -1,9 +1,10 @@
-import pytest
 import jwt
-from datetime import timedelta
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.services.auth.jwt import JWTService
+
 from app.core.config import settings
+from app.services.auth.jwt import JWTService
+
 
 def test_create_access_token():
     identity = "user_123"
@@ -14,13 +15,16 @@ def test_create_access_token():
     assert isinstance(token, str)
 
     # Decode to verify contents
-    payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    payload = jwt.decode(
+        token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+    )
     assert payload["sub"] == identity
     assert payload["type"] == "access"
     assert payload["role"] == "admin"
     assert "jti" in payload
     assert "iat" in payload
     assert "exp" in payload
+
 
 def test_create_refresh_token():
     identity = "user_456"
@@ -30,10 +34,13 @@ def test_create_refresh_token():
     assert isinstance(token, str)
 
     # Decode to verify contents
-    payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+    payload = jwt.decode(
+        token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+    )
     assert payload["sub"] == identity
     assert payload["type"] == "refresh"
     assert "jti" in payload
+
 
 def test_decode_success():
     identity = "user_789"
@@ -44,9 +51,11 @@ def test_decode_success():
     assert claims["sub"] == identity
     assert claims["type"] == "access"
 
+
 def test_decode_invalid_token():
     with pytest.raises(jwt.InvalidTokenError):
         JWTService.decode("completely.invalid.token")
+
 
 def test_decode_expired_token(monkeypatch):
     # Mock settings to have a very short expiry
@@ -58,11 +67,13 @@ def test_decode_expired_token(monkeypatch):
     with pytest.raises(jwt.ExpiredSignatureError):
         JWTService.decode(token)
 
+
 def test_identity():
     identity = "user_identity"
     token = JWTService.create_access_token(identity)
 
     assert JWTService.identity(token) == identity
+
 
 def test_claims():
     identity = "user_claims"
@@ -72,6 +83,7 @@ def test_claims():
     claims = JWTService.claims(token)
     assert claims["sub"] == identity
     assert claims["foo"] == "bar"
+
 
 @pytest.mark.asyncio
 async def test_revoke_and_is_revoked(db_session: AsyncSession):
@@ -86,6 +98,7 @@ async def test_revoke_and_is_revoked(db_session: AsyncSession):
 
     # Should now be revoked
     assert await JWTService.is_revoked(token, db_session) is True
+
 
 @pytest.mark.asyncio
 async def test_is_revoked_different_token(db_session: AsyncSession):
