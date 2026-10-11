@@ -1,4 +1,3 @@
-from functools import lru_cache
 from typing import Any
 from unittest.mock import patch
 
@@ -108,10 +107,10 @@ def mock_redis(monkeypatch):
         decode_responses=True,
     )
 
-    import app.extensions.redis
+    import app.extensions as extensions
 
     monkeypatch.setattr(
-        app.extensions.redis,
+        extensions,
         "redis",
         fake_redis,
     )
