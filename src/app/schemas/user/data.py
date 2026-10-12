@@ -7,6 +7,12 @@ from app.schemas.base import BaseDataModel
 
 
 class UserData(BaseDataModel):
+    """
+    Data transfer object for User information.
+
+    Represents the core user attributes used in responses and internal
+    data handling.
+    """
     uuid: UUID
     first_name: str | None
     middle_name: str | None
