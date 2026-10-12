@@ -7,6 +7,12 @@ from app.services.auth.jwt import JWTService
 
 
 def test_create_access_token():
+    """
+    Test the creation of an access token.
+
+    Verifies that the token is a string and contains the correct
+    subject, type, and extra claims.
+    """
     identity = "user_123"
     extra_claim = {"role": "admin"}
 
@@ -27,6 +33,12 @@ def test_create_access_token():
 
 
 def test_create_refresh_token():
+    """
+    Test the creation of a refresh token.
+
+    Verifies that the token is a string and contains the correct
+    subject and type.
+    """
     identity = "user_456"
 
     token = JWTService.create_refresh_token(identity)
@@ -43,6 +55,9 @@ def test_create_refresh_token():
 
 
 def test_decode_success():
+    """
+    Test successful decoding of a valid JWT.
+    """
     identity = "user_789"
     token = JWTService.create_access_token(identity)
 
@@ -53,11 +68,17 @@ def test_decode_success():
 
 
 def test_decode_invalid_token():
+    """
+    Test that decoding an invalid token raises a jwt.InvalidTokenError.
+    """
     with pytest.raises(jwt.InvalidTokenError):
         JWTService.decode("completely.invalid.token")
 
 
 def test_decode_expired_token(monkeypatch):
+    """
+    Test that decoding an expired token raises a jwt.ExpiredSignatureError.
+    """
     # Mock settings to have a very short expiry
     monkeypatch.setattr(settings, "JWT_ACCESS_TOKEN_EXPIRE_MINUTES", -1)
 
@@ -69,6 +90,9 @@ def test_decode_expired_token(monkeypatch):
 
 
 def test_identity():
+    """
+    Test extracting the identity (subject) from a token.
+    """
     identity = "user_identity"
     token = JWTService.create_access_token(identity)
 
@@ -76,6 +100,9 @@ def test_identity():
 
 
 def test_claims():
+    """
+    Test extracting all claims from a token.
+    """
     identity = "user_claims"
     extra = {"foo": "bar"}
     token = JWTService.create_access_token(identity, **extra)
@@ -87,6 +114,9 @@ def test_claims():
 
 @pytest.mark.asyncio
 async def test_revoke_and_is_revoked(db_session: AsyncSession):
+    """
+    Test revoking a token and checking its revocation status.
+    """
     identity = "user_revoke"
     token = JWTService.create_access_token(identity)
 
@@ -102,6 +132,9 @@ async def test_revoke_and_is_revoked(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_is_revoked_different_token(db_session: AsyncSession):
+    """
+    Test that revoking one token does not affect others.
+    """
     token1 = JWTService.create_access_token("user1")
     token2 = JWTService.create_access_token("user2")
 
