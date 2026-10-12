@@ -8,20 +8,26 @@ from app.services.auth.two_factor_challenge import (
 
 @pytest.mark.asyncio
 async def test_create_success(mock_redis):
+    """
+    Test successful creation of a 2FA challenge.
+
+    Verifies that a challenge token is generated and stored in Redis.
+    """
     user_id = "user_123"
     token = await TwoFactorChallengeService.create(mock_redis, user_id)
 
     assert isinstance(token, str)
 
     # Verify Redis key exists and contains user_id
-    # We need to extract challenge_id from token to check key,
-    # but we can also just validate it.
     challenge = await TwoFactorChallengeService.validate(mock_redis, token)
     assert challenge.user_id == user_id
 
 
 @pytest.mark.asyncio
 async def test_validate_success(mock_redis):
+    """
+    Test successful validation of a 2FA challenge token.
+    """
     user_id = "user_456"
     token = await TwoFactorChallengeService.create(mock_redis, user_id)
 
@@ -34,17 +40,22 @@ async def test_validate_success(mock_redis):
 
 @pytest.mark.asyncio
 async def test_validate_invalid_token(mock_redis):
+    """
+    Test that validation fails for an invalid or non-existent token.
+    """
     with pytest.raises(ValueError, match="auth:invalid_two_factor_challenge"):
         await TwoFactorChallengeService.validate(mock_redis, "invalid.token.here")
 
 
 @pytest.mark.asyncio
 async def test_validate_expired_challenge(mock_redis):
+    """
+    Test that validation fails for an expired challenge.
+    """
     user_id = "user_789"
     token = await TwoFactorChallengeService.create(mock_redis, user_id)
 
     # Manually delete from Redis to simulate expiration
-    # We need the challenge_id. We can get it by validating first.
     challenge = await TwoFactorChallengeService.validate(mock_redis, token)
     await mock_redis.delete(TwoFactorChallengeService._key(challenge.challenge_id))
 
@@ -54,6 +65,9 @@ async def test_validate_expired_challenge(mock_redis):
 
 @pytest.mark.asyncio
 async def test_validate_user_mismatch(mock_redis):
+    """
+    Test that validation fails if the token belongs to a different user.
+    """
     user_id = "user_abc"
     token = await TwoFactorChallengeService.create(mock_redis, user_id)
 
@@ -70,6 +84,11 @@ async def test_validate_user_mismatch(mock_redis):
 
 @pytest.mark.asyncio
 async def test_consume_success(mock_redis):
+    """
+    Test successful consumption of a 2FA challenge.
+
+    Verifies that consuming a challenge succeeds and removes the challenge from Redis.
+    """
     user_id = "user_consume"
     token = await TwoFactorChallengeService.create(mock_redis, user_id)
     challenge = await TwoFactorChallengeService.validate(mock_redis, token)
@@ -87,6 +106,9 @@ async def test_consume_success(mock_redis):
 
 @pytest.mark.asyncio
 async def test_consume_already_used(mock_redis):
+    """
+    Test that a 2FA challenge cannot be consumed more than once.
+    """
     user_id = "user_consume_twice"
     token = await TwoFactorChallengeService.create(mock_redis, user_id)
     challenge = await TwoFactorChallengeService.validate(mock_redis, token)

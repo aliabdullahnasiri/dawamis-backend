@@ -9,6 +9,12 @@ from app.services.auth.two_factor import TwoFactorService
 
 @pytest.mark.asyncio
 async def test_setup_success(db_session: AsyncSession):
+    """
+    Test the successful setup of two-factor authentication.
+
+    Verifies that the provisioning URI and QR code are generated,
+    and that the secret is stored in a pending state.
+    """
     user = User(
         email="test@example.com",
         user_name="testuser",
@@ -28,6 +34,9 @@ async def test_setup_success(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_setup_already_enabled(db_session: AsyncSession):
+    """
+    Test that setup fails if two-factor authentication is already enabled.
+    """
     user = User(
         email="test@example.com",
         user_name="testuser",
@@ -43,6 +52,12 @@ async def test_setup_already_enabled(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_enable_success(db_session: AsyncSession):
+    """
+    Test the successful enablement of two-factor authentication.
+
+    Verifies that providing a valid TOTP code activates 2FA,
+    generates recovery codes, and promotes the pending secret to active.
+    """
     # 1. Setup
     user = User(
         email="test@example.com",
@@ -55,7 +70,6 @@ async def test_enable_success(db_session: AsyncSession):
     setup_data = await TwoFactorService.setup(db_session, user)
 
     # Extract secret from URI to generate a valid code
-    # URI format: otpauth://totp/Issuer:user@example.com?secret=SECRET&issuer=Issuer
     import urllib.parse
 
     parsed = urllib.parse.urlparse(setup_data["provisioning_uri"])
@@ -76,6 +90,9 @@ async def test_enable_success(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_enable_invalid_code(db_session: AsyncSession):
+    """
+    Test that enabling 2FA fails with an invalid TOTP code.
+    """
     user = User(
         email="test@example.com",
         user_name="testuser",
@@ -91,6 +108,9 @@ async def test_enable_invalid_code(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_enable_without_setup(db_session: AsyncSession):
+    """
+    Test that enabling 2FA fails if setup has not been performed.
+    """
     user = User(
         email="test@example.com",
         user_name="testuser",
@@ -105,6 +125,9 @@ async def test_enable_without_setup(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_verify_totp_success(db_session: AsyncSession):
+    """
+    Test successful verification of a TOTP code.
+    """
     # Setup and enable
     user = User(
         email="test@example.com",
@@ -132,6 +155,9 @@ async def test_verify_totp_success(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_verify_totp_failure(db_session: AsyncSession):
+    """
+    Test that verification fails with an incorrect TOTP code.
+    """
     user = User(
         email="test@example.com",
         user_name="testuser",
@@ -150,6 +176,9 @@ async def test_verify_totp_failure(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_recovery_code_flow(db_session: AsyncSession):
+    """
+    Test the recovery code lifecycle: generation, usage, and one-time consumption.
+    """
     # Setup and enable to get recovery codes
     user = User(
         email="test@example.com",
@@ -186,6 +215,11 @@ async def test_recovery_code_flow(db_session: AsyncSession):
 
 @pytest.mark.asyncio
 async def test_regenerate_recovery_codes(db_session: AsyncSession):
+    """
+    Test the regeneration of recovery codes.
+
+    Verifies that new codes are generated and old codes are invalidated.
+    """
     user = User(
         email="test@example.com",
         user_name="testuser",
