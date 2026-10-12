@@ -17,11 +17,16 @@ from app.schemas.auth.request import LoginRequest, RegisterRequest
 from app.services.auth.user_agent import UserAgentService
 
 # --- Configuration ---
+# In-memory SQLite database for fast and isolated testing.
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
 @pytest_asyncio.fixture(scope="session")
 async def db_engine():
+    """
+    Creates a shared asynchronous SQLAlchemy engine for the entire test session.
+    Uses a StaticPool to keep the in-memory database alive across multiple connections.
+    """
     engine = create_async_engine(
         TEST_DATABASE_URL,
         connect_args={"check_same_thread": False},
@@ -36,12 +41,21 @@ async def db_engine():
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def create_tables(db_engine):
+    """
+    Initializes the database schema by creating all tables defined in the
+    SQLAlchemy Base metadata.
+    """
     async with db_engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
 
 
 @pytest_asyncio.fixture
 async def db_session(db_engine):
+    """
+    Provides a clean database session for each test.
+    Wraps the session in a transaction that is rolled back at the end to ensure
+    test isolation.
+    """
     async with db_engine.connect() as connection:
         transaction = await connection.begin()
 
@@ -66,11 +80,18 @@ async def db_session(db_engine):
 
 @pytest.fixture
 def app():
+    """
+    Returns the FastAPI application instance.
+    """
     return fastapi_app()
 
 
 @pytest_asyncio.fixture
 async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
+    """
+    Provides an asynchronous HTTPX client for making requests to the API.
+    Overrides the database dependency to use the test session.
+    """
     async def override_get_db():
         yield db_session
 
@@ -91,6 +112,9 @@ async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
 
 @pytest.fixture
 def mock_mail():
+    """
+    Mocks the EmailSendWorker to prevent actual emails from being sent during tests.
+    """
     with (
         patch("app.workers.email.EmailSendWorker.send") as mock_send,
         patch("app.workers.email.EmailSendWorker.send_template") as mock_template,
@@ -103,6 +127,9 @@ def mock_mail():
 
 @pytest.fixture
 def mock_redis(monkeypatch):
+    """
+    Mocks the Redis client using fakeredis to avoid external dependencies.
+    """
     fake_redis = fakeredis.FakeAsyncRedis(
         decode_responses=True,
     )
@@ -120,11 +147,17 @@ def mock_redis(monkeypatch):
 
 @pytest.fixture
 def fake_useragent():
+    """
+    Generates a fake browser User-Agent for requests.
+    """
     return UserAgentService().chrome()
 
 
 @pytest_asyncio.fixture
 async def test_user(client: AsyncClient, fake_useragent: str, mock_mail):
+    """
+    Helper fixture that registers a test user and returns their data.
+    """
     reg_data = RegisterRequest(
         email="anotheruser@example.com",
         password="password123",
@@ -144,6 +177,10 @@ async def test_user(client: AsyncClient, fake_useragent: str, mock_mail):
 
 @pytest_asyncio.fixture
 async def fake_session(client: AsyncClient, mock_mail) -> Any:
+    """
+    Helper fixture that registers a user and logs them in, returning the
+    authenticated client headers.
+    """
     # 1. Register a user
     reg_data = RegisterRequest(
         email="test@example.com",
@@ -174,6 +211,9 @@ async def fake_session(client: AsyncClient, mock_mail) -> Any:
 
 @pytest_asyncio.fixture
 async def fake_login(client, test_user, mock_mail):
+    """
+    Helper fixture that logs in an existing test user and returns their auth data.
+    """
     login_data = LoginRequest(
         email=test_user["email"],
         password="password123",
