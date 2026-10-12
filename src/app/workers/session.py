@@ -8,6 +8,12 @@ from app.workers.base import BaseWorker
 
 
 class SessionCleanupWorker(BaseWorker):
+    """
+    Background worker for periodic session maintenance.
+
+    Responsible for cleaning up expired or revoked sessions from
+    the database to prevent table bloat.
+    """
     name = "session.cleanup"
 
     beat_schedule: ClassVar[dict[str, dict[str, Any]]] = {
@@ -18,10 +24,16 @@ class SessionCleanupWorker(BaseWorker):
     }
 
     async def _run(self: Self) -> None:
+        """
+        Execution entry point for the session cleanup task.
+        """
         await self._cleanup()
 
     async def _cleanup(
         self: Self,
     ) -> None:
+        """
+        Performs the actual cleanup of expired sessions using the SessionService.
+        """
         async with get_worker_db() as db:
             await SessionService.cleanup(db=db)
