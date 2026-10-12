@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 from app.core.exceptions.base import AppError
 from app.core.i18n.types import T
 
@@ -19,8 +17,23 @@ class TokenError(AuthenticationError):
     message = T("auth:invalid_token")
 
 
+class TokenIdentityError(TokenError):
+    """Raised when a JWT is missing identity (sub claim)."""
+
+    type = "token_identity_error"
+    message = T("auth:invalid_token_identity")
+
+
+class RefreshTokenError(TokenError):
+    """Raised when a refresh token is invalid."""
+
+    type = "refresh_token_error"
+    message = T("auth:invalid_refresh_token")
+
+
 class TokenRevokedError(TokenError):
     """Raised when a revoked JWT is used."""
+
 
     type = "token_revoked"
     message = T("auth:token_revoked")
