@@ -5,6 +5,12 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """
+    Application-wide configuration settings.
+
+    Uses Pydantic's BaseSettings to manage configuration via environment variables
+    and .env files.
+    """
     APP_NAME: str = "DawaMIS API"
     APP_DESCRIPTION: str = "Backend API for DawaMIS pharmacy management system."
     APP_VERSION: str = "1.0.0"
@@ -70,4 +76,10 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
+    """
+    Create and cache the application settings instance.
+
+    Returns:
+        The cached Settings instance.
+    """
     return Settings()
