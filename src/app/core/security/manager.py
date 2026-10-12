@@ -26,6 +26,16 @@ class SecurityManager:
     ) -> str:
         """
         Validate the access token and return it.
+
+        Args:
+            db: The database session.
+            token: The JWT access token to validate.
+
+        Returns:
+            The validated access token.
+
+        Raises:
+            TokenError: If the token is invalid, expired, or has an incorrect type.
         """
         try:
             JWTService.decode(token)
@@ -41,6 +51,12 @@ class SecurityManager:
     ) -> dict[str, Any]:
         """
         Return the claims from the currently authenticated access token.
+
+        Args:
+            token: The validated JWT access token.
+
+        Returns:
+            A dictionary containing the token claims.
         """
         return JWTService.claims(token)
 
@@ -50,6 +66,15 @@ class SecurityManager:
     ) -> UUID:
         """
         Return the authenticated user's UUID from the JWT subject claim.
+
+        Args:
+            claims: The claims extracted from the access token.
+
+        Returns:
+            The UUID of the authenticated user.
+
+        Raises:
+            TokenIdentityError: If the JWT does not contain a subject ('sub') claim.
         """
         user_uuid = claims.get("sub")
         if not user_uuid:
@@ -63,6 +88,17 @@ class SecurityManager:
     ) -> str:
         """
         Validate and return the current refresh token.
+
+        Args:
+            token: The refresh token to validate.
+            db: The database session.
+
+        Returns:
+            The validated refresh token.
+
+        Raises:
+            RefreshTokenError: If the token is not a refresh token or is otherwise invalid.
+            TokenRevokedError: If the refresh token has been revoked.
         """
         try:
             claims = JWTService.decode(token)
@@ -83,6 +119,13 @@ class SecurityManager:
     ) -> User | None:
         """
         Retrieve the authenticated user by UUID.
+
+        Args:
+            db: The database session.
+            uuid: The UUID of the user to retrieve.
+
+        Returns:
+            The User object if found, otherwise None.
         """
         return await UserService.get_by_uuid(db, uuid)
 
@@ -94,6 +137,17 @@ class SecurityManager:
     ) -> UserSession:
         """
         Retrieve the currently active session for the request.
+
+        Args:
+            db: The database session.
+            request: The incoming FastAPI request.
+            user: The authenticated User object.
+
+        Returns:
+            The active UserSession object.
+
+        Raises:
+            AuthenticationError: If no active session is found for the user and request.
         """
         session = await SessionService.get_active_session_for_request(
             db=db,
