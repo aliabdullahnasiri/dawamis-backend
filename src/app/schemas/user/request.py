@@ -59,10 +59,16 @@ class CreateUserRequest(BaseUserRequest):
 
     @async_field_validator("email")
     async def _validate_email(self: Self) -> None:
+        """
+        Ensure the email address is unique across all users.
+        """
         await Unique(User.email, T("email:email_already_exists")).validate(self.email)
 
     @async_field_validator("user_name")
     async def _validate_user_name(self: Self) -> None:
+        """
+        Ensure the username is unique across all users.
+        """
         await Unique(
             User.user_name,
             T("user_name:user_name_already_exists"),
@@ -70,4 +76,9 @@ class CreateUserRequest(BaseUserRequest):
 
 
 class UpdateUserRequest(BaseUserRequest):
+    """
+    Schema for validating user profile update data.
+
+    Allows updating personal information, username, email, and birthday.
+    """
     pass
