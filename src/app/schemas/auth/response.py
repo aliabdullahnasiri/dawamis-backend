@@ -12,12 +12,14 @@ from app.schemas.user.data import UserData
 class LoginResponse(BaseResponseModel[LoginData]):
     """
     Schema for the successful login response.
+    Contains authentication tokens and user session details.
     """
 
 
 class RegisterResponse(BaseResponseModel[UserData]):
     """
     Schema for the successful registration response.
+    Returns the created user's basic data.
     """
 
 
@@ -34,22 +36,29 @@ class RefreshResponse(BaseResponseModel[RefreshData]):
 
 
 class EmailVerificationResponse(BaseResponseModel[None]):
+    """
+    Response schema for successful email verification.
+    """
     pass
 
 
 class ResendVerificationEmailResponse(BaseResponseModel[None]):
+    """
+    Response schema for successfully requesting a new verification email.
+    """
     pass
 
 
 class PasswordResetResponse(BaseResponseModel[None]):
     """
-    Response schema for password management operations.
+    Response schema for successful password management operations
+    (e.g., reset request or password update).
     """
 
 
 class SessionsResponse(BaseResponseModel[list[SessionData]]):
     """
-    Response schema for listing user sessions.
+    Response schema for listing all active user sessions.
     """
 
 
@@ -61,13 +70,15 @@ class RevokeSessionResponse(BaseResponseModel[None]):
 
 class TwoFactorSetupResponse(BaseResponseModel[TwoFactorSetupData]):
     """
-    Response containing the two-factor authentication setup details.
+    Response containing the two-factor authentication setup details,
+    including the QR code URL or secret key.
     """
 
 
 class RecoveryCodesResponse(BaseResponseModel[RecoveryCodesData]):
     """
-    Response containing the user's two-factor authentication recovery codes.
+    Response containing the user's one-time recovery codes for
+    two-factor authentication.
     """
 
     __forbid__ = True
