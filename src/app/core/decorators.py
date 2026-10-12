@@ -13,7 +13,18 @@ def handle_exception(
     _raise: type[AppError],
 ) -> Callable[[F], F]:
     """
-    Convert an exception into an application error.
+    A decorator factory that converts specific exceptions into defined application errors.
+
+    If the wrapped function raises the specified 'exception', it is caught and
+    re-raised as the provided '_raise' application error. Application errors
+    (AppError) are passed through unchanged.
+
+    Args:
+        exception: The exception type to intercept.
+        _raise: The AppError subclass to raise instead.
+
+    Returns:
+        A decorator that wraps the target function.
     """
 
     def decorator(func: F) -> F:
