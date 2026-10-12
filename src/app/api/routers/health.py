@@ -1,9 +1,9 @@
-from fastapi import HTTPException
 from sqlalchemy import text
 
 from app.api.dependencies import DBSession
 from app.api.dependencies.auth import CurrentActiveSession
 from app.api.router import Router
+from app.core.exceptions import ServiceUnavailableError
 from app.core.i18n.types import T
 
 router = Router(
@@ -24,16 +24,13 @@ async def health_check(
         dict[str, str]: A response containing the application's health status.
 
     Raises:
-        HTTPException: If the database connection is unavailable.
+        ServiceUnavailableError: If the database connection is unavailable.
     """
 
     try:
         await db.execute(text("SELECT 1"))
 
     except Exception:
-        raise HTTPException(
-            status_code=503,
-            detail=T("health.database_unavailable"),
-        )
+        raise ServiceUnavailableError()
 
     return {"status": T("health.ok")}
