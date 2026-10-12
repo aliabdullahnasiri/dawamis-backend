@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Any, Type
+from typing import Type
 from uuid import UUID
 
 from sqlalchemy import delete, select, update
