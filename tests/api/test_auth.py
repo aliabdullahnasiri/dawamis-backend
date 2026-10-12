@@ -13,6 +13,12 @@ from app.schemas.auth.request import (
 
 @pytest.mark.asyncio
 async def test_register(client, mock_mail):
+    """
+    Test the user registration endpoint.
+
+    Verifies that a new user can be successfully registered and that
+    the response contains the created user's data.
+    """
     data = RegisterRequest(
         email="newuser@example.com",
         password="password123",
@@ -32,6 +38,12 @@ async def test_register(client, mock_mail):
 
 @pytest.mark.asyncio
 async def test_login(client, mock_mail):
+    """
+    Test the user login endpoint.
+
+    Verifies that a registered user can authenticate and receive
+    access and refresh tokens.
+    """
     data = RegisterRequest(
         email="loginuser@example.com",
         password="password123",
@@ -64,6 +76,11 @@ async def test_login(client, mock_mail):
 
 @pytest.mark.asyncio
 async def test_get_sessions(client, fake_session):
+    """
+    Test retrieving active user sessions.
+
+    Verifies that an authenticated user can list their active sessions.
+    """
     response = await client.get("/api/v1/auth/sessions")
 
     assert response.status_code == 200
@@ -75,6 +92,11 @@ async def test_get_sessions(client, fake_session):
 
 @pytest.mark.asyncio
 async def test_me(client, fake_session):
+    """
+    Test the 'get current user' endpoint.
+
+    Verifies that an authenticated user can retrieve their own profile data.
+    """
     response = await client.get("/api/v1/auth/me")
 
     assert response.status_code == 200
@@ -83,8 +105,11 @@ async def test_me(client, fake_session):
 
 @pytest.mark.asyncio
 async def test_refresh_token(client, fake_login):
-    # This endpoint may require a refresh token in the Authorization header.
-    # If so, use a test-specific dependency override instead of auth_headers.
+    """
+    Test the token refresh endpoint.
+
+    Verifies that a valid refresh token can be used to obtain a new access token.
+    """
     refresh_token = fake_login["refresh_token"]
     response = await client.post(
         "/api/v1/auth/refresh",
@@ -99,6 +124,12 @@ async def test_refresh_token(client, fake_login):
 
 @pytest.mark.asyncio
 async def test_revoke_session(client, fake_login):
+    """
+    Test revoking a specific user session.
+
+    Verifies that a session can be revoked and that the session
+    is no longer accessible.
+    """
     response = await client.get("/api/v1/auth/sessions")
 
     assert response.status_code == 200
@@ -118,6 +149,11 @@ async def test_revoke_session(client, fake_login):
 
 @pytest.mark.asyncio
 async def test_revoke_all_sessions(client, fake_login):
+    """
+    Test revoking all active user sessions.
+
+    Verifies that the 'revoke-all' endpoint invalidates all current sessions.
+    """
     response = await client.post("/api/v1/auth/sessions/revoke-all")
 
     assert response.status_code == 200
@@ -128,6 +164,11 @@ async def test_revoke_all_sessions(client, fake_login):
 
 @pytest.mark.asyncio
 async def test_logout(client, fake_login):
+    """
+    Test the logout endpoint.
+
+    Verifies that logging out invalidates the current session.
+    """
     response = await client.post("/api/v1/auth/logout")
     assert response.status_code == 200
 
@@ -137,6 +178,12 @@ async def test_logout(client, fake_login):
 
 @pytest.mark.asyncio
 async def test_verify_email(client, db_session, mock_mail):
+    """
+    Test the email verification flow.
+
+    Verifies that a user can request a verification email and
+    verify their account using the token sent.
+    """
     data = RegisterRequest(
         email="verify@example.com",
         password="password123",
@@ -179,6 +226,9 @@ async def test_verify_email(client, db_session, mock_mail):
 
 @pytest.mark.asyncio
 async def test_resend_verification_email(client, mock_mail):
+    """
+    Test requesting a resend of the verification email.
+    """
     data = ResendVerificationEmailRequest(email="test@example.com")
 
     response = await client.post(
@@ -191,6 +241,12 @@ async def test_resend_verification_email(client, mock_mail):
 
 @pytest.mark.asyncio
 async def test_password_forgot(client, mock_mail):
+    """
+    Test requesting a password reset.
+
+    Verifies that the forgot password endpoint returns success and
+    triggers a reset email.
+    """
     data = ForgotPasswordRequest(email="test@example.com")
 
     response = await client.post(
@@ -203,6 +259,12 @@ async def test_password_forgot(client, mock_mail):
 
 @pytest.mark.asyncio
 async def test_password_reset(client, mock_mail):
+    """
+    Test the password reset flow.
+
+    Verifies that a user can reset their password using a token
+    received via email.
+    """
     data = RegisterRequest(
         email="reset@example.com",
         password="password123",
@@ -251,6 +313,9 @@ async def test_password_reset(client, mock_mail):
 
 @pytest.mark.asyncio
 async def test_password_change(client, fake_session):
+    """
+    Test changing the password while authenticated.
+    """
     data = ChangePasswordRequest(
         current_password="password123",
         new_password="newpassword123",
