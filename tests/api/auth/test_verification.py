@@ -1,4 +1,5 @@
 import pytest
+from httpx import AsyncClient
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     ResendVerificationEmailRequest,
@@ -6,7 +7,7 @@ from app.schemas.auth.request import (
 )
 
 @pytest.mark.asyncio
-async def test_verify_email(client, db_session, mock_mail):
+async def test_verify_email(client: AsyncClient, db_session, mock_mail):
     """
     Test the email verification flow.
     """
@@ -51,7 +52,7 @@ async def test_verify_email(client, db_session, mock_mail):
 
 
 @pytest.mark.asyncio
-async def test_resend_verification_email(client, mock_mail):
+async def test_resend_verification_email(client: AsyncClient, mock_mail):
     """
     Test requesting a resend of the verification email.
     """
