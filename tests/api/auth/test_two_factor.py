@@ -1,4 +1,5 @@
 import pytest
+from httpx import AsyncClient
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     TwoFactorEnableRequest,
@@ -7,7 +8,7 @@ from app.schemas.auth.request import (
 )
 
 @pytest.mark.asyncio
-async def test_two_factor_endpoints(client, fake_session):
+async def test_two_factor_endpoints(client: AsyncClient, fake_session):
     """
     Test that 2FA endpoints are reachable and return appropriate status codes.
     """
