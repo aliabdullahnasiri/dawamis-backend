@@ -1,4 +1,5 @@
 import pytest
+from httpx import AsyncClient
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     LoginRequest,
@@ -24,7 +25,7 @@ from app.services.user import UserService
 # to ensure they are complete.
 
 @pytest.mark.asyncio
-async def test_get_sessions(client, fake_session):
+async def test_get_sessions(client: AsyncClient, fake_session):
     """
     Test retrieving active user sessions.
     """
@@ -35,7 +36,7 @@ async def test_get_sessions(client, fake_session):
     assert len(sessions) > 0
 
 @pytest.mark.asyncio
-async def test_me(client, fake_session):
+async def test_me(client: AsyncClient, fake_session):
     """
     Test the 'get current user' endpoint.
     """
@@ -44,7 +45,7 @@ async def test_me(client, fake_session):
     assert response.json()["email"] == "test@example.com"
 
 @pytest.mark.asyncio
-async def test_refresh_token(client, fake_login):
+async def test_refresh_token(client: AsyncClient, fake_login):
     """
     Test the token refresh endpoint.
     """
@@ -57,7 +58,7 @@ async def test_refresh_token(client, fake_login):
     assert "access_token" in response.json()["data"]
 
 @pytest.mark.asyncio
-async def test_revoke_session(client, fake_login):
+async def test_revoke_session(client: AsyncClient, fake_login):
     """
     Test revoking a specific user session.
     """
@@ -72,7 +73,7 @@ async def test_revoke_session(client, fake_login):
     assert response.status_code == 401
 
 @pytest.mark.asyncio
-async def test_revoke_all_sessions(client, fake_login):
+async def test_revoke_all_sessions(client: AsyncClient, fake_login):
     """
     Test revoking all active user sessions.
     """
@@ -82,7 +83,7 @@ async def test_revoke_all_sessions(client, fake_login):
     assert response.status_code == 401
 
 @pytest.mark.asyncio
-async def test_logout(client, fake_login):
+async def test_logout(client: AsyncClient, fake_login):
     """
     Test the logout endpoint.
     """
