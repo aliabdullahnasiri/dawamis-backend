@@ -1,4 +1,5 @@
 import pytest
+from httpx import AsyncClient
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     ChangePasswordRequest,
@@ -7,7 +8,7 @@ from app.schemas.auth.request import (
 )
 
 @pytest.mark.asyncio
-async def test_password_forgot(client, mock_mail):
+async def test_password_forgot(client: AsyncClient, mock_mail):
     """
     Test requesting a password reset.
     """
@@ -22,7 +23,7 @@ async def test_password_forgot(client, mock_mail):
 
 
 @pytest.mark.asyncio
-async def test_password_reset(client, mock_mail):
+async def test_password_reset(client: AsyncClient, mock_mail):
     """
     Test the password reset flow.
     """
@@ -73,7 +74,7 @@ async def test_password_reset(client, mock_mail):
 
 
 @pytest.mark.asyncio
-async def test_password_change(client, fake_session):
+async def test_password_change(client: AsyncClient, fake_session):
     """
     Test changing the password while authenticated.
     """
