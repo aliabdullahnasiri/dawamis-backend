@@ -199,7 +199,7 @@ async def test_verify_email(client, db_session, mock_mail):
 
     resend_data = ResendVerificationEmailRequest(email="verify@example.com")
 
-    await client.post(
+    response = await client.post(
         "/api/v1/auth/email/resend",
         json=resend_data.model_dump(),
     )
