@@ -1,8 +1,8 @@
+from datetime import UTC, datetime
 import base64
 import hashlib
 import io
 import secrets
-from datetime import UTC, datetime
 from typing import Type
 
 import pyotp
@@ -113,6 +113,38 @@ class TwoFactorService:
         return cls._verify_totp(secret, code)
 
     @classmethod
+    async def verify_recovery_code(
+        cls: Type[TwoFactorService],
+        db: AsyncSession,
+        user: User,
+        code: str,
+    ) -> bool:
+        if not user.totp_enabled:
+            return False
+
+        code_hash = cls._hash_recovery_code(code)
+
+        result = await db.execute(
+            select(RecoveryCode)
+            .where(
+                RecoveryCode.user_id == user.id,
+                RecoveryCode.code_hash == code_hash,
+                RecoveryCode.used_at.is_(None),
+            )
+            .with_for_update()
+        )
+
+        recovery_code = result.scalar_one_or_none()
+
+        if recovery_code is None:
+            return False
+
+        recovery_code.used_at = datetime.now(UTC)
+        await db.commit()
+
+        return True
+
+    @classmethod
     async def _replace_recovery_codes(
         cls: Type[TwoFactorService],
         db: AsyncSession,
@@ -150,33 +182,22 @@ class TwoFactorService:
         return codes
 
     @classmethod
-    async def verify_recovery_code(
+    async def disable(
         cls: Type[TwoFactorService],
         db: AsyncSession,
         user: User,
+        password: str,
         code: str,
-    ) -> bool:
-        if not user.totp_enabled:
-            return False
+    ) -> None:
+        if not user.check_password(password):
+            raise ValueError(T("auth:invalid_password"))
 
-        code_hash = cls._hash_recovery_code(code)
+        if not await cls.verify_totp(user, code):
+            raise ValueError(T("auth:invalid_two_factor_code"))
 
-        result = await db.execute(
-            select(RecoveryCode)
-            .where(
-                RecoveryCode.user_id == user.id,
-                RecoveryCode.code_hash == code_hash,
-                RecoveryCode.used_at.is_(None),
-            )
-            .with_for_update()
-        )
+        user.totp_enabled = False
+        user.totp_secret_encrypted = None
+        user.totp_pending_secret_encrypted = None
 
-        recovery_code = result.scalar_one_or_none()
-
-        if recovery_code is None:
-            return False
-
-        recovery_code.used_at = datetime.now(UTC)
+        await db.execute(delete(RecoveryCode).where(RecoveryCode.user_id == user.id))
         await db.commit()
-
-        return True
