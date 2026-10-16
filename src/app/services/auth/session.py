@@ -31,7 +31,7 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
             ip_address: IP address of the request.
             user_agent: User agent of the request.
             expires_in_seconds: Session expiration time in seconds.
@@ -39,6 +39,7 @@ class SessionService:
         Returns:
             The active UserSession object.
         """
+
         now = DateTimeService.utc_now()
 
         # Search for an existing active session from the same device
@@ -85,13 +86,14 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
             ip_address: IP address of the request.
             user_agent: User agent of the request.
 
         Returns:
             The matching UserSession object if found, otherwise None.
         """
+
         now = DateTimeService.utc_now()
 
         stmt = (
@@ -122,7 +124,7 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
             ip_address: IP address of the request.
             user_agent: User agent of the request.
             expires_in_seconds: Session expiration time in seconds.
@@ -130,6 +132,7 @@ class SessionService:
         Returns:
             The created UserSession object.
         """
+
         now = DateTimeService.utc_now()
 
         session = UserSession(
@@ -157,11 +160,12 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
 
         Returns:
             A list of active UserSession objects, ordered by last used date.
         """
+
         now = DateTimeService.utc_now()
 
         stmt = (
@@ -190,7 +194,7 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
             session_uuid: UUID of the session to retrieve.
 
         Returns:
@@ -199,6 +203,7 @@ class SessionService:
         Raises:
             SessionNotFoundError: If the session is not found for the given user.
         """
+
         stmt = select(UserSession).where(
             UserSession.uuid == session_uuid,
             UserSession.user_id == user_id,
@@ -225,9 +230,10 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
             session_uuid: UUID of the session to revoke.
         """
+
         session = await cls.get_user_session(
             db=db,
             user_id=user_id,
@@ -251,9 +257,10 @@ class SessionService:
 
         Args:
             db: The database session.
-            user_id: UUID of the user.
+            user_id: The ID of the user.
             exclude_session_id: Optional ID of a session to keep active.
         """
+
         now = DateTimeService.utc_now()
 
         stmt = (
