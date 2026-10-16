@@ -1,9 +1,12 @@
 from uuid import UUID
+
 from fastapi import Request, status
+
 from app.api.dependencies.auth import CurrentActiveSession, CurrentRefreshToken
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.redis import RedisClient
 from app.api.router import Router
+from app.core.config import settings
 from app.core.exceptions import AuthenticationError, RateLimitError
 from app.core.i18n.types import T
 from app.schemas.auth import (
@@ -28,6 +31,7 @@ from app.services.auth.session import SessionService
 from app.services.user import UserService
 
 router = Router(tags=["Authentication - Sessions"])
+
 
 @router.post(
     "/register",
@@ -102,7 +106,7 @@ async def login(
                 attempts = await AuthRateLimiter.record_user_failure(
                     redis, user_to_limit.uuid
                 )
-                if attempts >= 5:  # Matching settings.AUTH_RATE_LIMIT_USER
+                if attempts >= settings.AUTH_RATE_LIMIT_USER:
                     await SecurityService.account_locked(
                         db,
                         user_id=user_to_limit.id,
