@@ -1,8 +1,8 @@
-from datetime import UTC, datetime
 import base64
 import hashlib
 import io
 import secrets
+from datetime import UTC, datetime
 from typing import Type
 
 import pyotp
@@ -30,6 +30,7 @@ class TwoFactorService:
     This service handles the setup, enablement, verification, and management of
     Time-based One-Time Passwords (TOTP) and recovery codes for users.
     """
+
     @classmethod
     def _hash_recovery_code(cls: Type[TwoFactorService], code: str) -> str:
         """
@@ -44,7 +45,6 @@ class TwoFactorService:
         normalized = code.replace("-", "").strip().upper()
         return hashlib.sha256(normalized.encode()).hexdigest()
 
-
     @classmethod
     def _generate_recovery_codes(cls: Type[TwoFactorService]) -> list[str]:
         """
@@ -56,7 +56,6 @@ class TwoFactorService:
         return [
             secrets.token_hex(5).upper() for _ in range(settings.RECOVERY_CODE_COUNT)
         ]
-
 
     @classmethod
     def _verify_totp(cls: Type[TwoFactorService], secret: str, code: str) -> bool:
@@ -73,11 +72,11 @@ class TwoFactorService:
         if len(code) != 6 or not code.isdigit():
             return False
 
-
         return pyotp.TOTP(secret).verify(
             code,
-            valid_window=1,
+            valid_window=settings.TOTP_VALID_WINDOW,
         )
+
 
     @classmethod
     async def setup(
@@ -102,7 +101,6 @@ class TwoFactorService:
         """
         if user.totp_enabled:
             raise TwoFactorAlreadyEnabledError()
-
 
         secret = pyotp.random_base32()
         user.totp_pending_secret_encrypted = SecretEncryption.encrypt(secret)
@@ -154,7 +152,6 @@ class TwoFactorService:
         if user.totp_enabled:
             raise TwoFactorAlreadyEnabledError()
 
-
         if not user.totp_pending_secret_encrypted:
             raise TwoFactorSetupRequiredError()
 
@@ -193,7 +190,6 @@ class TwoFactorService:
         if not user.totp_enabled or not user.totp_secret_encrypted:
             return False
 
-
         secret = SecretEncryption.decrypt(user.totp_secret_encrypted)
 
         return cls._verify_totp(secret, code)
@@ -220,7 +216,6 @@ class TwoFactorService:
         """
         if not user.totp_enabled:
             return False
-
 
         code_hash = cls._hash_recovery_code(code)
 
@@ -261,7 +256,6 @@ class TwoFactorService:
         """
         await db.execute(delete(RecoveryCode).where(RecoveryCode.user_id == user_id))
 
-
         for code in codes:
             db.add(
                 RecoveryCode(
@@ -294,7 +288,6 @@ class TwoFactorService:
         """
         if not user.totp_enabled:
             raise TwoFactorNotEnabledError()
-
 
         if not await cls.verify_totp(user, code):
             raise InvalidTwoFactorCodeError()
@@ -329,7 +322,6 @@ class TwoFactorService:
         """
         if not user.check_password(password):
             raise InvalidTwoFactorPasswordError()
-
 
         if not await cls.verify_totp(user, code):
             raise InvalidTwoFactorCodeError()
