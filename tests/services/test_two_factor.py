@@ -5,6 +5,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 from app.services.auth.two_factor import TwoFactorService
+from app.core.exceptions.authentication import (
+    InvalidTwoFactorCodeError,
+    TwoFactorAlreadyEnabledError,
+    TwoFactorSetupRequiredError,
+)
+
 
 
 @pytest.mark.asyncio
@@ -46,8 +52,9 @@ async def test_setup_already_enabled(db_session: AsyncSession):
     db_session.add(user)
     await db_session.commit()
 
-    with pytest.raises(ValueError, match="auth:two_factor_already_enabled"):
+    with pytest.raises(TwoFactorAlreadyEnabledError):
         await TwoFactorService.setup(db_session, user)
+
 
 
 @pytest.mark.asyncio
@@ -102,8 +109,9 @@ async def test_enable_invalid_code(db_session: AsyncSession):
     await db_session.commit()
     await TwoFactorService.setup(db_session, user)
 
-    with pytest.raises(ValueError, match="auth:invalid_two_factor_code"):
+    with pytest.raises(InvalidTwoFactorCodeError):
         await TwoFactorService.enable(db_session, user, "000000")
+
 
 
 @pytest.mark.asyncio
@@ -119,8 +127,9 @@ async def test_enable_without_setup(db_session: AsyncSession):
     db_session.add(user)
     await db_session.commit()
 
-    with pytest.raises(ValueError, match="auth:two_factor_setup_required"):
+    with pytest.raises(TwoFactorSetupRequiredError):
         await TwoFactorService.enable(db_session, user, "123456")
+
 
 
 @pytest.mark.asyncio
