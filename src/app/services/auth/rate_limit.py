@@ -34,7 +34,6 @@ class AuthRateLimiter:
         """
         key = cls._ip_key(ip_address)
 
-
         attempts = await redis.get(key)
 
         if attempts is not None and int(attempts) >= settings.AUTH_RATE_LIMIT_IP:
@@ -44,20 +43,19 @@ class AuthRateLimiter:
     async def check_user(
         cls: type[AuthRateLimiter],
         redis: Redis,
-        user_id: UUID,
+        user_uuid: UUID,
     ) -> None:
         """
         Check if the given user has exceeded the authentication rate limit.
 
         Args:
             redis: Redis client instance.
-            user_id: The UUID of the user.
+            user_uuid: The UUID of the user.
 
         Raises:
             RateLimitError: If the user is rate-limited.
         """
-        key = cls._user_key(user_id)
-
+        key = cls._user_key(user_uuid)
 
         attempts = await redis.get(key)
 
@@ -86,45 +84,42 @@ class AuthRateLimiter:
             settings.AUTH_RATE_LIMIT_IP_WINDOW,
         )
 
-
     @classmethod
     async def record_user_failure(
         cls: type[AuthRateLimiter],
         redis: Redis,
-        user_id: UUID,
+        user_uuid: UUID,
     ) -> int:
         """
         Record a failed authentication attempt for a specific user.
 
         Args:
             redis: Redis client instance.
-            user_id: The UUID of the user.
+            user_uuid: The UUID of the user.
 
         Returns:
             The current number of failures for this user.
         """
         return await cls._increment(
             redis,
-            cls._user_key(user_id),
+            cls._user_key(user_uuid),
             settings.AUTH_RATE_LIMIT_USER_WINDOW,
         )
-
 
     @classmethod
     async def reset_user(
         cls: type[AuthRateLimiter],
         redis: Redis,
-        user_id: UUID,
+        user_uuid: UUID,
     ) -> None:
         """
         Reset the rate limit counter for a specific user.
 
         Args:
             redis: Redis client instance.
-            user_id: The UUID of the user to reset.
+            user_uuid: The UUID of the user to reset.
         """
-        await redis.delete(cls._user_key(user_id))
-
+        await redis.delete(cls._user_key(user_uuid))
 
     @classmethod
     async def _increment(
@@ -146,7 +141,6 @@ class AuthRateLimiter:
         """
         count = await redis.incr(key)
 
-
         if count == 1:
             await redis.expire(key, window)
 
@@ -165,17 +159,15 @@ class AuthRateLimiter:
         """
         return f"auth:rate-limit:ip:{ip_address}"
 
-
     @staticmethod
-    def _user_key(user_id: UUID) -> str:
+    def _user_key(user_uuid: UUID) -> str:
         """
         Generate a Redis key for user-based rate limiting.
 
         Args:
-            user_id: The UUID of the user.
+            user_uuid: The UUID of the user.
 
         Returns:
             The formatted Redis key.
         """
-        return f"auth:rate-limit:user:{user_id}"
-
+        return f"auth:rate-limit:user:{user_uuid}"
