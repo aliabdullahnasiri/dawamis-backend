@@ -14,17 +14,40 @@ from app.workers.email import EmailSendWorker
 
 
 class PasswordResetService:
-    """Service for handling password reset and recovery logic."""
+    """
+    Service for handling password reset and recovery logic.
+
+    This service handles generating reset tokens, sending reset emails,
+    and performing the actual password update.
+    """
+
 
     TOKEN_EXPIRE_MINUTES = 60
 
     @staticmethod
     def _hash_token(token: str) -> str:
+        """
+        Hash a reset token for secure storage.
+
+        Args:
+            token: The raw token string.
+
+        Returns:
+            The SHA-256 hash of the token.
+        """
         return hashlib.sha256(token.encode()).hexdigest()
+
 
     @staticmethod
     def _generate_token() -> str:
+        """
+        Generate a secure random reset token.
+
+        Returns:
+            A URL-safe random token string.
+        """
         return secrets.token_urlsafe(32)
+
 
     @classmethod
     async def send_reset_email(
@@ -33,9 +56,16 @@ class PasswordResetService:
         email: str,
     ) -> None:
         """
-        Generate a reset token and send it via email.
+        Generate a reset token and send a password reset email.
+
+        If the user is not found, the method returns silently to prevent email enumeration.
+
+        Args:
+            db: Database session.
+            email: The email address requesting the reset.
         """
         try:
+
             user: User = await UserService.get_by_email(db=db, email=email)
         except Exception:
             # Generic failure for security to prevent email enumeration
@@ -68,9 +98,15 @@ class PasswordResetService:
         new_password: str,
     ) -> None:
         """
-        Verify the token and reset the user's password.
+        Verify the reset token and update the user's password.
+
+        Args:
+            db: Database session.
+            token: The reset token provided by the user.
+            new_password: The new password to set.
         """
         token_hash = cls._hash_token(token)
+
 
         user: User = await UserService.get_by_reset_token(db=db, token_hash=token_hash)
 
