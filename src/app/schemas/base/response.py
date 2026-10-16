@@ -13,6 +13,8 @@ class BaseResponseModel(Model, Generic[T]):
     response schemas returned by the application.
     """
 
+    __exclude_none__ = True
+
     message: str | None = None
     success: bool = True
     data: T | None = None
