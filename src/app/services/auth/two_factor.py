@@ -12,7 +12,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.encryption import SecretEncryption
-from app.core.i18n.types import T
+from app.core.exceptions.authentication import (
+    InvalidTwoFactorCodeError,
+    InvalidTwoFactorPasswordError,
+    TwoFactorAlreadyEnabledError,
+    TwoFactorNotEnabledError,
+    TwoFactorSetupRequiredError,
+)
 from app.models.recovery_code import RecoveryCode
 from app.models.user import User
 
@@ -46,7 +52,7 @@ class TwoFactorService:
         user: User,
     ) -> dict[str, str]:
         if user.totp_enabled:
-            raise ValueError(T("auth:two_factor_already_enabled"))
+            raise TwoFactorAlreadyEnabledError()
 
         secret = pyotp.random_base32()
         user.totp_pending_secret_encrypted = SecretEncryption.encrypt(secret)
@@ -78,15 +84,15 @@ class TwoFactorService:
         code: str,
     ) -> list[str]:
         if user.totp_enabled:
-            raise ValueError(T("auth:two_factor_already_enabled"))
+            raise TwoFactorAlreadyEnabledError()
 
         if not user.totp_pending_secret_encrypted:
-            raise ValueError(T("auth:two_factor_setup_required"))
+            raise TwoFactorSetupRequiredError()
 
         secret = SecretEncryption.decrypt(user.totp_pending_secret_encrypted)
 
         if not cls._verify_totp(secret, code):
-            raise ValueError(T("auth:invalid_two_factor_code"))
+            raise InvalidTwoFactorCodeError()
 
         user.totp_secret_encrypted = user.totp_pending_secret_encrypted
         user.totp_pending_secret_encrypted = None
@@ -169,10 +175,10 @@ class TwoFactorService:
         code: str,
     ) -> list[str]:
         if not user.totp_enabled:
-            raise ValueError(T("auth:two_factor_not_enabled"))
+            raise TwoFactorNotEnabledError()
 
         if not await cls.verify_totp(user, code):
-            raise ValueError(T("auth:invalid_two_factor_code"))
+            raise InvalidTwoFactorCodeError()
 
         codes = cls._generate_recovery_codes()
 
@@ -190,10 +196,10 @@ class TwoFactorService:
         code: str,
     ) -> None:
         if not user.check_password(password):
-            raise ValueError(T("auth:invalid_password"))
+            raise InvalidTwoFactorPasswordError()
 
         if not await cls.verify_totp(user, code):
-            raise ValueError(T("auth:invalid_two_factor_code"))
+            raise InvalidTwoFactorCodeError()
 
         user.totp_enabled = False
         user.totp_secret_encrypted = None
