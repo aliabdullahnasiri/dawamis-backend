@@ -14,16 +14,39 @@ from app.workers.email import EmailSendWorker
 
 
 class EmailVerificationService:
+    """
+    Service for managing user email verification.
+
+    Handles the generation of verification tokens, sending verification emails,
+    and marking user accounts as verified.
+    """
 
     TOKEN_EXPIRE_MINUTES = 30
 
     @staticmethod
     def _hash_token(token: str) -> str:
+        """
+        Hash a verification token for secure storage.
+
+        Args:
+            token: The raw token string.
+
+        Returns:
+            The SHA-256 hash of the token.
+        """
         return hashlib.sha256(token.encode()).hexdigest()
+
 
     @staticmethod
     def _generate_token() -> str:
+        """
+        Generate a secure random verification token.
+
+        Returns:
+            A URL-safe random token string.
+        """
         return secrets.token_urlsafe(32)
+
 
     @classmethod
     async def send(
@@ -31,7 +54,15 @@ class EmailVerificationService:
         db: AsyncSession,
         user: User,
     ) -> None:
+        """
+        Generate a verification token and send a verification email to the user.
+
+        Args:
+            db: Database session.
+            user: The user requiring verification.
+        """
         token = cls._generate_token()
+
         token_hash = cls._hash_token(token)
 
         user.email_verification_token_hash = token_hash
@@ -56,7 +87,17 @@ class EmailVerificationService:
         db: AsyncSession,
         token: str,
     ) -> None:
+        """
+        Verify a user's email using the provided token.
+
+        Marks the user as verified and sends a success notification email.
+
+        Args:
+            db: Database session.
+            token: The verification token provided by the user.
+        """
         token_hash = cls._hash_token(token)
+
 
         user: User = await UserService.get_by_verification_token(
             db=db, token=token_hash
