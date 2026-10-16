@@ -65,6 +65,8 @@ class Settings(BaseSettings):
 
     TOTP_ENCRYPTION_KEY: str = "your-generated-key"
     RECOVERY_CODE_COUNT: int = 10
+    TOTP_VALID_WINDOW: int = 1
+
 
     model_config = SettingsConfigDict(
         env_file=".env",
