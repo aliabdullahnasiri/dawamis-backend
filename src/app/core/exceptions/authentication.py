@@ -68,3 +68,50 @@ class InvalidPasswordResetTokenError(AppError):
     code: int = 400
     type: str = "invalid_password_reset_token"
     message: str = T("errors:invalid_password_reset_token")
+
+
+class TwoFactorError(AuthenticationError):
+    """Base exception for Two-Factor authentication errors."""
+
+    type = "two_factor_error"
+
+
+class TwoFactorAlreadyEnabledError(TwoFactorError):
+    """Raised when 2FA is already enabled for the user."""
+
+    code = 400
+    type = "two_factor_already_enabled"
+    message = T("auth:two_factor_already_enabled")
+
+
+class TwoFactorSetupRequiredError(TwoFactorError):
+    """Raised when 2FA setup is required before enabling."""
+
+    code = 400
+    type = "two_factor_setup_required"
+    message = T("auth:two_factor_setup_required")
+
+
+class InvalidTwoFactorCodeError(TwoFactorError):
+    """Raised when the provided TOTP code is invalid."""
+
+    code = 401
+    type = "invalid_two_factor_code"
+    message = T("auth:invalid_two_factor_code")
+
+
+class TwoFactorNotEnabledError(TwoFactorError):
+    """Raised when 2FA operations are attempted but not enabled."""
+
+    code = 400
+    type = "two_factor_not_enabled"
+    message = T("auth:two_factor_not_enabled")
+
+
+class InvalidTwoFactorPasswordError(TwoFactorError):
+    """Raised when the password provided during 2FA disable is incorrect."""
+
+    code = 401
+    type = "invalid_two_factor_password"
+    message = T("auth:invalid_password")
+
