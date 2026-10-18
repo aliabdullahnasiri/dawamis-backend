@@ -1,9 +1,9 @@
 from datetime import UTC, datetime
-from typing import Literal, Type
+from typing import Literal
 
 from pydantic import Field, field_validator
 
-from app.core.i18n.types import T
+from app.core.exceptions.validation import InvalidTimestampError
 from app.schemas.base.model import Model as BaseModel
 
 
@@ -19,9 +19,9 @@ class TwoFactorChallengePayload(BaseModel):
     @field_validator("exp", "iat")
     @classmethod
     def validate_timestamp(
-        cls: Type[TwoFactorChallengePayload], value: int | float
+        cls: type[TwoFactorChallengePayload], value: float
     ) -> int | float:
         if not datetime.fromtimestamp(value, tz=UTC):
-            raise ValueError(T("value_error:invalid_timestamp"))
+            raise InvalidTimestampError()
 
         return value
