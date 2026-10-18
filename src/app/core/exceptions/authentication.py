@@ -34,7 +34,6 @@ class RefreshTokenError(TokenError):
 class TokenRevokedError(TokenError):
     """Raised when a revoked JWT is used."""
 
-
     type = "token_revoked"
     message = T("auth:token_revoked")
 
@@ -76,6 +75,20 @@ class TwoFactorError(AuthenticationError):
     type = "two_factor_error"
 
 
+class InvalidTwoFactorChallengeError(AuthenticationError):
+    """Raised when the 2FA challenge token is invalid."""
+
+    type = "invalid_two_factor_challenge"
+    message = T("auth:invalid_two_factor_challenge")
+
+
+class TwoFactorChallengeExpiredError(AuthenticationError):
+    """Raised when the 2FA challenge token has expired."""
+
+    type = "two_factor_challenge_expired"
+    message = T("auth:two_factor_challenge_expired")
+
+
 class TwoFactorAlreadyEnabledError(TwoFactorError):
     """Raised when 2FA is already enabled for the user."""
 
@@ -114,4 +127,3 @@ class InvalidTwoFactorPasswordError(TwoFactorError):
     code = 401
     type = "invalid_two_factor_password"
     message = T("auth:invalid_password")
-
