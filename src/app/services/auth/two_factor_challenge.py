@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any, Type
+from typing import Any
 from uuid import uuid4
 
 import jwt
@@ -9,7 +9,10 @@ from pydantic import ValidationError
 from redis.asyncio import Redis
 
 from app.core.config import settings
-from app.core.i18n.types import T
+from app.core.exceptions.authentication import (
+    InvalidTwoFactorChallengeError,
+    TwoFactorChallengeExpiredError,
+)
 from app.schemas.auth.two_factor import TwoFactorChallengePayload
 
 
@@ -64,7 +67,7 @@ class TwoFactorChallengeService:
 
     @classmethod
     def _encode_token(
-        cls: Type[TwoFactorChallengeService],
+        cls: type[TwoFactorChallengeService],
         user_id: str,
         challenge_id: str,
         expires_at: datetime,
@@ -99,7 +102,7 @@ class TwoFactorChallengeService:
 
     @classmethod
     async def create(
-        cls: Type[TwoFactorChallengeService],
+        cls: type[TwoFactorChallengeService],
         redis: Redis,
         user_id: str | int,
     ) -> str:
@@ -137,13 +140,14 @@ class TwoFactorChallengeService:
         )
 
         if not created:
-            raise RuntimeError(T("auth:failed_to_create_2fa_challenge"))
+            raise RuntimeError("Failed to create 2FA challenge in Redis")
+
 
         return token
 
     @classmethod
     async def validate(
-        cls: Type[TwoFactorChallengeService],
+        cls: type[TwoFactorChallengeService],
         redis: Redis,
         token: str,
     ) -> TwoFactorChallenge:
@@ -183,7 +187,8 @@ class TwoFactorChallengeService:
             )
 
         except InvalidTokenError, ValidationError:
-            raise ValueError(T("auth:invalid_two_factor_challenge"))
+            raise InvalidTwoFactorChallengeError()
+
 
         user_id = payload.sub
         challenge_id = payload.jti
@@ -192,13 +197,15 @@ class TwoFactorChallengeService:
         stored_user_id = await redis.get(cls._key(challenge_id))
 
         if stored_user_id is None:
-            raise ValueError(T("auth:two_factor_challenge_expired"))
+            raise TwoFactorChallengeExpiredError()
+
 
         if isinstance(stored_user_id, bytes):
             stored_user_id = stored_user_id.decode()
 
         if stored_user_id != user_id:
-            raise ValueError(T("auth:invalid_two_factor_challenge"))
+            raise InvalidTwoFactorChallengeError()
+
 
         return TwoFactorChallenge(
             user_id=user_id,
@@ -211,7 +218,7 @@ class TwoFactorChallengeService:
 
     @classmethod
     async def consume(
-        cls: Type[TwoFactorChallengeService],
+        cls: type[TwoFactorChallengeService],
         redis: Redis,
         challenge: TwoFactorChallenge,
     ) -> bool:
