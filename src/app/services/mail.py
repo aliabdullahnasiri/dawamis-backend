@@ -3,7 +3,7 @@ from email.message import EmailMessage
 from typing import Any
 
 from app.core.config import settings
-from app.core.i18n.types import T
+from app.core.exceptions.validation import EmailContentRequiredError
 from app.services.jinja import JinjaService
 
 
@@ -28,7 +28,8 @@ class MailService:
             html: HTML email body.
         """
         if text is None and html is None:
-            raise ValueError(T("errors:email_must_contain_text_or_html_content"))
+            raise EmailContentRequiredError()
+
 
         message = EmailMessage()
 
