@@ -3,7 +3,6 @@ import hashlib
 import io
 import secrets
 from datetime import UTC, datetime
-from typing import Type
 
 import pyotp
 import qrcode
@@ -32,7 +31,7 @@ class TwoFactorService:
     """
 
     @classmethod
-    def _hash_recovery_code(cls: Type[TwoFactorService], code: str) -> str:
+    def _hash_recovery_code(cls: type[TwoFactorService], code: str) -> str:
         """
         Hashes a recovery code for secure storage.
 
@@ -46,7 +45,7 @@ class TwoFactorService:
         return hashlib.sha256(normalized.encode()).hexdigest()
 
     @classmethod
-    def _generate_recovery_codes(cls: Type[TwoFactorService]) -> list[str]:
+    def _generate_recovery_codes(cls: type[TwoFactorService]) -> list[str]:
         """
         Generates a set of random recovery codes.
 
@@ -58,7 +57,7 @@ class TwoFactorService:
         ]
 
     @classmethod
-    def _verify_totp(cls: Type[TwoFactorService], secret: str, code: str) -> bool:
+    def _verify_totp(cls: type[TwoFactorService], secret: str, code: str) -> bool:
         """
         Verifies a TOTP code against a given secret.
 
@@ -80,7 +79,7 @@ class TwoFactorService:
 
     @classmethod
     async def setup(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         db: AsyncSession,
         user: User,
     ) -> dict[str, str]:
@@ -126,7 +125,7 @@ class TwoFactorService:
 
     @classmethod
     async def enable(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         db: AsyncSession,
         user: User,
         code: str,
@@ -173,7 +172,7 @@ class TwoFactorService:
 
     @classmethod
     async def verify_totp(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         user: User,
         code: str,
     ) -> bool:
@@ -196,7 +195,7 @@ class TwoFactorService:
 
     @classmethod
     async def verify_recovery_code(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         db: AsyncSession,
         user: User,
         code: str,
@@ -241,7 +240,7 @@ class TwoFactorService:
 
     @classmethod
     async def _replace_recovery_codes(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         db: AsyncSession,
         user_id: int,
         codes: list[str],
@@ -266,7 +265,7 @@ class TwoFactorService:
 
     @classmethod
     async def regenerate_recovery_codes(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         db: AsyncSession,
         user: User,
         code: str,
@@ -301,7 +300,7 @@ class TwoFactorService:
 
     @classmethod
     async def disable(
-        cls: Type[TwoFactorService],
+        cls: type[TwoFactorService],
         db: AsyncSession,
         user: User,
         password: str,

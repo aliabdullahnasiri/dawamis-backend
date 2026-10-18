@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any
 
 from pydantic import BaseModel, model_validator
 from pydantic_async_validation.mixins import AsyncValidationModelMixin
@@ -17,7 +17,7 @@ class Model(AsyncValidationModelMixin, BaseModel, metaclass=BaseModelMeta):
 
     @model_validator(mode="before")
     @classmethod
-    def _validate(cls: Type[Model], values: Any) -> Any:
+    def _validate(cls: type[Model], values: Any) -> Any:
         """
         Internal pre-validation hook.
 

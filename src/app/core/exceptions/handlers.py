@@ -34,9 +34,7 @@ async def validation_error_handler(
     """
     Handle Pydantic and FastAPI request validation errors.
     """
-    if isinstance(exc, RequestValidationError):
-        errors = exc.errors()
-    elif isinstance(exc, ValidationError):
+    if isinstance(exc, RequestValidationError) or isinstance(exc, ValidationError):
         errors = exc.errors()
     else:
         raise TypeError(f"Unsupported validation error: {type(exc)!r}")

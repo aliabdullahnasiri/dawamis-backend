@@ -1,9 +1,13 @@
 import pytest
-
+from app.core.exceptions.authentication import (
+    InvalidTwoFactorChallengeError,
+    TwoFactorChallengeExpiredError,
+)
 from app.services.auth.two_factor_challenge import (
     TwoFactorChallenge,
     TwoFactorChallengeService,
 )
+
 
 
 @pytest.mark.asyncio
@@ -43,8 +47,9 @@ async def test_validate_invalid_token(mock_redis):
     """
     Test that validation fails for an invalid or non-existent token.
     """
-    with pytest.raises(ValueError, match="auth:invalid_two_factor_challenge"):
+    with pytest.raises(InvalidTwoFactorChallengeError):
         await TwoFactorChallengeService.validate(mock_redis, "invalid.token.here")
+
 
 
 @pytest.mark.asyncio
@@ -59,8 +64,9 @@ async def test_validate_expired_challenge(mock_redis):
     challenge = await TwoFactorChallengeService.validate(mock_redis, token)
     await mock_redis.delete(TwoFactorChallengeService._key(challenge.challenge_id))
 
-    with pytest.raises(ValueError, match="auth:two_factor_challenge_expired"):
+    with pytest.raises(TwoFactorChallengeExpiredError):
         await TwoFactorChallengeService.validate(mock_redis, token)
+
 
 
 @pytest.mark.asyncio
@@ -78,8 +84,9 @@ async def test_validate_user_mismatch(mock_redis):
         TwoFactorChallengeService._key(challenge.challenge_id), "wrong_user"
     )
 
-    with pytest.raises(ValueError, match="auth:invalid_two_factor_challenge"):
+    with pytest.raises(InvalidTwoFactorChallengeError):
         await TwoFactorChallengeService.validate(mock_redis, token)
+
 
 
 @pytest.mark.asyncio

@@ -59,10 +59,8 @@ class Startup:
         """
         Internal method to initialize system roles in the database.
         """
-        ...
 
     async def _init_permissions(self: Self) -> None:
         """
         Internal method to initialize system permissions in the database.
         """
-        ...

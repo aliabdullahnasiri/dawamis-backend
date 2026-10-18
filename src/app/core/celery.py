@@ -18,4 +18,4 @@ celery_app.conf.update(
 )
 
 # IMPORTANT: Initialize worker database connections and event loop for Celery worker processes.
-__import__("app.core.worker_database")  # noqa: F401
+__import__("app.core.worker_database")

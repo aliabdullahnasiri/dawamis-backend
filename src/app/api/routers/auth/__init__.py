@@ -1,8 +1,6 @@
 from app.api.router import Router
-from . import passwords
-from . import sessions
-from . import two_factor
-from . import verification
+
+from . import passwords, sessions, two_factor, verification
 
 router = Router(
     prefix="/auth",

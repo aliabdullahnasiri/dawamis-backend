@@ -2,6 +2,11 @@ import pytest
 from datetime import datetime
 from uuid import UUID
 from pydantic import ValidationError
+from app.core.exceptions.validation import (
+    AuthTokensRequiredError,
+    ChallengeTokenForbiddenError,
+    ChallengeTokenRequiredError,
+)
 from app.schemas.auth.data import (
     LoginData,
     RefreshData,
@@ -10,6 +15,7 @@ from app.schemas.auth.data import (
     RecoveryCodesData,
 )
 
+
 def test_login_data_valid():
     data = {"access_token": "access", "refresh_token": "refresh"}
     model = LoginData(**data)
@@ -17,8 +23,9 @@ def test_login_data_valid():
     assert model.refresh_token == data["refresh_token"]
 
 def test_login_data_missing_field():
-    with pytest.raises(ValidationError):
+    with pytest.raises(AuthTokensRequiredError):
         LoginData(access_token="access")
+
 
 def test_refresh_data_valid():
     data = {"access_token": "access"}

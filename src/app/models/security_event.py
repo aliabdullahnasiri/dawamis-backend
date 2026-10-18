@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import JSON
+from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.enums.security import SecurityEventType

@@ -1,6 +1,7 @@
 from typing import Annotated
-from redis.asyncio import Redis
+
 from fastapi import Depends
+from redis.asyncio import Redis
 
 from app.extensions.redis import redis as redis_client
 

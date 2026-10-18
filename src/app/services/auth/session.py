@@ -1,5 +1,4 @@
 from datetime import timedelta
-from typing import Type
 from uuid import UUID
 
 from sqlalchemy import delete, select, update
@@ -19,7 +18,7 @@ class SessionService:
 
     @classmethod
     async def get_or_create_session(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
         ip_address: str | None = None,
@@ -75,7 +74,7 @@ class SessionService:
 
     @classmethod
     async def get_active_session_for_request(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
         ip_address: str | None = None,
@@ -112,7 +111,7 @@ class SessionService:
 
     @classmethod
     async def create_session(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
         ip_address: str | None = None,
@@ -151,7 +150,7 @@ class SessionService:
 
     @classmethod
     async def get_user_sessions(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
     ) -> list[UserSession]:
@@ -184,7 +183,7 @@ class SessionService:
 
     @classmethod
     async def get_user_session(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
         session_uuid: UUID,
@@ -220,7 +219,7 @@ class SessionService:
 
     @classmethod
     async def revoke_session(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
         session_uuid: UUID,
@@ -247,7 +246,7 @@ class SessionService:
 
     @classmethod
     async def revoke_all_sessions(
-        cls: Type[SessionService],
+        cls: type[SessionService],
         db: AsyncSession,
         user_id: int,
         exclude_session_id: int | None = None,
@@ -283,7 +282,7 @@ class SessionService:
         await db.commit()
 
     @classmethod
-    async def cleanup(cls: Type[SessionService], *, db: AsyncSession) -> None:
+    async def cleanup(cls: type[SessionService], *, db: AsyncSession) -> None:
         """
         Clean up expired sessions from the database.
 

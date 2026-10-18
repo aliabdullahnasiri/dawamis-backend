@@ -6,10 +6,10 @@ from app.services.auth.session import SessionService
 from app.services.auth.user_agent import UserAgentService
 
 __all__ = [
+    "AuthService",
     "EmailVerificationService",
     "JWTService",
     "PasswordResetService",
-    "AuthService",
     "SessionService",
     "UserAgentService",
 ]

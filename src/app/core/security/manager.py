@@ -4,7 +4,13 @@ from uuid import UUID
 from fastapi import Request
 
 from app.api.dependencies.db import DBSession
-from app.core.exceptions import AuthenticationError, TokenError, TokenIdentityError, TokenRevokedError, RefreshTokenError
+from app.core.exceptions import (
+    AuthenticationError,
+    RefreshTokenError,
+    TokenError,
+    TokenIdentityError,
+    TokenRevokedError,
+)
 from app.core.i18n.types import T
 from app.models.user import User
 from app.models.user_session import UserSession

@@ -81,4 +81,3 @@ class UpdateUserRequest(BaseUserRequest):
 
     Allows updating personal information, username, email, and birthday.
     """
-    pass

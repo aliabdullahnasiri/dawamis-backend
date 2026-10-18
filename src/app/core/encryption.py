@@ -1,4 +1,3 @@
-from typing import Type
 
 from cryptography.fernet import Fernet
 
@@ -15,7 +14,7 @@ class SecretEncryption:
     _fernet = Fernet(settings.TOTP_ENCRYPTION_KEY.encode())
 
     @classmethod
-    def encrypt(cls: Type[SecretEncryption], value: str) -> str:
+    def encrypt(cls: type[SecretEncryption], value: str) -> str:
         """
         Encrypt a plain text string.
 
@@ -28,7 +27,7 @@ class SecretEncryption:
         return cls._fernet.encrypt(value.encode()).decode()
 
     @classmethod
-    def decrypt(cls: Type[SecretEncryption], value: str) -> str:
+    def decrypt(cls: type[SecretEncryption], value: str) -> str:
         """
         Decrypt an encrypted string.
 

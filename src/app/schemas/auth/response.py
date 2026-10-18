@@ -39,14 +39,12 @@ class EmailVerificationResponse(BaseResponseModel[None]):
     """
     Response schema for successful email verification.
     """
-    pass
 
 
 class ResendVerificationEmailResponse(BaseResponseModel[None]):
     """
     Response schema for successfully requesting a new verification email.
     """
-    pass
 
 
 class PasswordResetResponse(BaseResponseModel[None]):

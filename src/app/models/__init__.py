@@ -16,11 +16,11 @@ __all__ = [
     "Organization",
     "OrganizationUser",
     "Permission",
+    "RecoveryCode",
     "Role",
     "RolePermission",
+    "SecurityEvent",
     "User",
     "UserRole",
     "UserSession",
-    "SecurityEvent",
-    "RecoveryCode",
 ]

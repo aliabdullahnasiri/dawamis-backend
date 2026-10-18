@@ -1,4 +1,4 @@
-from typing import Self, Type
+from typing import Self
 
 from app.services.mail import MailService
 from app.types import AsyncService, JSONValue
@@ -29,7 +29,7 @@ class EmailSendWorker(BaseWorker):
 
     @classmethod
     async def send(
-        cls: Type[EmailSendWorker],
+        cls: type[EmailSendWorker],
         *,
         to: str,
         subject: str,
@@ -49,7 +49,7 @@ class EmailSendWorker(BaseWorker):
 
     @classmethod
     async def send_template(
-        cls: Type[EmailSendWorker],
+        cls: type[EmailSendWorker],
         *,
         to: str,
         subject: str,

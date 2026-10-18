@@ -4,7 +4,7 @@ from app.schemas.user.response import CreateUserResponse
 
 __all__ = [
     "CreateUserRequest",
-    "UpdateUserRequest",
     "CreateUserResponse",
+    "UpdateUserRequest",
     "UserData",
 ]

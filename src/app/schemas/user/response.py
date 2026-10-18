@@ -6,11 +6,9 @@ class GetUserResponse(BaseResponseModel[UserData]):
     """
     Response schema for retrieving a single user's profile.
     """
-    pass
 
 
 class CreateUserResponse(BaseResponseModel[UserData]):
     """
     Response schema for the successful creation of a new user.
     """
-    pass
