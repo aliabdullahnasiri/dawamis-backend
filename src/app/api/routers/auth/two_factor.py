@@ -1,17 +1,34 @@
-from app.api.dependencies.auth import CurrentActiveSession
+from uuid import UUID
+
+from fastapi import Request
+
+from app.api.dependencies.auth import (
+    Current2FAChallenge,
+    CurrentActiveSession,
+    CurrentUser,
+)
 from app.api.dependencies.db import DBSession
+from app.api.dependencies.redis import RedisClient
 from app.api.router import Router
 from app.core.exceptions import AuthenticationError
 from app.core.i18n.types import T
-from app.schemas.auth.data import RecoveryCodesData, TwoFactorSetupData
+from app.schemas.auth.data import LoginData, RecoveryCodesData, TwoFactorSetupData
 from app.schemas.auth.request import (
     TwoFactorDisableRequest,
     TwoFactorEnableRequest,
     TwoFactorVerifyRequest,
 )
-from app.schemas.auth.response import RecoveryCodesResponse, TwoFactorSetupResponse
+from app.schemas.auth.response import (
+    RecoveryCodesResponse,
+    TwoFactorSetupResponse,
+    TwoFactorVerifyResponse,
+)
 from app.schemas.base.response import BaseResponseModel
+from app.services.auth.jwt import JWTService
+from app.services.auth.session import SessionService
 from app.services.auth.two_factor import TwoFactorService
+from app.services.auth.two_factor_challenge import TwoFactorChallengeService
+from app.services.user import UserService
 
 router = Router(prefix="/2fa", tags=["Authentication - Two Factor"])
 
@@ -88,33 +105,69 @@ async def disable_2fa(
 
 @router.post(
     "/verify",
-    response_model=BaseResponseModel[None],
+    response_model=TwoFactorVerifyResponse,
 )
 async def verify_2fa(
     data: TwoFactorVerifyRequest,
-    session: CurrentActiveSession,
+    challenge: Current2FAChallenge,
     db: DBSession,
-) -> BaseResponseModel[None]:
+    user: CurrentUser,
+    redis: RedisClient,
+    request: Request,
+) -> TwoFactorVerifyResponse:
     """
-    Verify a TOTP or recovery code.
+    Verify a TOTP or recovery code and issue session tokens.
     """
-    # 1. Try TOTP verification
-    if await TwoFactorService.verify_totp(session.user, data.code):
-        return BaseResponseModel(
-            message=T("auth:two_factor_verified_successfully"),
-        )
+    user_id = challenge.user_id
+    user = await UserService.get_by_uuid(db, user_uuid=UUID(user_id))
 
-    # 2. Try recovery code verification
-    if await TwoFactorService.verify_recovery_code(
+    if not user:
+        raise AuthenticationError(T("auth:user_not_found"))
+
+    # 1. Verify TOTP or Recovery Code
+    verified = False
+    if await TwoFactorService.verify_totp(user, data.code):
+        verified = True
+    elif await TwoFactorService.verify_recovery_code(db, user, data.code):
+        verified = True
+
+    if not verified:
+        raise AuthenticationError(T("auth:invalid_two_factor_code"))
+
+    # 2. Atomically consume the challenge to prevent replay
+    consumed = await TwoFactorChallengeService.consume(
+        redis=redis,
+        challenge=challenge,
+    )
+
+    if not consumed:
+        raise AuthenticationError(T("auth:challenge_already_consumed"))
+
+    # 3. Create authenticated session
+    ip_address = request.client.host if request.client else None
+    user_agent = request.headers.get("user-agent")
+
+    await SessionService.get_or_create_session(
         db=db,
-        user=session.user,
-        code=data.code,
-    ):
-        return BaseResponseModel(
-            message=T("auth:recovery_code_verified_successfully"),
-        )
+        user_id=user.id,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
 
-    raise AuthenticationError(T("auth:invalid_two_factor_code"))
+    # 4. Issue normal tokens
+    login_data = LoginData(
+        access_token=JWTService.create_access_token(
+            identity=str(user.uuid),
+        ),
+        refresh_token=JWTService.create_refresh_token(
+            identity=str(user.uuid),
+        ),
+    )
+
+    return TwoFactorVerifyResponse(
+        message=T("auth:two_factor_verified_successfully"),
+        data=login_data,
+    )
 
 
 @router.post(
