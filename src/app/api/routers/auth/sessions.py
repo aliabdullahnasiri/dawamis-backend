@@ -23,11 +23,11 @@ from app.schemas.auth.response import (
     SessionsResponse,
 )
 from app.schemas.user.data import UserData
-from app.services.auth import AuthService
-from app.services.auth.jwt import JWTService
+from app.services.auth import AuthService, JWTService
 from app.services.auth.rate_limit import AuthRateLimiter
 from app.services.auth.security import SecurityService
 from app.services.auth.session import SessionService
+from app.services.auth.two_factor_challenge import TwoFactorChallengeService
 from app.services.user import UserService
 
 router = Router(tags=["Authentication - Sessions"])
@@ -130,6 +130,20 @@ async def login(
     await SecurityService.login_success(
         db, user_id=user.id, ip_address=ip_address, user_agent=user_agent
     )
+
+    if user.totp_enabled:
+        challenge_token = await TwoFactorChallengeService.create(
+            redis=redis,
+            user_id=str(user.uuid),
+        )
+        return LoginResponse(
+            message=T("auth:two_factor_challenge_created"),
+            data=LoginData(
+                requires_2fa=True,
+                challenge_token=challenge_token,
+                expires_in=TwoFactorChallengeService.TTL_SECONDS,
+            ),
+        )
 
     await SessionService.get_or_create_session(
         db=db,
