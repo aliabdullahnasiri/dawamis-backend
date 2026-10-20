@@ -14,3 +14,8 @@ class SecurityEventType(StrEnum):
     SESSION_CREATED = "session_created"
     SESSION_REVOKED = "session_revoked"
     ALL_SESSIONS_REVOKED = "all_sessions_revoked"
+
+
+class TwoFactorMethod(StrEnum):
+    TOTP = "totp"
+    OTP = "otp"
