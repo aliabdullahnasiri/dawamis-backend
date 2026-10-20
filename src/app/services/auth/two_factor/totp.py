@@ -82,3 +82,13 @@ class TOTPProvider(TwoFactorProvider):
         user.two_factor_secret_encrypted = user.two_factor_pending_secret_encrypted
         user.two_factor_pending_secret_encrypted = None
         user.two_factor_enabled = True
+
+    async def send(self, user: User, secret: str) -> None:
+        """
+        TOTP does not require sending a code.
+        """
+
+    async def resend(self, db: AsyncSession, user: User) -> None:
+        """
+        TOTP does not require resending a code.
+        """
