@@ -7,7 +7,7 @@ from app.schemas.auth import (
     ForgotPasswordRequest,
     ResetPasswordRequest,
 )
-from app.schemas.auth.response import PasswordResetResponse
+from app.schemas.auth import PasswordResetResponse
 from app.services.auth import AuthService
 from app.services.auth.password_reset import PasswordResetService
 
