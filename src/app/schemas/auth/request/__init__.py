@@ -2,7 +2,13 @@ from .login import LoginRequest
 from .registration import RegisterRequest
 from .verification import ResendVerificationEmailRequest, VerifyEmailRequest
 from .password import ChangePasswordRequest, ForgotPasswordRequest, ResetPasswordRequest
-from .two_factor import TwoFactorDisableRequest, TwoFactorEnableRequest, TwoFactorVerifyRequest
+from .two_factor import (
+    OTPEnableRequest,
+    OTPVerifyRequest,
+    TOTPEnableRequest,
+    TOTPVerifyRequest,
+    TwoFactorDisableRequest,
+)
 
 __all__ = [
     "LoginRequest",
@@ -13,6 +19,8 @@ __all__ = [
     "ForgotPasswordRequest",
     "ResetPasswordRequest",
     "TwoFactorDisableRequest",
-    "TwoFactorEnableRequest",
-    "TwoFactorVerifyRequest",
+    "OTPEnableRequest",
+    "OTPVerifyRequest",
+    "TOTPEnableRequest",
+    "TOTPVerifyRequest",
 ]
