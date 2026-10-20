@@ -3,8 +3,8 @@ from httpx import AsyncClient
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     LoginRequest,
-    TwoFactorEnableRequest,
-    TwoFactorVerifyRequest,
+    TOTPEnableRequest,
+    TOTPVerifyRequest,
     TwoFactorDisableRequest,
 )
 from app.schemas.auth.response import (
