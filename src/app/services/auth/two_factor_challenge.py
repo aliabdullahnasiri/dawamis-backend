@@ -13,7 +13,7 @@ from app.core.exceptions.authentication import (
     InvalidTwoFactorChallengeError,
     TwoFactorChallengeExpiredError,
 )
-from app.schemas.auth.two_factor import TwoFactorChallengePayload
+from app.schemas.auth.internal.two_factor import TwoFactorChallengePayload
 
 
 @dataclass(frozen=True, slots=True)
