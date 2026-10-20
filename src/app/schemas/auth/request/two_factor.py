@@ -22,28 +22,24 @@ class OTPEnableRequest(BaseTwoFactorRequest):
     """
     Schema for enabling OTP authentication.
     """
-    pass
 
 
 class BaseTwoFactorVerifyRequest(BaseTwoFactorRequest):
     """
     Base schema for verifying a two-factor authentication code.
     """
-    pass
 
 
 class TOTPVerifyRequest(BaseTwoFactorVerifyRequest):
     """
     Schema for verifying a TOTP code.
     """
-    pass
 
 
 class OTPVerifyRequest(BaseTwoFactorVerifyRequest):
     """
     Schema for verifying an OTP code.
     """
-    pass
 
 
 class TwoFactorDisableRequest(BaseTwoFactorRequest):
