@@ -2,10 +2,7 @@ from datetime import date
 
 from pydantic import EmailStr, Field
 
-from app.core.i18n.types import T
-from app.models.user import User
 from app.schemas.base import BaseRequestModel
-from app.schemas.validators.unique import Unique
 
 
 class BaseUserRequest(BaseRequestModel):
