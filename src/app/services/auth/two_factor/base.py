@@ -21,6 +21,12 @@ class TwoFactorProvider(ABC):
         """
 
     @abstractmethod
+    async def send(self, user: User, secret: str) -> Any:
+        """
+        Send the 2FA code/secret to the user.
+        """
+
+    @abstractmethod
     async def verify(self, db: AsyncSession, user: User, code: str) -> bool:
         """
         Verify a 2FA code for a user.
@@ -36,4 +42,10 @@ class TwoFactorProvider(ABC):
 
         This is called after the initial setup and a successful verification
         of the first code.
+        """
+
+    @abstractmethod
+    async def resend(self, db: AsyncSession, user: User) -> None:
+        """
+        Resend the 2FA setup code/information to the user.
         """
