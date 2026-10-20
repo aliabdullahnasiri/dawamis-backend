@@ -10,10 +10,10 @@ from app.schemas.auth.response import (
     PasswordResetResponse,
     SessionsResponse,
     RevokeSessionResponse,
-    TwoFactorSetupResponse,
+    TOTPSetupResponse,
     RecoveryCodesResponse,
 )
-from app.schemas.auth.data import LoginData, RefreshData, SessionData, TwoFactorSetupData, RecoveryCodesData
+from app.schemas.auth.data import LoginData, RefreshData, SessionData, TOTPSetupData, RecoveryCodesData
 from app.schemas.user.data import UserData
 
 def test_login_response_valid():
@@ -107,9 +107,9 @@ def test_revoke_session_response_valid():
 def test_two_factor_setup_response_valid():
     data = {
         "success": True,
-        "data": TwoFactorSetupData(provisioning_uri="uri", qr_code="qr")
+        "data": TOTPSetupData(provisioning_uri="uri", qr_code="qr")
     }
-    model = TwoFactorSetupResponse(**data)
+    model = TOTPSetupResponse(**data)
     assert model.data.qr_code == "qr"
 
 def test_recovery_codes_response_valid():
