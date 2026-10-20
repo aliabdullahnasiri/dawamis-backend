@@ -2,7 +2,7 @@ from app.api.dependencies.db import DBSession
 from app.api.router import Router
 from app.core.i18n.types import T
 from app.schemas.auth import ResendVerificationEmailRequest, VerifyEmailRequest
-from app.schemas.auth.response import (
+from app.schemas.auth import (
     EmailVerificationResponse,
     ResendVerificationEmailResponse,
 )
