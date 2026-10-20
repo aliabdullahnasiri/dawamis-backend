@@ -1,9 +1,13 @@
 import secrets
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions.authentication import InvalidTwoFactorCodeError
 from app.models.user import User
 from app.workers.email import EmailSendWorker
+
 from .base import TwoFactorProvider
+
 
 class OTPProvider(TwoFactorProvider):
     """
