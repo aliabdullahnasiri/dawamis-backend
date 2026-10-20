@@ -3,7 +3,7 @@ from app.core.exceptions.authentication import (
     InvalidTwoFactorChallengeError,
     TwoFactorChallengeExpiredError,
 )
-from app.services.auth.two_factor_challenge import (
+from app.services.auth.two_factor.challenge import (
     TwoFactorChallenge,
     TwoFactorChallengeService,
 )
