@@ -5,6 +5,7 @@ import bcrypt
 from sqlalchemy import Boolean, Date, DateTime, String, UniqueConstraint, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.enums.security import TwoFactorMethod
 from app.models.base import Base
 
 if TYPE_CHECKING:
@@ -107,6 +108,11 @@ class User(Base):
         default=False,
         server_default=false(),
         nullable=False,
+    )
+
+    two_factor_method: Mapped[TwoFactorMethod | None] = mapped_column(
+        String(20),
+        nullable=True,
     )
 
     user_roles: Mapped[list[UserRole]] = relationship(
