@@ -1,12 +1,12 @@
 from app.schemas.auth.data.auth import LoginData
-from app.schemas.auth.data.two_factor import RecoveryCodesData, TwoFactorSetupData
+from app.schemas.auth.data.two_factor import RecoveryCodesData, TOTPSetupData
 
 from app.schemas.base import BaseResponseModel
 
 
-class TwoFactorSetupResponse(BaseResponseModel[TwoFactorSetupData]):
+class TOTPSetupResponse(BaseResponseModel[TOTPSetupData]):
     """
-    Response containing the two-factor authentication setup details,
+    Response containing the TOTP setup details,
     including the QR code URL or secret key.
     """
 
