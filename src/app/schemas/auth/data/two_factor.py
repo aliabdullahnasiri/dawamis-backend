@@ -1,9 +1,9 @@
 from app.schemas.base import BaseDataModel
 
 
-class TwoFactorSetupData(BaseDataModel):
+class TOTPSetupData(BaseDataModel):
     """
-    Data required to set up two-factor authentication.
+    Data required to set up Time-based One-Time Password (TOTP) authentication.
     """
 
     provisioning_uri: str
