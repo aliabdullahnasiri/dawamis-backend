@@ -65,7 +65,9 @@ class TwoFactorService:
             raise TwoFactorAlreadyEnabledError()
 
         provider = cls._get_provider(method)
-        return await provider.setup(db, user)
+        result = await provider.setup(db, user)
+        await db.commit()
+        return result
 
     @classmethod
     async def enable(
