@@ -5,9 +5,9 @@ from app.core.i18n.types import T
 from app.schemas.auth import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
+    PasswordResetResponse,
     ResetPasswordRequest,
 )
-from app.schemas.auth import PasswordResetResponse
 from app.services.auth import AuthService
 from app.services.auth.password_reset import PasswordResetService
 
