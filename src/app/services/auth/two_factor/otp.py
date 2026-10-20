@@ -1,8 +1,13 @@
+import hashlib
+import hmac
 import secrets
+import time
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.encryption import SecretEncryption
 from app.core.exceptions.authentication import InvalidTwoFactorCodeError
+from app.enums.security import TwoFactorMethod
 from app.models.user import User
 from app.workers.email import EmailSendWorker
 
@@ -12,54 +17,85 @@ from .base import TwoFactorProvider
 class OTPProvider(TwoFactorProvider):
     """
     Two-Factor Authentication provider using One-Time Passwords (OTP) sent via Email.
+    Follows a secret-based architecture where codes are derived from a base secret.
     """
 
-    def _generate_otp_code(self) -> str:
+    def _derive_code(self, secret: str) -> str:
         """
-        Generates a random 6-digit OTP code.
+        Derives a 6-digit OTP code from a base secret and the current time window.
+        The window is 5 minutes to allow for email delivery delays.
         """
-        return "".join([str(secrets.randbelow(10)) for _ in range(6)])
+        # Use a 5-minute window for the time-based derivation
+        window = str(int(time.time() // 300)).encode()
+
+        # HMAC-SHA256(secret, window)
+        digest = hmac.new(secret.encode(), window, hashlib.sha256).digest()
+
+        # Convert bytes to integer and take last 6 digits
+        code_int = int.from_bytes(digest, byteorder="big")
+        return str(code_int % 10**6).zfill(6)
 
     async def setup(self, db: AsyncSession, user: User) -> dict[str, str]:
         """
-        Initiates OTP setup by generating and sending a code.
+        Initiates OTP setup by generating a base secret and sending a derived code.
         """
-        code = self._generate_otp_code()
+        # Generate a secure random base secret (similar to TOTP)
+        base_secret = secrets.token_urlsafe(32)
 
-        # Store the OTP code temporarily (In a real app, this would go to Redis/DB)
-        # For now, we use the pending_secret field as a temporary store
-        user.two_factor_pending_secret_encrypted = code
+        # Encrypt and store the base secret
+        user.two_factor_secret_encrypted = None
+        user.two_factor_pending_secret_encrypted = SecretEncryption.encrypt(base_secret)
+        user.two_factor_method = TwoFactorMethod.OTP
+
+        await db.commit()
+
+        # Derive and send the code
+        await self.send_code(user, base_secret)
+
+        return {"message": "OTP sent to your email"}
+
+    async def send_code(self, user: User, secret: str) -> str:
+        """
+        Derives the current OTP code from the base secret and sends it to the user's email.
+        """
+        code = self._derive_code(secret)
 
         await EmailSendWorker.send_template(
             to=user.email,
             subject="Your Verification Code",
             text=f"Your verification code is {code}",
             template="emails/auth/otp_setup.html",
-            code=code,
+            otp_code=code,
+            user=user.to_dict(),
         )
 
-        return {"message": "OTP sent to your email"}
+        return code
 
     async def verify(self, db: AsyncSession, user: User, code: str) -> bool:
         """
-        Verifies the provided OTP code.
+        Verifies the provided OTP code against the encrypted base secret.
         """
-        if not user.two_factor_enabled or not user.two_factor_secret_encrypted:
+        if not user.two_factor_enabled or not user.two_factor_pending_secret_encrypted:
             return False
 
-        # In a real implementation, we'd check Redis for the latest code.
-        # Here we check against the stored secret (if used as OTP secret).
-        return user.two_factor_secret_encrypted == code
+        # Decrypt the base secret and derive the current valid code
+        base_secret = SecretEncryption.decrypt(user.two_factor_pending_secret_encrypted)
+        return self._derive_code(base_secret) == code
 
     async def enable(self, db: AsyncSession, user: User, code: str) -> None:
         """
-        Finalizes OTP enablement.
+        Finalizes OTP enablement by verifying the code and promoting the secret.
         """
         if not user.two_factor_pending_secret_encrypted:
             return
 
-        if user.two_factor_pending_secret_encrypted != code:
+        # Decrypt the pending base secret and derive the code
+        base_secret = SecretEncryption.decrypt(user.two_factor_pending_secret_encrypted)
+
+        if self._derive_code(base_secret) != code:
             raise InvalidTwoFactorCodeError()
 
-        user.two_factor_enabled = True
+        # Promote pending secret to active secret and enable 2FA
+        user.two_factor_secret_encrypted = None
         user.two_factor_pending_secret_encrypted = None
+        user.two_factor_enabled = True
