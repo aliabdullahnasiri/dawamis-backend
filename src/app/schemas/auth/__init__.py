@@ -8,42 +8,42 @@ from .data.two_factor import (
     TOTPSetupData,
 )
 from .request.login import LoginRequest
-from .request.registration import RegisterRequest
-from .request.verification import (
-    ResendVerificationEmailRequest,
-    VerifyEmailRequest,
-)
 from .request.password import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
 )
+from .request.registration import RegisterRequest
 from .request.two_factor import (
-    TwoFactorDisableRequest,
     OTPEnableRequest,
     OTPVerifyRequest,
     TOTPEnableRequest,
     TOTPVerifyRequest,
+    TwoFactorDisableRequest,
+)
+from .request.verification import (
+    ResendVerificationEmailRequest,
+    VerifyEmailRequest,
 )
 from .response.login import (
     LoginResponse,
     LogoutResponse,
     RefreshResponse,
 )
-from .response.registration import RegisterResponse
-from .response.verification import (
-    EmailVerificationResponse,
-    ResendVerificationEmailResponse,
-)
 from .response.password import PasswordResetResponse
+from .response.registration import RegisterResponse
+from .response.session import (
+    RevokeSessionResponse,
+    SessionsResponse,
+)
 from .response.two_factor import (
     RecoveryCodesResponse,
     TOTPSetupResponse,
     TwoFactorVerifyResponse,
 )
-from .response.session import (
-    RevokeSessionResponse,
-    SessionsResponse,
+from .response.verification import (
+    EmailVerificationResponse,
+    ResendVerificationEmailResponse,
 )
 
 __all__ = [
@@ -54,6 +54,8 @@ __all__ = [
     "LoginRequest",
     "LoginResponse",
     "LogoutResponse",
+    "OTPEnableRequest",
+    "OTPVerifyRequest",
     "PasswordResetResponse",
     "RecoveryCodesData",
     "RecoveryCodesResponse",
@@ -67,12 +69,10 @@ __all__ = [
     "RevokeSessionResponse",
     "SessionData",
     "SessionsResponse",
-    "TwoFactorDisableRequest",
-    "OTPEnableRequest",
-    "OTPVerifyRequest",
     "TOTPEnableRequest",
-    "TOTPVerifyRequest",
     "TOTPSetupData",
     "TOTPSetupResponse",
+    "TOTPVerifyRequest",
+    "TwoFactorDisableRequest",
     "VerifyEmailRequest",
 ]
