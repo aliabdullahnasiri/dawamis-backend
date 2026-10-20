@@ -5,7 +5,7 @@ from .data.auth import (
 from .data.session import SessionData
 from .data.two_factor import (
     RecoveryCodesData,
-    TwoFactorSetupData,
+    TOTPSetupData,
 )
 from .request.login import LoginRequest
 from .request.registration import RegisterRequest
@@ -20,8 +20,10 @@ from .request.password import (
 )
 from .request.two_factor import (
     TwoFactorDisableRequest,
-    TwoFactorEnableRequest,
-    TwoFactorVerifyRequest,
+    OTPEnableRequest,
+    OTPVerifyRequest,
+    TOTPEnableRequest,
+    TOTPVerifyRequest,
 )
 from .response.login import (
     LoginResponse,
@@ -36,7 +38,7 @@ from .response.verification import (
 from .response.password import PasswordResetResponse
 from .response.two_factor import (
     RecoveryCodesResponse,
-    TwoFactorSetupResponse,
+    TOTPSetupResponse,
     TwoFactorVerifyResponse,
 )
 from .response.session import (
@@ -66,9 +68,11 @@ __all__ = [
     "SessionData",
     "SessionsResponse",
     "TwoFactorDisableRequest",
-    "TwoFactorEnableRequest",
-    "TwoFactorSetupData",
-    "TwoFactorSetupResponse",
-    "TwoFactorVerifyRequest",
+    "OTPEnableRequest",
+    "OTPVerifyRequest",
+    "TOTPEnableRequest",
+    "TOTPVerifyRequest",
+    "TOTPSetupData",
+    "TOTPSetupResponse",
     "VerifyEmailRequest",
 ]
