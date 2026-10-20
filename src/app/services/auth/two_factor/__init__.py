@@ -1,7 +1,7 @@
-from .service import TwoFactorService
 from .challenge import TwoFactorChallengeService
+from .service import TwoFactorService
 
 __all__ = [
-    "TwoFactorService",
     "TwoFactorChallengeService",
+    "TwoFactorService",
 ]
