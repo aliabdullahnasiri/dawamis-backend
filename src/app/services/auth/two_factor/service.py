@@ -209,6 +209,7 @@ class TwoFactorService:
             raise InvalidTwoFactorCodeError()
 
         user.two_factor_enabled = False
+        user.two_factor_method = None
         user.two_factor_secret_encrypted = None
         user.two_factor_pending_secret_encrypted = None
 
