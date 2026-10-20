@@ -1,12 +1,16 @@
 import base64
 import io
+
 import pyotp
 import qrcode
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.core.encryption import SecretEncryption
 from app.models.user import User
+
 from .base import TwoFactorProvider
+
 
 class TOTPProvider(TwoFactorProvider):
     """
