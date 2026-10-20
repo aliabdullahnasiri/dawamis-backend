@@ -12,13 +12,17 @@ from app.api.dependencies.redis import RedisClient
 from app.api.router import Router
 from app.core.exceptions import AuthenticationError
 from app.core.i18n.types import T
-from app.schemas.auth.data import LoginData, RecoveryCodesData, TwoFactorSetupData
-from app.schemas.auth.request import (
+from app.schemas.auth import (
+    LoginData,
+    RecoveryCodesData,
+    TwoFactorSetupData,
+)
+from app.schemas.auth import (
     TwoFactorDisableRequest,
     TwoFactorEnableRequest,
     TwoFactorVerifyRequest,
 )
-from app.schemas.auth.response import (
+from app.schemas.auth import (
     RecoveryCodesResponse,
     TwoFactorSetupResponse,
     TwoFactorVerifyResponse,
