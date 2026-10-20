@@ -15,14 +15,14 @@ from app.schemas.auth import (
     RegisterRequest,
     RegisterResponse,
 )
-from app.schemas.auth.data import LoginData, RefreshData
-from app.schemas.auth.response import (
+from app.schemas.auth import LoginData, RefreshData
+from app.schemas.auth import (
     LogoutResponse,
     RefreshResponse,
     RevokeSessionResponse,
     SessionsResponse,
 )
-from app.schemas.user.data import UserData
+from app.schemas.user import UserData
 from app.services.auth import AuthService, JWTService
 from app.services.auth.rate_limit import AuthRateLimiter
 from app.services.auth.security import SecurityService
