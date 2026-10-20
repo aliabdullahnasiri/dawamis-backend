@@ -1,13 +1,13 @@
 from .router import (
-    TOTPSetupResponse,
     OTPSetupResponse,
-    TwoFactorVerifyResponse,
     RecoveryCodesResponse,
+    TOTPSetupResponse,
+    TwoFactorVerifyResponse,
 )
 
 __all__ = [
-    "TOTPSetupResponse",
     "OTPSetupResponse",
-    "TwoFactorVerifyResponse",
     "RecoveryCodesResponse",
+    "TOTPSetupResponse",
+    "TwoFactorVerifyResponse",
 ]
