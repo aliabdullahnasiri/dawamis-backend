@@ -1,5 +1,4 @@
 from app.schemas.auth.data.auth import LoginData, RefreshData
-
 from app.schemas.base import BaseResponseModel
 
 
