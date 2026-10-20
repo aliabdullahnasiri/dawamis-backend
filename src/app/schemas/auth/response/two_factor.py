@@ -1,6 +1,5 @@
 from app.schemas.auth.data.auth import LoginData
 from app.schemas.auth.data.two_factor import RecoveryCodesData, TOTPSetupData
-
 from app.schemas.base import BaseResponseModel
 
 
