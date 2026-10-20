@@ -1,5 +1,6 @@
 import pytest
 from httpx import AsyncClient
+
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     TOTPEnableRequest,
@@ -7,13 +8,14 @@ from app.schemas.auth.request import (
     TwoFactorDisableRequest,
 )
 
+
 @pytest.mark.asyncio
 async def test_two_factor_endpoints(client: AsyncClient, fake_session):
     """
     Test that 2FA endpoints are reachable and return appropriate status codes.
     """
     # 1. Setup 2FA
-    setup_res = await client.post("/api/v1/auth/2fa/setup")
+    setup_res = await client.post("/api/v1/auth/2fa/totp/setup")
     assert setup_res.status_code == 200
     setup_data = setup_res.json()["data"]
     assert "provisioning_uri" in setup_data
