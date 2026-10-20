@@ -1,9 +1,9 @@
 from .common import RecoveryCodesData
-from .totp import TOTPSetupData
 from .otp import OTPSetupData
+from .totp import TOTPSetupData
 
 __all__ = [
+    "OTPSetupData",
     "RecoveryCodesData",
     "TOTPSetupData",
-    "OTPSetupData",
 ]
