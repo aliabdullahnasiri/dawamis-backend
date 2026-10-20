@@ -5,6 +5,7 @@ import time
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.i18n.types import T
 from app.core.encryption import SecretEncryption
 from app.core.exceptions.authentication import InvalidTwoFactorCodeError
 from app.enums.security import TwoFactorMethod
@@ -62,8 +63,8 @@ class OTPProvider(TwoFactorProvider):
 
         await EmailSendWorker.send_template(
             to=user.email,
-            subject="Your Verification Code",
-            text=f"Your verification code is {code}",
+            subject=T("emails:otp_setup_subject"),
+            text=T("emails:otp_setup_text"),
             template="emails/auth/otp_setup.html",
             otp_code=code,
             user=user.to_dict(),
