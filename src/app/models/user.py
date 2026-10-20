@@ -92,17 +92,17 @@ class User(Base):
 
     locked_until: Mapped[datetime | None]
 
-    totp_secret_encrypted: Mapped[str | None] = mapped_column(
+    two_factor_secret_encrypted: Mapped[str | None] = mapped_column(
         String(512),
         nullable=True,
     )
 
-    totp_pending_secret_encrypted: Mapped[str | None] = mapped_column(
+    two_factor_pending_secret_encrypted: Mapped[str | None] = mapped_column(
         String(512),
         nullable=True,
     )
 
-    totp_enabled: Mapped[bool] = mapped_column(
+    two_factor_enabled: Mapped[bool] = mapped_column(
         Boolean,
         default=False,
         server_default=false(),
