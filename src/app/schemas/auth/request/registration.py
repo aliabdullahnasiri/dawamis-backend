@@ -1,4 +1,3 @@
-from app.schemas.base import BaseRequestModel
 from app.schemas.user import CreateUserRequest
 
 
