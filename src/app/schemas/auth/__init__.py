@@ -1,34 +1,47 @@
-from app.schemas.auth.data import (
+from .data.auth import (
     LoginData,
-    RecoveryCodesData,
     RefreshData,
-    SessionData,
+)
+from .data.session import SessionData
+from .data.two_factor import (
+    RecoveryCodesData,
     TwoFactorSetupData,
 )
-from app.schemas.auth.request import (
+from .request.login import LoginRequest
+from .request.registration import RegisterRequest
+from .request.verification import (
+    ResendVerificationEmailRequest,
+    VerifyEmailRequest,
+)
+from .request.password import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
-    LoginRequest,
-    RegisterRequest,
-    ResendVerificationEmailRequest,
     ResetPasswordRequest,
+)
+from .request.two_factor import (
     TwoFactorDisableRequest,
     TwoFactorEnableRequest,
     TwoFactorVerifyRequest,
-    VerifyEmailRequest,
 )
-from app.schemas.auth.response import (
-    EmailVerificationResponse,
+from .response.login import (
     LoginResponse,
     LogoutResponse,
-    PasswordResetResponse,
-    RecoveryCodesResponse,
     RefreshResponse,
-    RegisterResponse,
+)
+from .response.registration import RegisterResponse
+from .response.verification import (
+    EmailVerificationResponse,
     ResendVerificationEmailResponse,
+)
+from .response.password import PasswordResetResponse
+from .response.two_factor import (
+    RecoveryCodesResponse,
+    TwoFactorSetupResponse,
+    TwoFactorVerifyResponse,
+)
+from .response.session import (
     RevokeSessionResponse,
     SessionsResponse,
-    TwoFactorSetupResponse,
 )
 
 __all__ = [
