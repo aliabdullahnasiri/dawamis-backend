@@ -11,7 +11,6 @@ from app.schemas.auth.response.two_factor import OTPSetupResponse, RecoveryCodes
 from app.schemas.base.response import BaseResponseModel
 from app.services.auth.two_factor import TwoFactorService
 from app.services.auth.two_factor.base import TwoFactorProvider
-from app.services.auth.two_factor.otp import OTPProvider
 
 router = Router(prefix="/otp", tags=["Authentication - Two Factor OTP"])
 
