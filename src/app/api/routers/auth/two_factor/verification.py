@@ -41,7 +41,9 @@ async def verify_2fa(
 
     # 1. Verify TOTP or Recovery Code
     verified = False
-    if await TwoFactorService.verify(db, user, data.code) or await TwoFactorService.verify_recovery_code(db, user, data.code):
+    if await TwoFactorService.verify(db, user, data.code):
+        verified = True
+    elif await TwoFactorService.verify_recovery_code(db, user, data.code):
         verified = True
 
     if not verified:
