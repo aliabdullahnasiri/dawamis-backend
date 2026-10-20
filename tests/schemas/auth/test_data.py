@@ -11,7 +11,7 @@ from app.schemas.auth.data import (
     LoginData,
     RefreshData,
     SessionData,
-    TwoFactorSetupData,
+    TOTPSetupData,
     RecoveryCodesData,
 )
 
@@ -71,13 +71,13 @@ def test_two_factor_setup_data_valid():
         "provisioning_uri": "otpauth://totp/Dawamis:user@example.com?secret=SECRET&issuer=Dawamis",
         "qr_code": "base64_qr_code",
     }
-    model = TwoFactorSetupData(**data)
+    model = TOTPSetupData(**data)
     assert model.provisioning_uri == data["provisioning_uri"]
     assert model.qr_code == data["qr_code"]
 
 def test_two_factor_setup_data_missing_field():
     with pytest.raises(ValidationError):
-        TwoFactorSetupData(provisioning_uri="uri")
+        TOTPSetupData(provisioning_uri="uri")
 
 def test_recovery_codes_data_valid():
     data = {"recovery_codes": ["code1", "code2", "code3"]}
