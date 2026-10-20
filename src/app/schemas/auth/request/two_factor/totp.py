@@ -1,4 +1,5 @@
 from pydantic import Field
+
 from .base import BaseTwoFactorRequest
 
 
@@ -13,4 +14,3 @@ class TOTPVerifyRequest(BaseTwoFactorRequest):
     """
     Schema for verifying a TOTP code.
     """
-    pass
