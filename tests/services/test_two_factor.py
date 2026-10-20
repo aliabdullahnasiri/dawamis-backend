@@ -3,14 +3,13 @@ import pytest
 from cryptography.fernet import InvalidToken
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.user import User
-from app.services.auth.two_factor import TwoFactorService
 from app.core.exceptions.authentication import (
     InvalidTwoFactorCodeError,
     TwoFactorAlreadyEnabledError,
     TwoFactorSetupRequiredError,
 )
-
+from app.models.user import User
+from app.services.auth.two_factor import TwoFactorService
 
 
 @pytest.mark.asyncio
@@ -34,8 +33,8 @@ async def test_setup_success(db_session: AsyncSession):
     assert "provisioning_uri" in result
     assert "qr_code" in result
     assert result["qr_code"].startswith("data:image/png;base64,")
-    assert user.totp_pending_secret_encrypted is not None
-    assert user.totp_enabled is False
+    assert user.two_factor_pending_secret_encrypted is not None
+    assert user.two_factor_enabled is False
 
 
 @pytest.mark.asyncio
@@ -47,14 +46,13 @@ async def test_setup_already_enabled(db_session: AsyncSession):
         email="test@example.com",
         user_name="testuser",
         password_hash="hashed_password",
-        totp_enabled=True,
+        two_factor_enabled=True,
     )
     db_session.add(user)
     await db_session.commit()
 
     with pytest.raises(TwoFactorAlreadyEnabledError):
         await TwoFactorService.setup(db_session, user)
-
 
 
 @pytest.mark.asyncio
@@ -90,9 +88,9 @@ async def test_enable_success(db_session: AsyncSession):
     recovery_codes = await TwoFactorService.enable(db_session, user, code)
 
     assert len(recovery_codes) > 0
-    assert user.totp_enabled is True
-    assert user.totp_pending_secret_encrypted is None
-    assert user.totp_secret_encrypted is not None
+    assert user.two_factor_enabled is True
+    assert user.two_factor_pending_secret_encrypted is None
+    assert user.two_factor_secret_encrypted is not None
 
 
 @pytest.mark.asyncio
@@ -113,7 +111,6 @@ async def test_enable_invalid_code(db_session: AsyncSession):
         await TwoFactorService.enable(db_session, user, "000000")
 
 
-
 @pytest.mark.asyncio
 async def test_enable_without_setup(db_session: AsyncSession):
     """
@@ -129,7 +126,6 @@ async def test_enable_without_setup(db_session: AsyncSession):
 
     with pytest.raises(TwoFactorSetupRequiredError):
         await TwoFactorService.enable(db_session, user, "123456")
-
 
 
 @pytest.mark.asyncio
@@ -159,7 +155,7 @@ async def test_verify_totp_success(db_session: AsyncSession):
 
     # Verify
     new_code = totp.now()
-    assert await TwoFactorService.verify_totp(user, new_code) is True
+    assert await TwoFactorService.verify(db_session, user, new_code) is True
 
 
 @pytest.mark.asyncio
@@ -171,14 +167,14 @@ async def test_verify_totp_failure(db_session: AsyncSession):
         email="test@example.com",
         user_name="testuser",
         password_hash="hashed_password",
-        totp_enabled=True,
-        totp_secret_encrypted="some_encrypted_secret",
+        two_factor_enabled=True,
+        two_factor_secret_encrypted="some_encrypted_secret",
     )
     db_session.add(user)
     await db_session.commit()
 
     try:
-        assert await TwoFactorService.verify_totp(user, "000000") is False
+        assert await TwoFactorService.verify(db_session, user, "000000") is False
     except InvalidToken:
         ...
 
