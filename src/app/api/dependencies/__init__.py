@@ -12,13 +12,13 @@ from .auth import (
 )
 
 __all__ = [
+    "Current2FAChallenge",
+    "CurrentActiveSession",
     "CurrentClaims",
     "CurrentRefreshToken",
     "CurrentToken",
-    "CurrentUserUUID",
     "CurrentUser",
-    "CurrentActiveSession",
-    "Current2FAChallenge",
-    "PermissionRequired",
+    "CurrentUserUUID",
     "DBSession",
+    "PermissionRequired",
 ]
