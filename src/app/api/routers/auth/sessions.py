@@ -27,7 +27,7 @@ from app.services.auth import AuthService, JWTService
 from app.services.auth.rate_limit import AuthRateLimiter
 from app.services.auth.security import SecurityService
 from app.services.auth.session import SessionService
-from app.services.auth.two_factor_challenge import TwoFactorChallengeService
+from app.services.auth.two_factor.challenge import TwoFactorChallengeService
 from app.services.user import UserService
 
 router = Router(tags=["Authentication - Sessions"])
@@ -131,7 +131,7 @@ async def login(
         db, user_id=user.id, ip_address=ip_address, user_agent=user_agent
     )
 
-    if user.totp_enabled:
+    if user.two_factor_enabled:
         challenge_token = await TwoFactorChallengeService.create(
             redis=redis,
             user_id=str(user.uuid),
