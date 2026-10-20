@@ -1,34 +1,22 @@
-from uuid import UUID
 
-from fastapi import Request
 
 from app.api.dependencies.auth import (
-    Current2FAChallenge,
     CurrentActiveSession,
-    CurrentUser,
 )
 from app.api.dependencies.db import DBSession
-from app.api.dependencies.redis import RedisClient
 from app.api.router import Router
-from app.core.exceptions import AuthenticationError
 from app.core.i18n.types import T
 from app.schemas.auth import (
-    LoginData,
     RecoveryCodesData,
     RecoveryCodesResponse,
     TOTPEnableRequest,
     TOTPSetupData,
     TOTPSetupResponse,
     TOTPVerifyRequest,
-    TwoFactorVerifyResponse,
 )
 from app.schemas.auth.request.two_factor import TwoFactorDisableRequest
 from app.schemas.base.response import BaseResponseModel
-from app.services.auth.jwt import JWTService
-from app.services.auth.session import SessionService
 from app.services.auth.two_factor import TwoFactorService
-from app.services.auth.two_factor.challenge import TwoFactorChallengeService
-from app.services.user import UserService
 
 router = Router(prefix="/totp", tags=["Authentication - Two Factor TOTP"])
 
