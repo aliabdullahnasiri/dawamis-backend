@@ -15,16 +15,12 @@ from app.core.i18n.types import T
 from app.schemas.auth import (
     LoginData,
     RecoveryCodesData,
-    TwoFactorSetupData,
-)
-from app.schemas.auth import (
-    TwoFactorDisableRequest,
-    TwoFactorEnableRequest,
-    TwoFactorVerifyRequest,
-)
-from app.schemas.auth import (
     RecoveryCodesResponse,
-    TwoFactorSetupResponse,
+    TOTPEnableRequest,
+    TOTPSetupData,
+    TOTPSetupResponse,
+    TOTPVerifyRequest,
+    TwoFactorDisableRequest,
     TwoFactorVerifyResponse,
 )
 from app.schemas.base.response import BaseResponseModel
@@ -39,12 +35,12 @@ router = Router(prefix="/2fa", tags=["Authentication - Two Factor"])
 
 @router.post(
     "/setup",
-    response_model=TwoFactorSetupResponse,
+    response_model=TOTPSetupResponse,
 )
 async def setup_2fa(
     session: CurrentActiveSession,
     db: DBSession,
-) -> TwoFactorSetupResponse:
+) -> TOTPSetupResponse:
     """
     Initialize TOTP setup for the current user.
     """
@@ -53,9 +49,9 @@ async def setup_2fa(
         user=session.user,
     )
 
-    return TwoFactorSetupResponse(
+    return TOTPSetupResponse(
         message=T("auth:two_factor_setup_started"),
-        data=TwoFactorSetupData(**data),
+        data=TOTPSetupData(**data),
     )
 
 
@@ -64,7 +60,7 @@ async def setup_2fa(
     response_model=RecoveryCodesResponse,
 )
 async def enable_2fa(
-    data: TwoFactorEnableRequest,
+    data: TOTPEnableRequest,
     session: CurrentActiveSession,
     db: DBSession,
 ) -> RecoveryCodesResponse:
@@ -112,7 +108,7 @@ async def disable_2fa(
     response_model=TwoFactorVerifyResponse,
 )
 async def verify_2fa(
-    data: TwoFactorVerifyRequest,
+    data: TOTPVerifyRequest,
     challenge: Current2FAChallenge,
     db: DBSession,
     user: CurrentUser,
@@ -179,7 +175,7 @@ async def verify_2fa(
     response_model=RecoveryCodesResponse,
 )
 async def regenerate_recovery_codes(
-    data: TwoFactorVerifyRequest,
+    data: TOTPVerifyRequest,
     session: CurrentActiveSession,
     db: DBSession,
 ) -> RecoveryCodesResponse:
