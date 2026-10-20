@@ -1,5 +1,4 @@
 from app.schemas.auth.data.session import SessionData
-
 from app.schemas.base import BaseResponseModel
 
 
