@@ -2,8 +2,8 @@ import pytest
 from httpx import AsyncClient
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
-    TwoFactorEnableRequest,
-    TwoFactorVerifyRequest,
+    TOTPEnableRequest,
+    TOTPVerifyRequest,
     TwoFactorDisableRequest,
 )
 
@@ -20,7 +20,7 @@ async def test_two_factor_endpoints(client: AsyncClient, fake_session):
     assert "qr_code" in setup_data
 
     # 2. Enable 2FA (Expected to fail with 400/422/500 due to invalid code, but not 404)
-    enable_data = TwoFactorEnableRequest(code="123456")
+    enable_data = TOTPEnableRequest(code="123456")
     try:
         enable_res = await client.post(
             "/api/v1/auth/2fa/enable",
@@ -31,7 +31,7 @@ async def test_two_factor_endpoints(client: AsyncClient, fake_session):
         pass
 
     # 3. Verify 2FA
-    verify_data = TwoFactorVerifyRequest(code="123456")
+    verify_data = TOTPVerifyRequest(code="123456")
     try:
         verify_res = await client.post(
             "/api/v1/auth/2fa/verify",
