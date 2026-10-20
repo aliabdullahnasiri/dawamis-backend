@@ -52,7 +52,7 @@ async def resend_otp(
     """
     # Reuse setup logic to generate and send a new code
     provider: TwoFactorProvider = TwoFactorService._get_provider("otp")
-    await provider.setup(db=db, user=session.user)
+    await provider.resend(db=db, user=session.user)
 
     return BaseResponseModel(
         message=T("auth:otp_resent_successfully"),
