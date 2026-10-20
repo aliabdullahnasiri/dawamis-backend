@@ -7,13 +7,11 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.encryption import SecretEncryption
 from app.core.exceptions.authentication import (
     InvalidTwoFactorCodeError,
     InvalidTwoFactorPasswordError,
     TwoFactorAlreadyEnabledError,
     TwoFactorNotEnabledError,
-    TwoFactorSetupRequiredError,
 )
 from app.models.recovery_code import RecoveryCode
 from app.models.user import User
