@@ -1,0 +1,93 @@
+{% extends "emails/base.html" %}
+
+{% block title %}{{ T("auth:setup_two_factor_authentication") }}{% endblock %}
+
+{% block content %}
+
+<h2
+    style="
+        margin: 0 0 20px;
+        font-size: 24px;
+        color: #111827;
+    "
+>
+    {{ T("auth:setup_two_factor_authentication") }}{% if user.user_name %}, {{ user.user_name }}{% endif %}
+</h2>
+
+<p
+    style="
+        margin: 0 0 16px;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #4b5563;
+    "
+>
+    {{ T("auth:thank_you_for_enhancing_account_security") }}
+</p>
+
+<p
+    style="
+        margin: 0 0 24px;
+        font-size: 16px;
+        line-height: 1.6;
+        color: #4b5563;
+    "
+>
+    {{ T("auth:please_use_the_following_otp_setup_code_to_complete_registration") }}
+</p>
+
+<table
+    role="presentation"
+    cellspacing="0"
+    cellpadding="0"
+    border="0"
+    style="margin: 0 auto 24px;"
+>
+    <tr>
+        <td
+            align="center"
+            style="
+                border-radius: 6px;
+                background-color: #f3f4f6;
+                border: 1px solid #e5e7eb;
+                padding: 20px 40px;
+            "
+        >
+            <span
+                style="
+                    font-family: monospace;
+                    font-size: 32px;
+                    font-weight: bold;
+                    letter-spacing: 4px;
+                    color: #111827;
+                "
+            >
+                {{ otp_code }}
+            </span>
+        </td>
+    </tr>
+</table>
+
+<p
+    style="
+        margin: 0 0 12px;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #6b7280;
+    "
+>
+    {{ T("auth:this_code_will_expire_in_15_minutes") }}
+</p>
+
+<p
+    style="
+        margin: 0;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #6b7280;
+    "
+>
+    {{ T("auth:if_you_did_not_request_this_setup_please_ignore_this_email") }}
+</p>
+
+{% endblock %}
