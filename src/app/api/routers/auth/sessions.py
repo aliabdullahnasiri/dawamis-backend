@@ -10,15 +10,14 @@ from app.core.config import settings
 from app.core.exceptions import AuthenticationError, RateLimitError
 from app.core.i18n.types import T
 from app.schemas.auth import (
+    LoginData,
     LoginRequest,
     LoginResponse,
+    LogoutResponse,
+    RefreshData,
+    RefreshResponse,
     RegisterRequest,
     RegisterResponse,
-)
-from app.schemas.auth import LoginData, RefreshData
-from app.schemas.auth import (
-    LogoutResponse,
-    RefreshResponse,
     RevokeSessionResponse,
     SessionsResponse,
 )
