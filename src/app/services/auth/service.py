@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import AuthenticationError
 from app.core.i18n.types import T
 from app.models import User
-from app.schemas.auth.request import RegisterRequest
+from app.schemas.auth import RegisterRequest
 from app.services.auth.jwt import JWTService
 from app.services.user import UserService
 from app.workers.email import EmailSendWorker
