@@ -9,7 +9,7 @@ from app.api.dependencies.redis import RedisClient
 from app.core.security.manager import SecurityManager
 from app.models.user import User
 from app.models.user_session import UserSession
-from app.services.auth.two_factor_challenge import (
+from app.services.auth.two_factor.challenge import (
     TwoFactorChallenge,
     TwoFactorChallengeService,
 )
