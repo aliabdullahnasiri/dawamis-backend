@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-25 10:01+0430\n"
+"POT-Creation-Date: 2026-10-20 15:05+0430\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,154 +17,290 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: src/app/api/routers/auth.py:64
-msgid "auth:registration_successful"
+#: src/app/api/routers/health.py:36
+msgid "health.ok"
 msgstr ""
 
-#: src/app/api/routers/auth.py:97
-msgid "auth:authentication_successful"
-msgstr ""
-
-#: src/app/api/routers/auth.py:139
-msgid "auth:logout_successful"
-msgstr ""
-
-#: src/app/api/routers/auth.py:160
-msgid "auth:invalid_refresh_token"
-msgstr ""
-
-#: src/app/api/routers/auth.py:168 src/app/errors/exceptions.py:106
-msgid "auth:token_revoked"
-msgstr ""
-
-#: src/app/api/routers/auth.py:175 src/app/errors/exceptions.py:97
-msgid "auth:invalid_token"
-msgstr ""
-
-#: src/app/api/routers/auth.py:183
-msgid "auth:access_token_refreshed"
-msgstr ""
-
-#: src/app/api/routers/auth.py:204
-msgid "messages:email_verified_successfully"
-msgstr ""
-
-#: src/app/api/routers/auth.py:221 src/app/api/routers/auth.py:228
-msgid "messages:verification_email_sent"
-msgstr ""
-
-#: src/app/api/routers/auth.py:249
+#: src/app/api/routers/auth/passwords.py:33
 msgid "auth:password_reset_email_sent"
 msgstr ""
 
-#: src/app/api/routers/auth.py:271
+#: src/app/api/routers/auth/passwords.py:55
 #: src/app/templates/emails/auth/password_reset_success.html:3
 #: src/app/templates/emails/auth/password_reset_success.html:14
 msgid "auth:password_reset_successful"
 msgstr ""
 
-#: src/app/api/routers/auth.py:300
+#: src/app/api/routers/auth/passwords.py:85
 msgid "auth:password_change_successful"
 msgstr ""
 
-#: src/app/api/routers/health.py:37
-msgid "health.database_unavailable"
+#: src/app/api/routers/auth/sessions.py:55
+msgid "auth:registration_successful"
 msgstr ""
 
-#: src/app/api/routers/health.py:40
-msgid "health.ok"
+#: src/app/api/routers/auth/sessions.py:139
+msgid "auth:two_factor_challenge_created"
 msgstr ""
 
-#: src/app/errors/exceptions.py:11
-msgid "errors:internal_error"
+#: src/app/api/routers/auth/sessions.py:164
+msgid "auth:authentication_successful"
 msgstr ""
 
-#: src/app/errors/exceptions.py:36
-msgid "request:bad_request"
+#: src/app/api/routers/auth/sessions.py:200
+msgid "auth:logout_successful"
 msgstr ""
 
-#: src/app/errors/exceptions.py:46
+#: src/app/api/routers/auth/sessions.py:222
+#: src/app/core/exceptions/authentication.py:31
+msgid "auth:invalid_refresh_token"
+msgstr ""
+
+#: src/app/api/routers/auth/sessions.py:229
+#: src/app/core/exceptions/authentication.py:17
+msgid "auth:invalid_token"
+msgstr ""
+
+#: src/app/api/routers/auth/sessions.py:237
+msgid "auth:access_token_refreshed"
+msgstr ""
+
+#: src/app/api/routers/auth/sessions.py:262
+msgid "auth:sessions_listed_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/sessions.py:287
+msgid "auth:session_revoked_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/sessions.py:309
+msgid "auth:all_sessions_revoked_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/verification.py:30
+msgid "messages:email_verified_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/verification.py:47
+#: src/app/api/routers/auth/verification.py:54
+msgid "messages:verification_email_sent"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/verification.py:40
+msgid "auth:user_not_found"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/verification.py:48
+#: src/app/core/exceptions/authentication.py:113
+msgid "auth:invalid_two_factor_code"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/verification.py:57
+msgid "auth:challenge_already_consumed"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/verification.py:81
+msgid "auth:two_factor_verified_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/otp/router.py:37
+msgid "auth:otp_setup_started"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/otp/router.py:58
+msgid "auth:otp_resent_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/otp/router.py:83
+msgid "auth:otp_enabled_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/otp/router.py:108
+msgid "auth:otp_disabled_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/totp/router.py:41
+msgid "auth:two_factor_setup_started"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/totp/router.py:65
+msgid "auth:two_factor_enabled_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/totp/router.py:90
+msgid "auth:two_factor_disabled_successfully"
+msgstr ""
+
+#: src/app/api/routers/auth/two_factor/totp/router.py:113
+msgid "auth:recovery_codes_regenerated_successfully"
+msgstr ""
+
+#: src/app/core/worker_database.py:68
+msgid "worker:database_not_initialized"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:10
 msgid "auth:authentication_failed"
 msgstr ""
 
-#: src/app/errors/exceptions.py:57
-msgid "auth:permission_denied"
+#: src/app/core/exceptions/authentication.py:24
+msgid "auth:invalid_token_identity"
 msgstr ""
 
-#: src/app/errors/exceptions.py:67
-msgid "errors:not_found"
+#: src/app/core/exceptions/authentication.py:38
+msgid "auth:token_revoked"
 msgstr ""
 
-#: src/app/errors/exceptions.py:78
-msgid "errors:conflict"
+#: src/app/core/exceptions/authentication.py:45
+msgid "errors:password_reset_token_expired"
 msgstr ""
 
-#: src/app/errors/exceptions.py:88
-msgid "validation:failed"
-msgstr ""
-
-#: src/app/errors/exceptions.py:112
-msgid "user:not_found"
-msgstr ""
-
-#: src/app/schemas/user/request.py:42
-msgid "auth.username_exists"
-msgstr ""
-
-#: src/app/schemas/user/request.py:47
-msgid "auth.email_exists"
-msgstr ""
-
-#: src/app/services/auth.py:63
-msgid "auth:invalid_credentials"
-msgstr ""
-
-#: src/app/services/auth.py:97
-msgid "emails:welcome_subject"
-msgstr ""
-
-#: src/app/services/auth.py:98
-msgid "emails:welcome_text"
-msgstr ""
-
-#: src/app/services/auth.py:114
-msgid "auth:invalid_current_password"
-msgstr ""
-
-#: src/app/services/email_verification.py:46
-msgid "emails:verify_email_subject"
-msgstr ""
-
-#: src/app/services/email_verification.py:72
-msgid "emails:email_verified_success_subject"
-msgstr ""
-
-#: src/app/services/mail.py:31
-msgid "errors:email_must_contain_text_or_html_content"
-msgstr ""
-
-#: src/app/services/password_reset.py:56
-msgid "emails:password_reset_subject"
-msgstr ""
-
-#: src/app/services/password_reset.py:86
-msgid "emails:password_reset_success_subject"
-msgstr ""
-
-#: src/app/services/user.py:88
-msgid "errors:invalid_email_verification_token"
-msgstr ""
-
-#: src/app/services/user.py:96
+#: src/app/core/exceptions/authentication.py:53
 msgid "errors:email_verification_token_expired"
 msgstr ""
 
-#: src/app/services/user.py:113
+#: src/app/core/exceptions/authentication.py:61
+msgid "auth:session_not_found"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:69
 msgid "errors:invalid_password_reset_token"
 msgstr ""
 
-#: src/app/services/user.py:120
-msgid "errors:password_reset_token_expired"
+#: src/app/core/exceptions/authentication.py:82
+msgid "auth:invalid_two_factor_challenge"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:89
+msgid "auth:two_factor_challenge_expired"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:97
+msgid "auth:two_factor_already_enabled"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:105
+msgid "auth:two_factor_setup_required"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:121
+msgid "auth:two_factor_not_enabled"
+msgstr ""
+
+#: src/app/core/exceptions/authentication.py:129
+msgid "auth:invalid_password"
+msgstr ""
+
+#: src/app/core/exceptions/authorization.py:10
+msgid "auth:permission_denied"
+msgstr ""
+
+#: src/app/core/exceptions/base.py:11
+msgid "errors:internal_error"
+msgstr ""
+
+#: src/app/core/exceptions/conflicts.py:10
+msgid "errors:conflict"
+msgstr ""
+
+#: src/app/core/exceptions/rate_limit.py:10
+msgid "auth:too_many_attempts"
+msgstr ""
+
+#: src/app/core/exceptions/request.py:10
+msgid "request:bad_request"
+msgstr ""
+
+#: src/app/core/exceptions/request.py:18
+msgid "health.database_unavailable"
+msgstr ""
+
+#: src/app/core/exceptions/resources.py:10
+msgid "errors:not_found"
+msgstr ""
+
+#: src/app/core/exceptions/resources.py:18
+msgid "user:not_found"
+msgstr ""
+
+#: src/app/core/exceptions/validation.py:10
+msgid "validation:failed"
+msgstr ""
+
+#: src/app/core/exceptions/validation.py:17
+msgid "auth:challenge_token_required"
+msgstr ""
+
+#: src/app/core/exceptions/validation.py:24
+msgid "auth:auth_tokens_required"
+msgstr ""
+
+#: src/app/core/exceptions/validation.py:31
+msgid "auth:challenge_token_forbidden"
+msgstr ""
+
+#: src/app/core/exceptions/validation.py:38
+msgid "value_error:invalid_timestamp"
+msgstr ""
+
+#: src/app/core/exceptions/validation.py:45
+msgid "errors:email_must_contain_text_or_html_content"
+msgstr ""
+
+#: src/app/core/security/manager.py:166
+msgid "auth:session_expired_or_revoked"
+msgstr ""
+
+#: src/app/schemas/user/request/profile.py:31
+msgid "email:email_already_exists"
+msgstr ""
+
+#: src/app/schemas/user/request/profile.py:40
+msgid "user_name:user_name_already_exists"
+msgstr ""
+
+#: src/app/services/user.py:99
+msgid "errors:invalid_email_verification_token"
+msgstr ""
+
+#: src/app/services/auth/email_verification.py:77
+msgid "emails:verify_email_subject"
+msgstr ""
+
+#: src/app/services/auth/email_verification.py:114
+msgid "emails:email_verified_success_subject"
+msgstr ""
+
+#: src/app/services/auth/password_reset.py:86
+msgid "emails:password_reset_subject"
+msgstr ""
+
+#: src/app/services/auth/password_reset.py:121
+msgid "emails:password_reset_success_subject"
+msgstr ""
+
+#: src/app/services/auth/service.py:92
+msgid "auth:invalid_credentials"
+msgstr ""
+
+#: src/app/services/auth/service.py:145
+msgid "emails:welcome_subject"
+msgstr ""
+
+#: src/app/services/auth/service.py:146
+msgid "emails:welcome_text"
+msgstr ""
+
+#: src/app/services/auth/service.py:174
+msgid "auth:invalid_current_password"
+msgstr ""
+
+#: src/app/services/auth/two_factor/otp.py:66
+msgid "emails:otp_setup_subject"
+msgstr ""
+
+#: src/app/services/auth/two_factor/otp.py:67
+msgid "emails:otp_setup_text"
 msgstr ""
 
 #: src/app/templates/emails/base.html:7 src/app/templates/emails/base.html:52
@@ -206,6 +342,27 @@ msgstr ""
 
 #: src/app/templates/emails/auth/email_verified.html:81
 msgid "auth:if_you_have_any_questions_contact_support"
+msgstr ""
+
+#: src/app/templates/emails/auth/otp_setup.html:3
+#: src/app/templates/emails/auth/otp_setup.html:14
+msgid "auth:setup_two_factor_authentication"
+msgstr ""
+
+#: src/app/templates/emails/auth/otp_setup.html:25
+msgid "auth:thank_you_for_enhancing_account_security"
+msgstr ""
+
+#: src/app/templates/emails/auth/otp_setup.html:36
+msgid "auth:please_use_the_following_otp_setup_code_to_complete_registration"
+msgstr ""
+
+#: src/app/templates/emails/auth/otp_setup.html:79
+msgid "auth:this_code_will_expire_in_15_minutes"
+msgstr ""
+
+#: src/app/templates/emails/auth/otp_setup.html:90
+msgid "auth:if_you_did_not_request_this_setup_please_ignore_this_email"
 msgstr ""
 
 #: src/app/templates/emails/auth/password_reset.html:3
@@ -281,5 +438,9 @@ msgstr ""
 
 #: src/app/templates/emails/auth/verify_email.html:108
 msgid "auth:if_did_not_create_account_ignore_email"
+msgstr ""
+
+#: src/app/workers/base.py:47
+msgid "worker:event_loop_not_initialized"
 msgstr ""
 
