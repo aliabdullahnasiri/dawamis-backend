@@ -1,7 +1,10 @@
 from abc import ABC, abstractmethod
 from typing import Any
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.user import User
+
 
 class TwoFactorProvider(ABC):
     """
@@ -16,7 +19,6 @@ class TwoFactorProvider(ABC):
         Returns:
             A dictionary containing setup data (e.g., QR codes for TOTP).
         """
-        pass
 
     @abstractmethod
     async def verify(self, db: AsyncSession, user: User, code: str) -> bool:
@@ -26,7 +28,6 @@ class TwoFactorProvider(ABC):
         Returns:
             True if the code is valid, False otherwise.
         """
-        pass
 
     @abstractmethod
     async def enable(self, db: AsyncSession, user: User, code: str) -> None:
@@ -36,4 +37,3 @@ class TwoFactorProvider(ABC):
         This is called after the initial setup and a successful verification
         of the first code.
         """
-        pass
