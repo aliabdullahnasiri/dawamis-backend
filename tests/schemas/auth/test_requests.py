@@ -8,8 +8,8 @@ from app.schemas.auth.request import (
     ForgotPasswordRequest,
     ResetPasswordRequest,
     ChangePasswordRequest,
-    TwoFactorEnableRequest,
-    TwoFactorVerifyRequest,
+    TOTPEnableRequest,
+    TOTPVerifyRequest,
     TwoFactorDisableRequest,
 )
 
@@ -86,27 +86,27 @@ def test_change_password_request_new_password_too_short():
         ChangePasswordRequest(current_password="old", new_password="short")
 
 def test_two_factor_enable_request_valid():
-    model = TwoFactorEnableRequest(code="123456")
+    model = TOTPEnableRequest(code="123456")
     assert model.code == "123456"
 
 def test_two_factor_enable_request_invalid_code():
     # pattern=r"^\d{6}$"
     with pytest.raises(ValidationError):
-        TwoFactorEnableRequest(code="12345") # too short
+        TOTPEnableRequest(code="12345") # too short
 
     with pytest.raises(ValidationError):
-        TwoFactorEnableRequest(code="1234567") # too long
+        TOTPEnableRequest(code="1234567") # too long
 
     with pytest.raises(ValidationError):
-        TwoFactorEnableRequest(code="abcdef") # not digits
+        TOTPEnableRequest(code="abcdef") # not digits
 
 def test_two_factor_verify_request_valid():
-    model = TwoFactorVerifyRequest(code="123456")
+    model = TOTPVerifyRequest(code="123456")
     assert model.code == "123456"
 
 def test_two_factor_verify_request_too_short():
     with pytest.raises(ValidationError):
-        TwoFactorVerifyRequest(code="12345")
+        TOTPVerifyRequest(code="12345")
 
 def test_two_factor_disable_request_valid():
     model = TwoFactorDisableRequest(password="password123", code="123456")
