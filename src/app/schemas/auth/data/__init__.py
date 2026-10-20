@@ -4,8 +4,8 @@ from .two_factor import RecoveryCodesData, TOTPSetupData
 
 __all__ = [
     "LoginData",
+    "RecoveryCodesData",
     "RefreshData",
     "SessionData",
-    "RecoveryCodesData",
     "TwoFactorSetupData",
 ]
