@@ -34,7 +34,9 @@ class TOTPProvider(TwoFactorProvider):
         Generates a TOTP secret and creates a QR code.
         """
         secret = pyotp.random_base32()
+
         user.two_factor_pending_secret_encrypted = SecretEncryption.encrypt(secret)
+        await db.commit()
 
         totp = pyotp.TOTP(secret)
         uri = totp.provisioning_uri(
@@ -69,6 +71,7 @@ class TOTPProvider(TwoFactorProvider):
         """
         if not user.two_factor_pending_secret_encrypted:
             from app.core.exceptions.authentication import TwoFactorSetupRequiredError
+
             raise TwoFactorSetupRequiredError()
 
         secret = SecretEncryption.decrypt(user.two_factor_pending_secret_encrypted)
