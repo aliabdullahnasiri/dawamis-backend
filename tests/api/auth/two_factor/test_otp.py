@@ -19,6 +19,9 @@ async def test_otp_setup(client: AsyncClient, fake_session):
 @pytest.mark.asyncio
 async def test_otp_resend(client: AsyncClient, fake_session):
     """Test OTP resend endpoint."""
+    # First, setup OTP to ensure there is a code to resend
+    await client.post("/api/v1/auth/2fa/otp/setup")
+
     res = await client.post("/api/v1/auth/2fa/otp/resend")
     assert res.status_code == 200
     assert res.json()["success"] is True
