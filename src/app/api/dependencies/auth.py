@@ -6,6 +6,8 @@ from fastapi import Depends, Request
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
 from app.api.dependencies.redis import RedisClient
+from app.core.exceptions import AuthenticationError
+from app.core.i18n.types import T
 from app.core.security.manager import SecurityManager
 from app.models.user import User
 from app.models.user_session import UserSession
@@ -81,11 +83,17 @@ async def get_current_refresh_token(
 async def get_current_active_session(
     db: DBSession,
     request: Request,
-    user: User = Depends(get_current_user),
+    user: User | None = Depends(get_current_user),
 ) -> UserSession:
     """
     FastAPI dependency to retrieve the current active session for the authenticated user.
     """
+    if user is None:
+        raise AuthenticationError(
+            message=T("auth:user_not_found"),
+            code=401,
+        )
+
     return await security_manager.get_current_active_session(db, request, user)
 
 
