@@ -1,8 +1,11 @@
-import pytest
 from datetime import datetime
 from uuid import UUID
+
+import pytest
 from pydantic import ValidationError
+
 from app.schemas.user.data import UserData
+
 
 def test_user_data_valid():
     now = datetime.now()
