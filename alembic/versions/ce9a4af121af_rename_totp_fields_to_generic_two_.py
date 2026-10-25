@@ -5,17 +5,17 @@ Revises: 158f487476c1
 Create Date: 2026-10-20 09:24:21.044868
 
 """
-from typing import Sequence, Union
+from collections.abc import Sequence
+
+import sqlalchemy as sa
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
 revision: str = 'ce9a4af121af'
-down_revision: Union[str, Sequence[str], None] = '158f487476c1'
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | Sequence[str] | None = '158f487476c1'
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
