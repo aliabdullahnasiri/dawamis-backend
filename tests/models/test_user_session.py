@@ -1,8 +1,11 @@
 from datetime import datetime, timedelta
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.user import User
 from app.models.user_session import UserSession
+
 
 @pytest.mark.asyncio
 async def test_user_session_creation(db_session: AsyncSession):
@@ -38,6 +41,7 @@ async def test_user_session_creation(db_session: AsyncSession):
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+
 
 @pytest.mark.asyncio
 async def test_user_session_relationship(db_session: AsyncSession):
