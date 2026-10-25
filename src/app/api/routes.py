@@ -2,6 +2,7 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any
 
+from fastapi import APIRouter
 from fastapi.routing import APIRoute
 
 from app.schemas.base.model import Model
@@ -30,3 +31,15 @@ class AsyncValidationRoute(APIRoute):
             validated_endpoint,
             **kwargs,
         )
+
+
+def create_app_router() -> APIRouter:
+    from app.api.routers import auth, health, users
+
+    router = APIRouter(route_class=AsyncValidationRoute)
+
+    router.include_router(auth.router)
+    router.include_router(health.router)
+    router.include_router(users.router)
+
+    return router
