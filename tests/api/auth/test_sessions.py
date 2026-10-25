@@ -1,9 +1,11 @@
 import pytest
 from httpx import AsyncClient
+
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     LoginRequest,
 )
+
 
 @pytest.mark.asyncio
 async def test_register(client: AsyncClient, mock_mail):
