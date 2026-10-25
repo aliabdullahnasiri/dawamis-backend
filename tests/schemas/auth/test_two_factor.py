@@ -1,6 +1,8 @@
 import pytest
 from pydantic import ValidationError
+
 from app.schemas.auth.internal.two_factor import TwoFactorChallengePayload
+
 
 def test_two_factor_challenge_payload_valid():
     # Valid data
