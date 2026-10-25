@@ -1,14 +1,15 @@
 from __future__ import annotations
-
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
 from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.enums.security import SecurityEventType
 from app.models.base import Base
 
+if TYPE_CHECKING:
+    from app.models.user import User
 
 class SecurityEvent(Base):
     __tablename__ = "security_events"
@@ -43,4 +44,9 @@ class SecurityEvent(Base):
         "metadata",
         JSON,
         nullable=True,
+    )
+
+    user: Mapped[User] = relationship(
+        "User",
+        back_populates="security_events",
     )

@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from app.models.permission import Permission
     from app.models.role import Role
     from app.models.user_session import UserSession
+    from app.models.recovery_code import RecoveryCode
+    from app.models.security_event import SecurityEvent
 
 
 class User(Base):
@@ -136,6 +138,17 @@ class User(Base):
     organization_memberships: Mapped[list[OrganizationUser]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
+    )
+
+    recovery_codes: Mapped[list[RecoveryCode]] = relationship(
+        "RecoveryCode",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    security_events: Mapped[list[SecurityEvent]] = relationship(
+        "SecurityEvent",
+        back_populates="user",
     )
 
     __table_args__ = (
