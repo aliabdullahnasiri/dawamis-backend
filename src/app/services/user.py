@@ -13,7 +13,7 @@ from app.core.exceptions import (
 from app.core.exceptions.authentication import InvalidPasswordResetTokenError
 from app.core.i18n.types import T
 from app.models import User
-from app.schemas.user import CreateUserRequest
+from app.schemas.user.request.profile import CreateUserRequest, UpdateUserRequest
 from app.services.datetime import DateTimeService
 
 
@@ -48,6 +48,79 @@ class UserService:
         await db.commit()
         await db.refresh(user)
 
+        return user
+
+    @staticmethod
+    async def update(
+        db: AsyncSession,
+        user: User,
+        data: UpdateUserRequest,
+    ) -> User:
+        """
+        Update user profile information.
+        """
+        update_data = data.model_dump(exclude_unset=True)
+
+        # Uniqueness checks for username and email
+        if "user_name" in update_data and update_data["user_name"] != user.user_name:
+            existing_user = await UserService.get_by_username(db, update_data["user_name"])
+            if existing_user:
+                raise UserNotFound(message=T("user_name:user_name_already_exists"))
+
+        if "email" in update_data and update_data["email"] != user.email:
+            existing_user = await UserService.get_by_email(db, update_data["email"])
+            if existing_user:
+                raise UserNotFound(message=T("email:email_already_exists"))
+
+        for key, value in update_data.items():
+            setattr(user, key, value)
+
+        await db.commit()
+        await db.refresh(user)
+        return user
+
+    @staticmethod
+    async def update_email(
+        db: AsyncSession,
+        user: User,
+        new_email: str,
+    ) -> User:
+        """
+        Update user email with uniqueness check.
+        """
+        # Check if the email is already taken by another user
+        existing_user = (
+            await db.execute(select(User).where(User.email == new_email))
+        ).scalar_one_or_none()
+
+        if existing_user and existing_user.uuid != user.uuid:
+            raise UserNotFound(message=T("email:email_already_exists"))
+
+        user.email = new_email
+        await db.commit()
+        await db.refresh(user)
+        return user
+
+    @staticmethod
+    async def update_username(
+        db: AsyncSession,
+        user: User,
+        new_username: str,
+    ) -> User:
+        """
+        Update user username with uniqueness check.
+        """
+        # Check if the username is already taken by another user
+        existing_user = (
+            await db.execute(select(User).where(User.user_name == new_username))
+        ).scalar_one_or_none()
+
+        if existing_user and existing_user.uuid != user.uuid:
+            raise UserNotFound(message=T("user_name:user_name_already_exists"))
+
+        user.user_name = new_username
+        await db.commit()
+        await db.refresh(user)
         return user
 
     @staticmethod
