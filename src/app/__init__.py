@@ -7,7 +7,6 @@ from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.middleware import register_middleware
-from app.api.routers import auth, health
 from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.exceptions.handlers import app_error_handler, validation_error_handler
@@ -75,8 +74,11 @@ class App:
 
     @staticmethod
     def register_routers(app: FastAPI) -> None:
-        app.include_router(health.router, prefix="/api/v1")
-        app.include_router(auth.router, prefix="/api/v1")
+        from app.api.routes import create_app_router
+
+        api_router = create_app_router()
+
+        app.include_router(api_router, prefix="/api/v1")
 
 
 def main() -> FastAPI:
