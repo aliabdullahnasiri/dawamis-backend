@@ -1,18 +1,18 @@
-import pytest
 from datetime import datetime
 from uuid import UUID
+
+import pytest
 from pydantic import ValidationError
+
 from app.core.exceptions.validation import (
     AuthTokensRequiredError,
-    ChallengeTokenForbiddenError,
-    ChallengeTokenRequiredError,
 )
 from app.schemas.auth.data import (
     LoginData,
+    RecoveryCodesData,
     RefreshData,
     SessionData,
     TOTPSetupData,
-    RecoveryCodesData,
 )
 
 
