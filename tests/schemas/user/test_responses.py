@@ -1,8 +1,8 @@
-import pytest
-from pydantic import ValidationError
-from app.schemas.user.response import GetUserResponse, CreateUserResponse
-from app.schemas.user.data import UserData
 from datetime import datetime
+
+from app.schemas.user.data import UserData
+from app.schemas.user.response import CreateUserResponse, GetUserResponse
+
 
 def test_get_user_response_valid():
     data = {
