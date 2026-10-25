@@ -21,24 +21,25 @@ The project follows a layered architecture to ensure separation of concerns:
 1. **API Layer (`src/app/api`)**:
    - **Routers**: Define endpoints and handle HTTP requests/responses.
    - **Dependencies**: Handle authentication (e.g., `CurrentActiveSession`) and database sessions.
+   - **Middleware**: Handles cross-cutting concerns like database session management and locale settings.
 2. **Service Layer (`src/app/services`)**:
    - Contains the core business logic.
    - Services are typically stateless and called by routers.
-   - Example: `AuthService`, `SessionService`, `UserService`.
+   - Includes specialized auth services (`src/app/services/auth`) and general utilities (mail, url, datetime).
 3. **Model Layer (`src/app/models`)**:
    - SQLAlchemy async models defining the database schema.
-   - Base class located in `src/app/models/base.py`.
+   - Base class located in `src/app/models/base.py` using a custom metaclass `DeclarativeBaseMeta`.
 4. **Worker Layer (`src/app/workers`)**:
    - Celery tasks for long-running or asynchronous operations (e.g., `EmailSendWorker`, `SessionCleanupWorker`).
-   - Uses a `BaseWorker` ABC for consistency.
+   - Uses a `BaseWorker` ABC for consistency and `WorkerMeta` for automatic task registration.
 5. **Schema Layer (`src/app/schemas`)**:
    - Pydantic models for request validation and response serialization.
    - Divided into `request`, `response`, and `data` categories.
 
 ## 🎨 Coding Standards & Idioms
 - **Async Everywhere**: All database and I/O operations use `async`/`await`.
-- **Type Hinting**: Strict use of Python type hints. Use `TypeAlias` for complex types (e.g., `JSONValue` in `src/app/types/__init__.py`).
-- **Error Handling**: Centralized error handling using a custom `AppError` class and FastAPI exception handlers (`src/app/errors`).
+- **Type Hinting**: Strict use of Python type hints.
+- **Error Handling**: Centralized error handling using a custom `AppError` class and FastAPI exception handlers.
 - **Naming Conventions**:
   - Classes: `PascalCase`
   - Functions/Variables: `snake_case`
@@ -47,8 +48,14 @@ The project follows a layered architecture to ensure separation of concerns:
 - **Dependency Injection**: Leverages FastAPI's `Depends()` for database sessions and authenticated user context.
 
 ## 🗄 Domain Models
-- **User**: Core identity entity. Stores credentials, profile info, and account status (e.g., `failed_login_attempts`, `locked_until`).
+- **User**: Core identity entity. Stores credentials, profile info, and account status.
 - **UserSession**: Tracks active logins, IP addresses, user agents, and expiration timestamps.
+- **Role & Permission**: RBAC system for access control.
+- **Organization**: Multi-tenancy support.
+- **SecurityEvent**: Audit log for security-related actions.
+- **RecoveryCode**: Backup codes for 2FA.
+- **RevokedToken**: Tracking of invalidated JWTs.
+- **Branch**: Organizational hierarchy.
 
 ## ⚙️ Infrastructure & Tooling
 - **Database Migrations**:
@@ -58,6 +65,7 @@ The project follows a layered architecture to ensure separation of concerns:
   - Managed by Celery.
   - Task registration is handled via a metaclass `WorkerMeta` in `src/app/workers/meta.py`.
   - Periodic tasks are defined in the worker's `beat_schedule`.
+- **Internationalization (i18n)**: Implemented in `src/app/core/i18n` with custom translators and locale middleware.
 
 ## 📡 API Patterns
 - **Request Pattern**: `...Request` schema $\rightarrow$ Router $\rightarrow$ Service $\rightarrow$ DB.
@@ -66,7 +74,8 @@ The project follows a layered architecture to ensure separation of concerns:
 
 ## 🛠 Key Files for Reference
 - `src/app/__init__.py`: Application entry point and FastAPI setup.
-- `src/app/core/security.py`: JWT and password logic.
-- `src/app/api/routers/auth.py`: Main authentication endpoints.
-- `src/app/services/session.py`: Session lifecycle management.
-- `.gitignore`: Project exclusion rules.
+- `src/app/core/security/manager.py`: Central security management logic.
+- `src/app/api/router.py`: Main API router aggregation.
+- `src/app/services/auth/service.py`: Primary authentication business logic.
+- `src/app/models/base.py`: SQLAlchemy base and metaclass.
+- `src/app/core/config.py`: Application configuration.
