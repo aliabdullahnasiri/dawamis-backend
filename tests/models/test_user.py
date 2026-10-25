@@ -1,7 +1,10 @@
 from datetime import date
+
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.models.user import User
+
 
 @pytest.mark.asyncio
 async def test_user_password_hashing(db_session: AsyncSession):
