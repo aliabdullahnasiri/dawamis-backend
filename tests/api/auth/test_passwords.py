@@ -1,11 +1,13 @@
 import pytest
 from httpx import AsyncClient
+
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     ResetPasswordRequest,
 )
+
 
 @pytest.mark.asyncio
 async def test_password_forgot(client: AsyncClient, mock_mail):
