@@ -134,7 +134,7 @@ def mock_redis(monkeypatch):
         decode_responses=True,
     )
 
-    import app.extensions as extensions
+    from app import extensions
 
     monkeypatch.setattr(
         extensions,
