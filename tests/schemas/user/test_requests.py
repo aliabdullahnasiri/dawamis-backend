@@ -1,7 +1,10 @@
-import pytest
 from datetime import date
+
+import pytest
 from pydantic import ValidationError
+
 from app.schemas.user import CreateUserRequest, UpdateUserRequest
+
 
 def test_create_user_request_valid():
     data = {
