@@ -1,9 +1,11 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.organization import Organization
-from app.models.branch import Branch
+
 from app.models.associations.organization_user import OrganizationUser
+from app.models.branch import Branch
+from app.models.organization import Organization
 from app.models.user import User
+
 
 @pytest.mark.asyncio
 async def test_organization_creation(db_session: AsyncSession):
@@ -26,6 +28,7 @@ async def test_organization_creation(db_session: AsyncSession):
 
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+
 
 @pytest.mark.asyncio
 async def test_branch_creation(db_session: AsyncSession):
