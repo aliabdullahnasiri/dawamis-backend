@@ -12,10 +12,10 @@ if TYPE_CHECKING:
     from app.models.associations import UserRole
     from app.models.associations.organization_user import OrganizationUser
     from app.models.permission import Permission
-    from app.models.role import Role
-    from app.models.user_session import UserSession
     from app.models.recovery_code import RecoveryCode
+    from app.models.role import Role
     from app.models.security_event import SecurityEvent
+    from app.models.user_session import UserSession
 
 
 class User(Base):
