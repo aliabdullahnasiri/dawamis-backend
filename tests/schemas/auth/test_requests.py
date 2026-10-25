@@ -1,17 +1,19 @@
 import pytest
 from pydantic import ValidationError
+
 from app.schemas.auth.request import (
+    ChangePasswordRequest,
+    ForgotPasswordRequest,
     LoginRequest,
     RegisterRequest,
-    VerifyEmailRequest,
     ResendVerificationEmailRequest,
-    ForgotPasswordRequest,
     ResetPasswordRequest,
-    ChangePasswordRequest,
     TOTPEnableRequest,
     TOTPVerifyRequest,
     TwoFactorDisableRequest,
+    VerifyEmailRequest,
 )
+
 
 def test_login_request_valid():
     data = {"email": "user@example.com", "password": "password123"}
