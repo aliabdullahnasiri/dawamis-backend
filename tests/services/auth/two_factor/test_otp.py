@@ -1,13 +1,16 @@
-import pytest
 from unittest.mock import AsyncMock, patch
+
+import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.user import User
-from app.services.auth.two_factor.otp import OTPProvider
-from app.enums.security import TwoFactorMethod
+
 from app.core.exceptions.authentication import (
     InvalidTwoFactorCodeError,
     TwoFactorSetupRequiredError,
 )
+from app.enums.security import TwoFactorMethod
+from app.models.user import User
+from app.services.auth.two_factor.otp import OTPProvider
+
 
 @pytest.fixture
 def otp_provider():
