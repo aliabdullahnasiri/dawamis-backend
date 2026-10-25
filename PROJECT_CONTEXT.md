@@ -45,7 +45,7 @@ The project follows a layered architecture to ensure separation of concerns:
   - Functions/Variables: `snake_case`
   - Services: Suffix with `Service` (e.g., `AuthService`).
   - Workers: Suffix with `Worker` (e.g., `EmailSendWorker`).
-- **Dependency Injection**: Leverages FastAPI's `Depends()` for database sessions and authenticated user context.
+- **Dependency Injection**: Leverages FastAPI's `Depends()` for database sessions and authenticated user context. Uses `Annotated` types (e.g., `DBSession`, `CurrentActiveSession`) to define dependencies cleanly without explicit `= Depends()` in endpoint signatures.
 
 ## 🗄 Domain Models
 - **User**: Core identity entity. Stores credentials, profile info, and account status.
