@@ -1,25 +1,5 @@
 import pytest
 from httpx import AsyncClient
-from app.schemas.auth import RegisterRequest
-from app.schemas.auth.request import (
-    LoginRequest,
-    TOTPEnableRequest,
-    TOTPVerifyRequest,
-    TwoFactorDisableRequest,
-)
-from app.schemas.auth.response import (
-    LogoutResponse,
-    RefreshResponse,
-    RevokeSessionResponse,
-    SessionsResponse,
-)
-from app.schemas.user.data import UserData
-from app.services.auth import AuthService
-from app.services.auth.jwt import JWTService
-from app.services.auth.rate_limit import AuthRateLimiter
-from app.services.auth.security import SecurityService
-from app.services.auth.session import SessionService
-from app.services.user import UserService
 
 # Re-implementing the session-specific tests from old test_auth.py
 # to ensure they are complete.
