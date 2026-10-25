@@ -61,6 +61,11 @@ def test_update_user_request_valid():
     model = UpdateUserRequest(**data)
     assert model.user_name == "johndoe_updated"
 
-def test_update_user_request_missing_required():
-    with pytest.raises(ValidationError):
-        UpdateUserRequest(first_name="John")
+def test_update_user_request_optional_fields():
+    """
+    Ensure that UpdateUserRequest does not require any fields.
+    """
+    model = UpdateUserRequest()
+    assert model.first_name is None
+    assert model.user_name is None
+    assert model.email is None
