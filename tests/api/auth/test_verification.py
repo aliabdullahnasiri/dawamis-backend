@@ -1,10 +1,12 @@
 import pytest
 from httpx import AsyncClient
+
 from app.schemas.auth import RegisterRequest
 from app.schemas.auth.request import (
     ResendVerificationEmailRequest,
     VerifyEmailRequest,
 )
+
 
 @pytest.mark.asyncio
 async def test_verify_email(client: AsyncClient, db_session, mock_mail):
