@@ -1,10 +1,12 @@
 import pytest
 from httpx import AsyncClient
+
 from app.schemas.auth.request import (
     TOTPEnableRequest,
     TOTPVerifyRequest,
     TwoFactorDisableRequest,
 )
+
 
 @pytest.mark.asyncio
 async def test_totp_setup(client: AsyncClient, fake_session):
