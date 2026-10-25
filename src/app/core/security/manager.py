@@ -10,6 +10,7 @@ from app.core.exceptions import (
     TokenError,
     TokenIdentityError,
     TokenRevokedError,
+    UserNotFound,
 )
 from app.core.i18n.types import T
 from app.models.user import User
@@ -133,7 +134,10 @@ class SecurityManager:
         Returns:
             The User object if found, otherwise None.
         """
-        return await UserService.get_by_uuid(db, uuid)
+        try:
+            return await UserService.get_by_uuid(db, uuid)
+        except (UserNotFound, Exception):
+            return None
 
     async def get_current_active_session(
         self,
