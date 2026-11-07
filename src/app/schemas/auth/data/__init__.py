@@ -7,5 +7,5 @@ __all__ = [
     "RecoveryCodesData",
     "RefreshData",
     "SessionData",
-    "TwoFactorSetupData",
+    "TOTPSetupData",
 ]
