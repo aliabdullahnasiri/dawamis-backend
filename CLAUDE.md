@@ -94,7 +94,7 @@ Typical flow:
 
 `src/app/__init__.py` defines an `App` class that creates FastAPI, installs lifespan handling, registers the API under `/api/v1`, registers exception handlers, and installs middleware. The class uses a singleton-style `__new__`. Startup opens a database session and runs `Startup`; shutdown is currently a placeholder.
 
-`src/app/api/routes.py` builds the main API router through `create_app_router()`, currently including authentication, health, and users routers. `AsyncValidationRoute` calls `model_async_validate()` on request arguments that are instances of the project's schema `Model`.
+`src/app/api/routes.py` builds the main API router through `create_app_router()`, currently including authentication, health, users, and organizations routers. `AsyncValidationRoute` calls `model_async_validate()` on request arguments that are instances of the project's schema `Model`.
 
 ### Database and Redis
 
@@ -118,7 +118,7 @@ The model package includes:
 - `RecoveryCode`: one-time recovery-code records.
 - `RevokedToken`: token revocation records.
 
-Do not assume all models are fully integrated into endpoint authorization. In particular, inspect the implementation and tests before relying on RBAC: the current `current_user_can` dependency contains a placeholder, so permission enforcement must not be assumed complete just because permission models exist.
+`current_user_can(*permissions)` requires an active session, a selected active organization, an active membership, and every named permission through roles scoped to that organization. It does not merge grants across organizations or grant an implicit owner/superuser bypass.
 
 ### Base model
 
@@ -143,7 +143,7 @@ Security changes should consider replay, expiry, brute-force attempts, session r
 
 ## 7. Dependency injection
 
-Prefer the existing `Annotated` aliases and FastAPI dependencies rather than repeating `Depends(...)` throughout endpoint signatures. Aliases include `DBSession`, `RedisClient`, `OAuth2Token`, `RefreshToken`, `CurrentToken`, `CurrentRefreshToken`, `CurrentClaims`, `CurrentUserUUID`, `CurrentUser`, `CurrentActiveSession`, and `Current2FAChallenge`. Confirm the exact import path and current definition before using one.
+Prefer the existing `Annotated` aliases and FastAPI dependencies rather than repeating `Depends(...)` throughout endpoint signatures. Aliases include `DBSession`, `RedisClient`, `OAuth2Token`, `RefreshToken`, `CurrentToken`, `CurrentRefreshToken`, `CurrentClaims`, `CurrentUserUUID`, `CurrentUser`, `CurrentActiveSession`, `CurrentOrganization`, and `Current2FAChallenge`. Confirm the exact import path and current definition before using one.
 
 A valid access token, an existing user, an active session, and a 2FA challenge are distinct things. Choose the dependency matching the endpoint's security requirements.
 
@@ -159,7 +159,7 @@ A valid access token, an existing user, an active session, and a 2FA challenge a
 
 ## 9. Errors and localization
 
-Application errors derive from `AppError` in `src/app/core/exceptions/`. They carry a code, machine-readable type, and message. Central exception handlers are registered during app setup. Prefer established domain exceptions and add new exceptions within the existing hierarchy where appropriate; avoid broad try/except blocks in every endpoint.
+Application errors derive from `AppError` in `src/app/core/exceptions/`. They carry a code, machine-readable type, and message. Central exception handlers are registered during app setup. Uncaught SQLAlchemy `NoResultFound` exceptions are mapped centrally to HTTP 404 with the existing `not_found` error envelope; explicit domain errors retain their messages. Prefer established domain exceptions and add new exceptions within the existing hierarchy where appropriate; avoid broad try/except blocks in every endpoint.
 
 Localization lives in `src/app/core/i18n/` and `locales/`. Current language mapping: `en → en_US`, `fa → fa_IR`, `ps → ps_AF`; default language is English. Middleware handles locale context. Code uses translation keys through `T("namespace:key")`. Follow existing key conventions and update catalogs for new user-facing messages.
 
@@ -479,7 +479,6 @@ Services must follow the layered design: `HTTP request → router/route validati
 
 4. **Error Handling**:
    - Raise established domain exceptions from `app.core.exceptions`.
-   - Use the `@handle_exception(OriginalError, _raise=DomainError)` decorator for simple mapping of SQLAlchemy errors (like `NoResultFound`) to domain errors.
    - Use localized messages via `T("namespace:key")` for all user-facing errors.
 
 5. **Validation & Constraints**:
@@ -561,6 +560,7 @@ Use `test_<behavior>` functions with focused assertions. Keep ordinary schema va
 - `db_engine`: session-scoped in-memory SQLite engine using `StaticPool`. Autouse `create_tables` creates ORM metadata once; this does not test Alembic migrations or production database compatibility.
 - `db_session`: per-test `AsyncSession` bound to a connection transaction, with teardown rollbacks. It also calls `set_db(session)` for context-based schema validators. Reuse it for persistence tests, including services that commit internally; do not replace it with the application's production session factory.
 - `client`: HTTPX `AsyncClient` with `ASGITransport`, base URL `http://test`, and a generated User-Agent. It overrides `get_db` and removes that override at teardown. Use `/api/v1/...` paths. This fixture does not explicitly run app lifespan; tests requiring startup behavior need deliberate setup.
+- Reuse `mock_mail` for email-worker mocking in tests; do not repeat per-test patches of `EmailSendWorker.send` or `send_template`. Assert against `mock_mail["send"]` or `mock_mail["send_template"]`.
 - `mock_mail`: patches `EmailSendWorker.send` and `send_template`, exposing mocks under `['send']` and `['send_template']`. Request it whenever a path may enqueue mail; it is not autouse.
 - `mock_redis`: returns `fakeredis.FakeAsyncRedis(decode_responses=True)` and patches `app.extensions.redis`. It is not autouse. Pass it directly to services accepting Redis. Verify the consumer's import/dependency path for API tests: already-bound imports may require a targeted patch or dependency override.
 - `test_user`: registers a user through the API and returns the response's `data` dictionary, not an ORM `User`.
@@ -614,3 +614,43 @@ rtk uv run pyright
 ```
 
 Replace example paths with the actual scope. Report exactly what ran and whether it passed; distinguish test failures from collection or environment failures. Documentation-only changes need skill validation, not an application test run.
+
+
+## Organization API and authorization
+
+All paths use the `/api/v1` prefix. Organization CRUD lives at `/organizations`
+and `/organizations/{organization_uuid}`. Membership list/add lives at
+`/organizations/{organization_uuid}/members`; update/delete adds `/{member_uuid}`.
+Path parameters use typed UUIDs (`organization_uuid`, `member_uuid`); the membership
+UUID identifies the membership, not the user. Resolve public UUIDs through service
+`get_by_uuid` helpers and use the resulting integer `id` for internal relationships.
+Use `{something_uuid}` rather than `{something_id}` for every resource path parameter.
+List endpoints accept `offset` (default 0) and `limit` (default 50, maximum 100).
+
+Create accepts `name`, a lowercase hyphenated `slug`, and optional JSON `settings`.
+Creation atomically adds the authenticated user as owner and active member.
+PATCH accepts `name`, `slug`, `settings` (whole-object replacement), `is_active`
+(the organization status), and `owner_id`. Explicit null values are rejected.
+Only the current owner can transfer ownership, and the successor must already be
+an active member. Owner membership cannot be removed/deactivated. Account deletion
+requires transferring or deleting owned organizations first.
+
+Active members may read organization details and membership lists. Owners may
+manage their organizations; other active members need `organizations.update`,
+`organizations.delete`, or `organizations.members.manage` role permissions in the
+target organization. Owners may reactivate an inactive organization. Removing a
+membership deletes its organization role grants; deactivation retains grants but
+blocks their use. Both clear selected sessions for that member.
+
+`POST /auth/organizations/{organization_uuid}/select` selects an active organization
+on the current device session without issuing new tokens. `GET /auth/organization`
+returns the validated selection. `CurrentOrganization` resolves that selection and
+rechecks organization and membership status on each request. Selection therefore
+survives token refresh for the same session. Other device sessions are unchanged.
+Organization deletion clears selected contexts and removes memberships and roles.
+
+`OrganizationMembership` is the public alias for `OrganizationUser`, preserving the
+existing `organization_users` table. Settings and timestamps are persisted on the
+organization. Migration `72c8b9e15a20` adds ownership, JSON settings, and session
+selection. Legacy organizations keep a null owner rather than assigning ownership
+to an arbitrary member; administrators must explicitly assign their owners.
