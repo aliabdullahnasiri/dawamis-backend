@@ -14,6 +14,7 @@ class SessionCleanupWorker(BaseWorker):
     Responsible for cleaning up expired or revoked sessions from
     the database to prevent table bloat.
     """
+
     name = "session.cleanup"
 
     beat_schedule: ClassVar[dict[str, dict[str, Any]]] = {
