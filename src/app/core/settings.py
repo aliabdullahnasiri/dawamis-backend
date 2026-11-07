@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     Uses Pydantic's BaseSettings to manage configuration via environment variables
     and .env files.
     """
+
     APP_NAME: str = "DawaMIS API"
     APP_DESCRIPTION: str = "Backend API for DawaMIS pharmacy management system."
     APP_VERSION: str = "1.0.0"
@@ -66,7 +67,6 @@ class Settings(BaseSettings):
     TOTP_ENCRYPTION_KEY: str = "your-generated-key"
     RECOVERY_CODE_COUNT: int = 10
     TOTP_VALID_WINDOW: int = 1
-
 
     model_config = SettingsConfigDict(
         env_file=".env",
