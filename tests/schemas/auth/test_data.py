@@ -22,6 +22,7 @@ def test_login_data_valid():
     assert model.access_token == data["access_token"]
     assert model.refresh_token == data["refresh_token"]
 
+
 def test_login_data_missing_field():
     with pytest.raises(AuthTokensRequiredError):
         LoginData(access_token="access")
@@ -32,9 +33,11 @@ def test_refresh_data_valid():
     model = RefreshData(**data)
     assert model.access_token == data["access_token"]
 
+
 def test_refresh_data_missing_field():
     with pytest.raises(ValidationError):
         RefreshData()
+
 
 def test_session_data_valid():
     now = datetime.now()
@@ -54,6 +57,7 @@ def test_session_data_valid():
     assert model.last_used_at == now
     assert model.expires_at == now
 
+
 def test_session_data_invalid_uuid():
     with pytest.raises(ValidationError):
         SessionData(
@@ -62,9 +66,11 @@ def test_session_data_invalid_uuid():
             expires_at=datetime.now().isoformat(),
         )
 
+
 def test_session_data_missing_required():
     with pytest.raises(ValidationError):
         SessionData(id=1, uuid="550e8400-e29b-41d4-a716-446655440000")
+
 
 def test_two_factor_setup_data_valid():
     data = {
@@ -75,14 +81,17 @@ def test_two_factor_setup_data_valid():
     assert model.provisioning_uri == data["provisioning_uri"]
     assert model.qr_code == data["qr_code"]
 
+
 def test_two_factor_setup_data_missing_field():
     with pytest.raises(ValidationError):
         TOTPSetupData(provisioning_uri="uri")
+
 
 def test_recovery_codes_data_valid():
     data = {"recovery_codes": ["code1", "code2", "code3"]}
     model = RecoveryCodesData(**data)
     assert model.recovery_codes == data["recovery_codes"]
+
 
 def test_recovery_codes_data_invalid_type():
     with pytest.raises(ValidationError):

@@ -26,6 +26,7 @@ async def test_user_password_hashing(db_session: AsyncSession):
     assert user.check_password(password) is True
     assert user.check_password("wrong_password") is False
 
+
 @pytest.mark.asyncio
 async def test_user_creation(db_session: AsyncSession):
     """
@@ -48,6 +49,7 @@ async def test_user_creation(db_session: AsyncSession):
     assert user.email == "john@example.com"
     assert user.first_name == "John"
     assert user.last_name == "Doe"
+
 
 @pytest.mark.asyncio
 async def test_user_birthday(db_session: AsyncSession):

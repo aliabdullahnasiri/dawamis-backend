@@ -21,9 +21,11 @@ def test_create_user_request_valid():
     assert model.email == "john@example.com"
     assert model.password == "password123"
 
+
 def test_create_user_request_missing_required():
     with pytest.raises(ValidationError):
         CreateUserRequest(user_name="johndoe")
+
 
 def test_create_user_request_password_too_short():
     data = {
@@ -34,6 +36,7 @@ def test_create_user_request_password_too_short():
     with pytest.raises(ValidationError):
         CreateUserRequest(**data)
 
+
 def test_create_user_request_invalid_email():
     data = {
         "user_name": "johndoe",
@@ -42,6 +45,7 @@ def test_create_user_request_invalid_email():
     }
     with pytest.raises(ValidationError):
         CreateUserRequest(**data)
+
 
 def test_create_user_request_name_too_long():
     data = {
@@ -53,6 +57,7 @@ def test_create_user_request_name_too_long():
     with pytest.raises(ValidationError):
         CreateUserRequest(**data)
 
+
 def test_update_user_request_valid():
     data = {
         "user_name": "johndoe_updated",
@@ -60,6 +65,7 @@ def test_update_user_request_valid():
     }
     model = UpdateUserRequest(**data)
     assert model.user_name == "johndoe_updated"
+
 
 def test_update_user_request_optional_fields():
     """

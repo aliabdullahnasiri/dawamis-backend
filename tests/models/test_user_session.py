@@ -39,6 +39,7 @@ async def test_user_session_creation(db_session: AsyncSession):
     assert session.user_agent == "Mozilla/5.0 (Test)"
     assert session.expires_at == expires_at
 
+
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 

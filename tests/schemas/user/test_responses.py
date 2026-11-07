@@ -18,11 +18,12 @@ def test_get_user_response_valid():
             birthday=None,
             created_at=datetime.now(),
             updated_at=datetime.now(),
-        )
+        ),
     }
     model = GetUserResponse(**data)
     assert model.success is True
     assert model.data.user_name == "johndoe"
+
 
 def test_create_user_response_valid():
     data = {
@@ -38,7 +39,7 @@ def test_create_user_response_valid():
             birthday=None,
             created_at=datetime.now(),
             updated_at=datetime.now(),
-        )
+        ),
     }
     model = CreateUserResponse(**data)
     assert model.success is True
