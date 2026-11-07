@@ -26,6 +26,7 @@ async def test_organization_creation(db_session: AsyncSession):
     assert org.slug == "test-org"
     assert org.is_active is True
 
+
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
@@ -55,11 +56,14 @@ async def test_branch_creation(db_session: AsyncSession):
 
     # Eagerly load branches to avoid MissingGreenlet
     result = await db_session.execute(
-        select(Organization).where(Organization.id == org.id).options(selectinload(Organization.branches))
+        select(Organization)
+        .where(Organization.id == org.id)
+        .options(selectinload(Organization.branches))
     )
     org = result.scalar_one()
     assert len(org.branches) == 1
     assert org.branches[0].name == "Main Branch"
+
 
 @pytest.mark.asyncio
 async def test_organization_membership(db_session: AsyncSession):
@@ -83,12 +87,16 @@ async def test_organization_membership(db_session: AsyncSession):
 
     # Eagerly load memberships to avoid MissingGreenlet
     user_result = await db_session.execute(
-        select(User).where(User.id == user.id).options(selectinload(User.organization_memberships))
+        select(User)
+        .where(User.id == user.id)
+        .options(selectinload(User.organization_memberships))
     )
     user = user_result.scalar_one()
 
     org_result = await db_session.execute(
-        select(Organization).where(Organization.id == org.id).options(selectinload(Organization.memberships))
+        select(Organization)
+        .where(Organization.id == org.id)
+        .options(selectinload(Organization.memberships))
     )
     org = org_result.scalar_one()
 
