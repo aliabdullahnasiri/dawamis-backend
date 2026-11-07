@@ -19,6 +19,12 @@ class UserSession(Base):
         index=True,
     )
 
+    organization_id: Mapped[int | None] = mapped_column(
+        ForeignKey("organizations.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+
     ip_address: Mapped[str | None] = mapped_column(
         String(45),
         nullable=True,
