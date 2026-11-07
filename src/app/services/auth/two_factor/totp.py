@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.encryption import SecretEncryption
+from app.enums.security import TwoFactorMethod
 from app.models.user import User
 
 from .base import TwoFactorProvider
@@ -36,6 +37,7 @@ class TOTPProvider(TwoFactorProvider):
         secret = pyotp.random_base32()
 
         user.two_factor_pending_secret_encrypted = SecretEncryption.encrypt(secret)
+        user.two_factor_method = TwoFactorMethod.TOTP
         await db.commit()
 
         totp = pyotp.TOTP(secret)
