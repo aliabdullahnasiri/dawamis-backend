@@ -13,6 +13,7 @@ class UserData(BaseDataModel):
     Represents the core user attributes used in responses and internal
     data handling.
     """
+
     uuid: UUID
     first_name: str | None
     middle_name: str | None
