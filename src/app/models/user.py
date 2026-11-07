@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import TYPE_CHECKING, Self
+from typing import TYPE_CHECKING, ClassVar, Self
 
 import bcrypt
 from sqlalchemy import Boolean, Date, DateTime, String, UniqueConstraint, false
@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = "users"
 
-    __hidden_fields__ = {"password_hash"}
+    __hidden_fields__: ClassVar[set[str]] = {"password_hash"}
 
     first_name: Mapped[str | None] = mapped_column(
         String(50),
