@@ -2,9 +2,11 @@ import hashlib
 import secrets
 from datetime import timedelta
 
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.core.exceptions import UserNotFound
 from app.core.i18n.types import T
 from app.models.user import User
 from app.services.datetime import DateTimeService
@@ -67,7 +69,7 @@ class PasswordResetService:
         try:
 
             user: User = await UserService.get_by_email(db=db, email=email)
-        except Exception:
+        except (UserNotFound, NoResultFound):
             # Generic failure for security to prevent email enumeration
             return
 
