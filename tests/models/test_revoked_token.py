@@ -19,6 +19,7 @@ async def test_revoked_token_creation(db_session: AsyncSession):
     assert token.id is not None
     assert token.jti == jti
 
+
 @pytest.mark.asyncio
 async def test_revoked_token_unique_jti(db_session: AsyncSession):
     """
@@ -31,6 +32,6 @@ async def test_revoked_token_unique_jti(db_session: AsyncSession):
 
     token2 = RevokedToken(jti=jti)
     db_session.add(token2)
-    
-    with pytest.raises(Exception): # SQLAlchemy IntegrityError
+
+    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
         await db_session.commit()
