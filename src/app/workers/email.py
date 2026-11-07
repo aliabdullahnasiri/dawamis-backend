@@ -12,6 +12,7 @@ class EmailSendWorker(BaseWorker):
     Supports both plain text emails and template-based emails via
     integration with the MailService.
     """
+
     name = "email.send"
 
     async def _run(self: Self, *args, **kwargs) -> None:
