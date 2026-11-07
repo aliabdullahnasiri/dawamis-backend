@@ -36,7 +36,6 @@ class EmailVerificationService:
         """
         return hashlib.sha256(token.encode()).hexdigest()
 
-
     @staticmethod
     def _generate_token() -> str:
         """
@@ -46,7 +45,6 @@ class EmailVerificationService:
             A URL-safe random token string.
         """
         return secrets.token_urlsafe(32)
-
 
     @classmethod
     async def send(
@@ -97,7 +95,6 @@ class EmailVerificationService:
             token: The verification token provided by the user.
         """
         token_hash = cls._hash_token(token)
-
 
         user: User = await UserService.get_by_verification_token(
             db=db, token=token_hash
