@@ -2,9 +2,11 @@ import pytest
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+
+from app.models.associations.role_permission import RolePermission
 from app.models.permission import Permission
 from app.models.role import Role
-from app.models.associations.role_permission import RolePermission
+
 
 @pytest.mark.asyncio
 async def test_permission_creation(db_session: AsyncSession):
@@ -24,6 +26,7 @@ async def test_permission_creation(db_session: AsyncSession):
     assert perm.name == "Edit User"
     assert perm.code == 101
 
+
 @pytest.mark.asyncio
 async def test_permission_unique_name(db_session: AsyncSession):
     """
@@ -35,9 +38,10 @@ async def test_permission_unique_name(db_session: AsyncSession):
 
     perm2 = Permission(name="Unique", code=2)
     db_session.add(perm2)
-    
-    with pytest.raises(Exception): # SQLAlchemy IntegrityError
+
+    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
         await db_session.commit()
+
 
 @pytest.mark.asyncio
 async def test_permission_role_association(db_session: AsyncSession):
@@ -54,7 +58,9 @@ async def test_permission_role_association(db_session: AsyncSession):
     await db_session.commit()
 
     result = await db_session.execute(
-        select(Permission).where(Permission.id == perm.id).options(selectinload(Permission.role_permissions))
+        select(Permission)
+        .where(Permission.id == perm.id)
+        .options(selectinload(Permission.role_permissions))
     )
     saved_perm = result.scalar_one()
     assert any(rp.role_id == role.id for rp in saved_perm.role_permissions)
