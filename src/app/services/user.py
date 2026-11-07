@@ -1,18 +1,17 @@
 from uuid import UUID
 
 from sqlalchemy import select
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.decorators import handle_exception
 from app.core.exceptions import (
+    ConflictError,
     EmailVerificationTokenExpiredError,
     PasswordResetTokenExpiredError,
     UserNotFound,
 )
 from app.core.exceptions.authentication import InvalidPasswordResetTokenError
 from app.core.i18n.types import T
-from app.models import User
+from app.models import Organization, User
 from app.schemas.user.request.profile import CreateUserRequest, UpdateUserRequest
 from app.services.datetime import DateTimeService
 
@@ -63,7 +62,9 @@ class UserService:
 
         # Uniqueness checks for username and email
         if "user_name" in update_data and update_data["user_name"] != user.user_name:
-            existing_user = await UserService.get_by_username(db, update_data["user_name"])
+            existing_user = await UserService.get_by_username(
+                db, update_data["user_name"]
+            )
             if existing_user:
                 raise UserNotFound(message=T("user_name:user_name_already_exists"))
 
@@ -124,7 +125,6 @@ class UserService:
         return user
 
     @staticmethod
-    @handle_exception(NoResultFound, _raise=UserNotFound)
     async def get_by_uuid(
         db: AsyncSession,
         user_uuid: UUID,
@@ -137,7 +137,6 @@ class UserService:
         ).scalar_one()
 
     @staticmethod
-    @handle_exception(NoResultFound, _raise=UserNotFound)
     async def get_by_username(
         db: AsyncSession,
         user_name: str,
@@ -150,7 +149,6 @@ class UserService:
         ).scalar_one()
 
     @staticmethod
-    @handle_exception(NoResultFound, _raise=UserNotFound)
     async def get_by_email(
         db: AsyncSession,
         email: str,
@@ -228,5 +226,9 @@ class UserService:
         """
         Delete a user.
         """
+        if await db.scalar(
+            select(Organization.id).where(Organization.owner_id == user.id).limit(1)
+        ):
+            raise ConflictError(message=T("organization:transfer_before_user_delete"))
         await db.delete(user)
         await db.commit()
