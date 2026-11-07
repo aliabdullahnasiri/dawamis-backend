@@ -21,6 +21,7 @@ class BaseWorker(ABC, Task, metaclass=WorkerMeta):
         retry_backoff (bool): Enables exponential backoff for retries.
         max_retries (int): Maximum number of retry attempts before failing.
     """
+
     abstract = True
 
     autoretry_for = (Exception,)
