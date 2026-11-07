@@ -1,4 +1,5 @@
 from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.dependencies import DBSession
 from app.api.dependencies.auth import CurrentActiveSession
@@ -30,7 +31,7 @@ async def health_check(
     try:
         await db.execute(text("SELECT 1"))
 
-    except Exception:
+    except SQLAlchemyError:
         raise ServiceUnavailableError()
 
     return {"status": T("health.ok")}
