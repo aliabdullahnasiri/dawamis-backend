@@ -11,6 +11,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.user import User
 
+
 class RecoveryCode(Base):
     __tablename__ = "recovery_codes"
 
