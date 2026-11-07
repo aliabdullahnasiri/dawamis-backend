@@ -1,15 +1,20 @@
 from contextlib import asynccontextmanager
-from typing import Self
+from typing import Self, cast
 
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.middleware import register_middleware
 from app.core.config import settings
 from app.core.exceptions import AppError
-from app.core.exceptions.handlers import app_error_handler, validation_error_handler
+from app.core.exceptions.handlers import (
+    app_error_handler,
+    no_result_found_handler,
+    validation_error_handler,
+)
 from app.core.startup import Startup
 from app.extensions import redis
 from app.extensions.db import SessionLocal
@@ -18,13 +23,13 @@ from app.extensions.db import SessionLocal
 class App:
     __object__: App | None = None
 
-    def __new__(cls, *args, **kwargs) -> App:
+    def __new__(cls, *args, **kwargs) -> Self:
         if cls.__object__ is not None:
-            return cls.__object__
+            return cast(Self, cls.__object__)
 
         cls.__object__ = super().__new__(cls)
 
-        return cls.__object__
+        return cast(Self, cls.__object__)
 
     def __init__(self: Self) -> None:
         self.app: FastAPI = self.create()
@@ -62,6 +67,7 @@ class App:
 
         app.add_exception_handler(RequestValidationError, validation_error_handler)
         app.add_exception_handler(ValidationError, validation_error_handler)
+        app.add_exception_handler(NoResultFound, no_result_found_handler)
 
         app.add_exception_handler(
             AppError,
