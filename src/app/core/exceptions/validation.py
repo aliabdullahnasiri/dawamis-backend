@@ -43,4 +43,3 @@ class EmailContentRequiredError(ValidationError):
 
     type = "email_content_required"
     message = T("errors:email_must_contain_text_or_html_content")
-
