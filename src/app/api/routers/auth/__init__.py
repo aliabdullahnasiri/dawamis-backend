@@ -1,6 +1,6 @@
 from app.api.router import Router
 
-from . import passwords, sessions, two_factor, verification
+from . import organizations, passwords, sessions, two_factor, verification
 
 router = Router(
     prefix="/auth",
@@ -11,3 +11,5 @@ router.include_router(sessions.router)
 router.include_router(passwords.router)
 router.include_router(verification.router)
 router.include_router(two_factor.router)
+
+router.include_router(organizations.router)
