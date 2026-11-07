@@ -7,6 +7,7 @@ class BaseTwoFactorRequest(BaseRequestModel):
     """
     Base schema for all two-factor authentication requests.
     """
+
     code: str = Field(min_length=6, max_length=64)
 
 
@@ -15,6 +16,7 @@ class TOTPEnableRequest(BaseTwoFactorRequest):
     Schema for enabling TOTP authentication.
     Requires a 6-digit verification code.
     """
+
     code: str = Field(pattern=r"^\d{6}$")
 
 
@@ -48,4 +50,5 @@ class TwoFactorDisableRequest(BaseTwoFactorRequest):
 
     Requires the user's password and a current verification code.
     """
+
     password: str
