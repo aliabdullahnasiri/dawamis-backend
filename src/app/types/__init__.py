@@ -1,8 +1,8 @@
 from collections.abc import Awaitable, Callable
-from typing import Any, TypeAlias
+from typing import Any
 
 type AsyncService = Callable[..., Awaitable[Any]]
 
-JSONValue: TypeAlias = (
+type JSONValue = (
     str | int | float | bool | None | list["JSONValue"] | dict[str, "JSONValue"]
 )
