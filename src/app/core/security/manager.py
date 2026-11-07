@@ -51,7 +51,7 @@ class SecurityManager:
             return token
         except TokenError:
             raise
-        except (PyJWTError, KeyError, ValueError):
+        except PyJWTError, KeyError, ValueError:
             raise TokenError()
 
     async def get_current_claims(
@@ -118,7 +118,7 @@ class SecurityManager:
             return token
         except TokenError:
             raise
-        except (PyJWTError, KeyError, ValueError):
+        except PyJWTError, KeyError, ValueError:
             raise RefreshTokenError()
 
     async def get_current_user(
@@ -138,7 +138,7 @@ class SecurityManager:
         """
         try:
             return await UserService.get_by_uuid(db, uuid)
-        except (UserNotFound, NoResultFound):
+        except UserNotFound, NoResultFound:
             return None
 
     async def get_current_active_session(
