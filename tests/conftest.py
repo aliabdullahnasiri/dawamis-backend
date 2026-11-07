@@ -92,6 +92,7 @@ async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
     Provides an asynchronous HTTPX client for making requests to the API.
     Overrides the database dependency to use the test session.
     """
+
     async def override_get_db():
         yield db_session
 
