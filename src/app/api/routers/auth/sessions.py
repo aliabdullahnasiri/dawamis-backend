@@ -1,8 +1,13 @@
+import logging
 from uuid import UUID
 
 from fastapi import Request, status
 
-from app.api.dependencies.auth import CurrentActiveSession, CurrentRefreshToken
+from app.api.dependencies.auth import (
+    CurrentActiveSession,
+    CurrentRefreshSession,
+    CurrentRefreshToken,
+)
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.redis import RedisClient
 from app.api.router import Router
@@ -28,6 +33,8 @@ from app.services.auth.security import SecurityService
 from app.services.auth.session import SessionService
 from app.services.auth.two_factor.challenge import TwoFactorChallengeService
 from app.services.user import UserService
+
+logger = logging.getLogger(__name__)
 
 router = Router(tags=["Authentication - Sessions"])
 
@@ -78,13 +85,11 @@ async def login(
     try:
         if ip_address:
             await AuthRateLimiter.check_ip(redis, ip_address)
-    except RateLimitError as e:
+    except RateLimitError:
         await SecurityService.rate_limit_exceeded(
             db, ip_address=ip_address, user_agent=user_agent
         )
-        raise e
-    except Exception as e:
-        raise e
+        raise
 
     # 2. Authentication Attempt
     try:
@@ -114,7 +119,7 @@ async def login(
                         attempts=attempts,
                     )
         except Exception:
-            pass
+            logger.exception("Unable to record failed-login account limits")
 
         await SecurityService.login_failed(
             db,
@@ -209,7 +214,7 @@ async def logout(
 async def refresh(
     db: DBSession,
     token: CurrentRefreshToken,
-    session: CurrentActiveSession,
+    session: CurrentRefreshSession,
 ) -> RefreshResponse:
     """
     Create a new access token using a valid refresh token.
