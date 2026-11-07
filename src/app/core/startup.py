@@ -14,6 +14,7 @@ class Startup:
     initialization logic is performed before the app starts and cleanup
     (like commits/rollbacks) is performed on exit.
     """
+
     def __init__(
         self: Self, db: AsyncSession | None = None, redis: RedisClient | None = None
     ) -> None:
