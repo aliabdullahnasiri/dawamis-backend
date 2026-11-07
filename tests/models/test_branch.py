@@ -28,6 +28,7 @@ async def test_branch_creation(db_session: AsyncSession):
     assert branch.name == "Downtown Branch"
     assert branch.organization_id == org.id
 
+
 @pytest.mark.asyncio
 async def test_branch_inactive(db_session: AsyncSession):
     """
@@ -46,6 +47,7 @@ async def test_branch_inactive(db_session: AsyncSession):
     await db_session.commit()
 
     assert branch.is_active is False
+
 
 @pytest.mark.asyncio
 async def test_branch_cascade_delete(db_session: AsyncSession):
