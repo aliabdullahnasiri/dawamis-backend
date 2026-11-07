@@ -8,7 +8,6 @@ class UserAgentService:
     Useful for testing, mocking, or generating default device identifiers.
     """
 
-
     def __init__(self) -> None:
         self._user_agent = UserAgent()
 
@@ -21,7 +20,6 @@ class UserAgentService:
         """
         return self._user_agent.random
 
-
     def chrome(self) -> str:
         """
         Return a Chrome-specific User-Agent string.
@@ -30,7 +28,6 @@ class UserAgentService:
             A Chrome User-Agent string.
         """
         return self._user_agent.chrome
-
 
     def firefox(self) -> str:
         """
@@ -41,7 +38,6 @@ class UserAgentService:
         """
         return self._user_agent.firefox
 
-
     def safari(self) -> str:
         """
         Return a Safari-specific User-Agent string.
@@ -51,7 +47,6 @@ class UserAgentService:
         """
         return self._user_agent.safari
 
-
     def edge(self) -> str:
         """
         Return an Edge-specific User-Agent string.
@@ -60,4 +55,3 @@ class UserAgentService:
             An Edge User-Agent string.
         """
         return self._user_agent.edge
-
