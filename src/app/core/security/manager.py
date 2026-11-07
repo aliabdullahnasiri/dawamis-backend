@@ -2,6 +2,8 @@ from typing import Any
 from uuid import UUID
 
 from fastapi import Request
+from jwt import PyJWTError
+from sqlalchemy.exc import NoResultFound
 
 from app.api.dependencies.db import DBSession
 from app.core.exceptions import (
@@ -49,7 +51,7 @@ class SecurityManager:
             return token
         except TokenError:
             raise
-        except Exception:
+        except (PyJWTError, KeyError, ValueError):
             raise TokenError()
 
     async def get_current_claims(
@@ -116,7 +118,7 @@ class SecurityManager:
             return token
         except TokenError:
             raise
-        except Exception:
+        except (PyJWTError, KeyError, ValueError):
             raise RefreshTokenError()
 
     async def get_current_user(
@@ -136,7 +138,7 @@ class SecurityManager:
         """
         try:
             return await UserService.get_by_uuid(db, uuid)
-        except (UserNotFound, Exception):
+        except (UserNotFound, NoResultFound):
             return None
 
     async def get_current_active_session(
