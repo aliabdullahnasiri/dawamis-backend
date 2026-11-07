@@ -7,6 +7,7 @@ class TOTPEnableRequest(BaseTwoFactorRequest):
     """
     Schema for enabling TOTP authentication.
     """
+
     code: str = Field(pattern=r"^\d{6}$")
 
 
