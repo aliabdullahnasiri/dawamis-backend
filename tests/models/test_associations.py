@@ -1,11 +1,12 @@
 import pytest
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.models.user import User
-from app.models.organization import Organization
-from app.models.role import Role
+
 from app.models.associations.organization_user import OrganizationUser
 from app.models.associations.user_role import UserRole
+from app.models.organization import Organization
+from app.models.role import Role
+from app.models.user import User
+
 
 @pytest.mark.asyncio
 async def test_organization_user_association(db_session: AsyncSession):
@@ -13,9 +14,7 @@ async def test_organization_user_association(db_session: AsyncSession):
     Test association between User and Organization.
     """
     user = User(
-        user_name="member", 
-        email="member@example.com", 
-        password_hash="dummy_hash"
+        user_name="member", email="member@example.com", password_hash="dummy_hash"
     )
     org = Organization(name="Org", slug="org-slug")
     db_session.add_all([user, org])
@@ -33,15 +32,14 @@ async def test_organization_user_association(db_session: AsyncSession):
     assert membership.user_id == user.id
     assert membership.organization_id == org.id
 
+
 @pytest.mark.asyncio
 async def test_organization_user_unique_constraint(db_session: AsyncSession):
     """
     Test that a user cannot be added to the same organization twice.
     """
     user = User(
-        user_name="member", 
-        email="member@example.com", 
-        password_hash="dummy_hash"
+        user_name="member", email="member@example.com", password_hash="dummy_hash"
     )
     org = Organization(name="Org", slug="org-slug")
     db_session.add_all([user, org])
@@ -53,20 +51,17 @@ async def test_organization_user_unique_constraint(db_session: AsyncSession):
 
     membership2 = OrganizationUser(user_id=user.id, organization_id=org.id)
     db_session.add(membership2)
-    
-    with pytest.raises(Exception): # SQLAlchemy IntegrityError
+
+    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
         await db_session.commit()
+
 
 @pytest.mark.asyncio
 async def test_user_role_association(db_session: AsyncSession):
     """
     Test association between User, Role, and Organization.
     """
-    user = User(
-        user_name="user", 
-        email="user@example.com", 
-        password_hash="dummy_hash"
-    )
+    user = User(user_name="user", email="user@example.com", password_hash="dummy_hash")
     org = Organization(name="Org", slug="org-slug")
     role = Role(name="Admin")
     db_session.add_all([user, org, role])
@@ -85,16 +80,13 @@ async def test_user_role_association(db_session: AsyncSession):
     assert ur.role_id == role.id
     assert ur.organization_id == org.id
 
+
 @pytest.mark.asyncio
 async def test_user_role_unique_constraint(db_session: AsyncSession):
     """
     Test that a user cannot have the same role in the same organization twice.
     """
-    user = User(
-        user_name="user", 
-        email="user@example.com", 
-        password_hash="dummy_hash"
-    )
+    user = User(user_name="user", email="user@example.com", password_hash="dummy_hash")
     org = Organization(name="Org", slug="org-slug")
     role = Role(name="Admin")
     db_session.add_all([user, org, role])
@@ -106,6 +98,6 @@ async def test_user_role_unique_constraint(db_session: AsyncSession):
 
     ur2 = UserRole(user_id=user.id, role_id=role.id, organization_id=org.id)
     db_session.add(ur2)
-    
-    with pytest.raises(Exception): # SQLAlchemy IntegrityError
+
+    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
         await db_session.commit()
