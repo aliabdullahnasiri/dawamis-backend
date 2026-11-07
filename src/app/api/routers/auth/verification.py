@@ -44,7 +44,7 @@ async def resend_verification_email(
 ) -> ResendVerificationEmailResponse:
     try:
         user = await UserService.get_by_email(db=db, email=data.email)
-    except (UserNotFound, NoResultFound):
+    except UserNotFound, NoResultFound:
         # In a real app, we might return 404 or a generic message for security
         return ResendVerificationEmailResponse(
             message=T("messages:verification_email_sent")
