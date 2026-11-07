@@ -1,7 +1,7 @@
 import json
 import uuid
 from datetime import UTC, date, datetime
-from typing import Any, Self
+from typing import Any, ClassVar, Self
 from uuid import UUID
 
 from sqlalchemy import DateTime, inspect
@@ -48,7 +48,7 @@ class Base(DeclarativeBase, metaclass=DeclarativeBaseMeta):
         nullable=False,
     )
 
-    __hidden_fields__: set[str] = set()
+    __hidden_fields__: ClassVar[set[str]] = set()
 
     def to_dict(self: Self) -> dict[str, Any]:
         """
