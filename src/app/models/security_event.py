@@ -12,6 +12,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.user import User
 
+
 class SecurityEvent(Base):
     __tablename__ = "security_events"
 
