@@ -1,11 +1,7 @@
-from typing import Generic, TypeVar
-
 from app.schemas.base.model import Model
 
-T = TypeVar("T")
 
-
-class BaseResponseModel(Model, Generic[T]):
+class BaseResponseModel[T](Model):
     """
     Base schema for all API response payloads.
 
