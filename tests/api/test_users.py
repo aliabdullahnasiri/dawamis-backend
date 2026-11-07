@@ -6,7 +6,7 @@ from app.schemas.auth.request import LoginRequest, RegisterRequest
 
 
 @pytest_asyncio.fixture
-async def auth_client(client: AsyncClient):
+async def auth_client(client: AsyncClient, mock_mail):
     """
     Fixture to provide an authenticated client.
     """
@@ -33,7 +33,7 @@ async def auth_client(client: AsyncClient):
 
 
 @pytest.mark.asyncio
-async def test_get_me(auth_client):
+async def test_get_me(auth_client, mock_mail):
     """
     Test the GET /users/me endpoint.
     """
@@ -45,7 +45,7 @@ async def test_get_me(auth_client):
 
 
 @pytest.mark.asyncio
-async def test_update_me(auth_client):
+async def test_update_me(auth_client, mock_mail):
     """
     Test the PATCH /users/me endpoint.
     """
@@ -61,7 +61,7 @@ async def test_update_me(auth_client):
 
 
 @pytest.mark.asyncio
-async def test_update_my_email(auth_client):
+async def test_update_my_email(auth_client, mock_mail):
     """
     Test the PATCH /users/me/email endpoint.
     """
@@ -75,7 +75,7 @@ async def test_update_my_email(auth_client):
 
 
 @pytest.mark.asyncio
-async def test_update_my_username(auth_client):
+async def test_update_my_username(auth_client, mock_mail):
     """
     Test the PATCH /users/me/username endpoint.
     """
@@ -89,7 +89,7 @@ async def test_update_my_username(auth_client):
 
 
 @pytest.mark.asyncio
-async def test_delete_me(auth_client):
+async def test_delete_me(auth_client, mock_mail):
     """
     Test the DELETE /users/me endpoint.
     """
