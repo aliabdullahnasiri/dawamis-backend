@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 
 from app.schemas.user.data import UserData
 from app.schemas.user.response import CreateUserResponse, GetUserResponse
@@ -16,8 +16,8 @@ def test_get_user_response_valid():
             user_name="johndoe",
             email="john@example.com",
             birthday=None,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         ),
     }
     model = GetUserResponse(**data)
@@ -37,8 +37,8 @@ def test_create_user_response_valid():
             user_name="johndoe",
             email="john@example.com",
             birthday=None,
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         ),
     }
     model = CreateUserResponse(**data)

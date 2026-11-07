@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -39,7 +40,7 @@ async def test_role_unique_name(db_session: AsyncSession):
     role2 = Role(name="UniqueRole")
     db_session.add(role2)
 
-    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
+    with pytest.raises(IntegrityError):
         await db_session.commit()
 
 

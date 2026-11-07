@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.revoked_token import RevokedToken
@@ -33,5 +34,5 @@ async def test_revoked_token_unique_jti(db_session: AsyncSession):
     token2 = RevokedToken(jti=jti)
     db_session.add(token2)
 
-    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
+    with pytest.raises(IntegrityError):
         await db_session.commit()

@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.associations.organization_user import OrganizationUser
@@ -52,7 +53,7 @@ async def test_organization_user_unique_constraint(db_session: AsyncSession):
     membership2 = OrganizationUser(user_id=user.id, organization_id=org.id)
     db_session.add(membership2)
 
-    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
+    with pytest.raises(IntegrityError):
         await db_session.commit()
 
 
@@ -99,5 +100,5 @@ async def test_user_role_unique_constraint(db_session: AsyncSession):
     ur2 = UserRole(user_id=user.id, role_id=role.id, organization_id=org.id)
     db_session.add(ur2)
 
-    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
+    with pytest.raises(IntegrityError):
         await db_session.commit()

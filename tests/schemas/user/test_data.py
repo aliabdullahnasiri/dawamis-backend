@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
@@ -8,7 +8,7 @@ from app.schemas.user.data import UserData
 
 
 def test_user_data_valid():
-    now = datetime.now()
+    now = datetime.now(UTC)
     data = {
         "uuid": "550e8400-e29b-41d4-a716-446655440000",
         "first_name": "John",
@@ -37,6 +37,6 @@ def test_user_data_invalid_email():
             uuid="550e8400-e29b-41d4-a716-446655440000",
             user_name="johndoe",
             email="not-an-email",
-            created_at=datetime.now(),
-            updated_at=datetime.now(),
+            created_at=datetime.now(UTC),
+            updated_at=datetime.now(UTC),
         )

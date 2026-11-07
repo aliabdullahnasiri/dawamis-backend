@@ -1,5 +1,6 @@
 import pytest
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -39,7 +40,7 @@ async def test_permission_unique_name(db_session: AsyncSession):
     perm2 = Permission(name="Unique", code=2)
     db_session.add(perm2)
 
-    with pytest.raises(Exception):  # SQLAlchemy IntegrityError
+    with pytest.raises(IntegrityError):
         await db_session.commit()
 
 

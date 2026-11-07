@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -22,7 +22,7 @@ async def test_user_session_creation(db_session: AsyncSession):
     await db_session.commit()
 
     # Create a session for that user
-    expires_at = datetime.now() + timedelta(days=1)
+    expires_at = datetime.now(UTC) + timedelta(days=1)
     session = UserSession(
         user_id=user.id,
         ip_address="127.0.0.1",
@@ -37,7 +37,8 @@ async def test_user_session_creation(db_session: AsyncSession):
     assert session.user_id == user.id
     assert session.ip_address == "127.0.0.1"
     assert session.user_agent == "Mozilla/5.0 (Test)"
-    assert session.expires_at == expires_at
+    # SQLite returns stored datetimes without timezone information.
+    assert session.expires_at.replace(tzinfo=UTC) == expires_at
 
 
 from sqlalchemy import select
@@ -59,8 +60,8 @@ async def test_user_session_relationship(db_session: AsyncSession):
 
     # Create multiple sessions
     sessions = [
-        UserSession(user_id=user.id, expires_at=datetime.now() + timedelta(days=1)),
-        UserSession(user_id=user.id, expires_at=datetime.now() + timedelta(days=2)),
+        UserSession(user_id=user.id, expires_at=datetime.now(UTC) + timedelta(days=1)),
+        UserSession(user_id=user.id, expires_at=datetime.now(UTC) + timedelta(days=2)),
     ]
     db_session.add_all(sessions)
     await db_session.commit()

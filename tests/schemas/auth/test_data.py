@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from uuid import UUID
 
 import pytest
@@ -40,7 +40,7 @@ def test_refresh_data_missing_field():
 
 
 def test_session_data_valid():
-    now = datetime.now()
+    now = datetime.now(UTC)
     data = {
         "id": 1,
         "uuid": "550e8400-e29b-41d4-a716-446655440000",
@@ -63,7 +63,7 @@ def test_session_data_invalid_uuid():
         SessionData(
             id=1,
             uuid="not-a-uuid",
-            expires_at=datetime.now().isoformat(),
+            expires_at=datetime.now(UTC).isoformat(),
         )
 
 
