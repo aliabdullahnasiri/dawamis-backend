@@ -1,4 +1,3 @@
-
 from cryptography.fernet import Fernet
 
 from app.core.config import settings
@@ -11,6 +10,7 @@ class SecretEncryption:
     Uses Fernet (AES-128 in CBC mode with HMAC-SHA256) to ensure that
     encrypted data cannot be read or modified without the key.
     """
+
     _fernet = Fernet(settings.TOTP_ENCRYPTION_KEY.encode())
 
     @classmethod
