@@ -30,7 +30,6 @@ class MailService:
         if text is None and html is None:
             raise EmailContentRequiredError()
 
-
         message = EmailMessage()
 
         message["From"] = f"{settings.MAIL_FROM_NAME} " f"<{settings.MAIL_FROM_EMAIL}>"
