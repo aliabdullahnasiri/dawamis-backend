@@ -6,10 +6,7 @@ import time
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.encryption import SecretEncryption
-from app.core.exceptions.authentication import (
-    InvalidTwoFactorCodeError,
-    TwoFactorSetupRequiredError,
-)
+from app.core.exceptions.authentication import InvalidTwoFactorCodeError
 from app.core.i18n.types import T
 from app.enums.security import TwoFactorMethod
 from app.models.user import User
@@ -56,7 +53,7 @@ class OTPProvider(TwoFactorProvider):
         # Derive and send the code
         await self.send(user, base_secret)
 
-        return {"message": "OTP sent to your email"}
+        return {"message": T("auth:otp_sent_successfully")}
 
     async def send(self, user: User, secret: str) -> str:
         """
@@ -66,9 +63,9 @@ class OTPProvider(TwoFactorProvider):
 
         await EmailSendWorker.send_template(
             to=user.email,
-            subject=T("emails:otp_setup_subject"),
-            text=T("emails:otp_setup_text"),
-            template="emails/auth/otp_setup.html",
+            subject=T("emails:otp_verify_subject"),
+            text=T("emails:otp_verify_text"),
+            template="emails/auth/otp_verify.html",
             otp_code=code,
             user=user.to_dict(),
         )
@@ -107,8 +104,4 @@ class OTPProvider(TwoFactorProvider):
         """
         Resends the OTP code using the pending secret.
         """
-        if not user.two_factor_pending_secret_encrypted:
-            raise TwoFactorSetupRequiredError()
-
-        base_secret = SecretEncryption.decrypt(user.two_factor_pending_secret_encrypted)
-        await self.send(user, base_secret)
+        await self.setup(db, user)
