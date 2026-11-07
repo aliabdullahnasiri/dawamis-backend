@@ -8,6 +8,7 @@ def _normalize_lang(lang: str) -> str:
     normalized_lang = lang.strip().lower().replace("-", "_")
     return normalized_lang.split("_", 1)[0]
 
+
 def get_locale(request: Request) -> str:
     """
     Resolve the user's locale.
@@ -48,4 +49,6 @@ def get_locale(request: Request) -> str:
             return supported_languages[base_lang]
 
     # 4. Default
-    return supported_languages.get(settings.DEFAULT_LANGUAGE, supported_languages.get("en", "en_US"))
+    return supported_languages.get(
+        settings.DEFAULT_LANGUAGE, supported_languages.get("en", "en_US")
+    )
