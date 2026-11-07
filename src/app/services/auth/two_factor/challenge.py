@@ -26,6 +26,7 @@ class TwoFactorChallenge:
         challenge_id: A unique identifier for the specific challenge instance.
         expires_at: The expiration timestamp of the challenge.
     """
+
     user_id: str
     challenge_id: str
     expires_at: datetime
@@ -38,6 +39,7 @@ class TwoFactorChallengeService:
     This service handles the creation, validation, and consumption of
     short-lived challenges used during the 2FA verification process.
     """
+
     PREFIX = "auth:2fa:challenge:"
     TTL_SECONDS = 300
 
@@ -64,7 +66,6 @@ class TwoFactorChallengeService:
         """
         return f"{cls.PREFIX}{challenge_id}"
 
-
     @classmethod
     def _encode_token(
         cls: type[TwoFactorChallengeService],
@@ -84,7 +85,6 @@ class TwoFactorChallengeService:
             An encoded JWT string representing the challenge.
         """
         now = datetime.now(UTC)
-
 
         payload: dict[str, Any] = {
             "sub": user_id,
@@ -142,7 +142,6 @@ class TwoFactorChallengeService:
         if not created:
             raise RuntimeError("Failed to create 2FA challenge in Redis")
 
-
         return token
 
     @classmethod
@@ -166,7 +165,6 @@ class TwoFactorChallengeService:
         """
         try:
 
-
             payload: TwoFactorChallengePayload = (
                 TwoFactorChallengePayload.model_validate(
                     jwt.decode(
@@ -189,7 +187,6 @@ class TwoFactorChallengeService:
         except InvalidTokenError, ValidationError:
             raise InvalidTwoFactorChallengeError()
 
-
         user_id = payload.sub
         challenge_id = payload.jti
         expires_timestamp = payload.exp
@@ -199,13 +196,11 @@ class TwoFactorChallengeService:
         if stored_user_id is None:
             raise TwoFactorChallengeExpiredError()
 
-
         if isinstance(stored_user_id, bytes):
             stored_user_id = stored_user_id.decode()
 
         if stored_user_id != user_id:
             raise InvalidTwoFactorChallengeError()
-
 
         return TwoFactorChallenge(
             user_id=user_id,
@@ -233,7 +228,6 @@ class TwoFactorChallengeService:
             True if the challenge was successfully consumed, False otherwise.
         """
         result = await redis.eval(
-
             cls._CONSUME_SCRIPT,
             1,
             cls._key(challenge.challenge_id),
