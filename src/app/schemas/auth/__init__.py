@@ -74,5 +74,6 @@ __all__ = [
     "TOTPSetupResponse",
     "TOTPVerifyRequest",
     "TwoFactorDisableRequest",
+    "TwoFactorVerifyResponse",
     "VerifyEmailRequest",
 ]
