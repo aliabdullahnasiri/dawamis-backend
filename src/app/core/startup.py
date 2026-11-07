@@ -1,3 +1,4 @@
+from types import TracebackType
 from typing import Self
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,7 +42,7 @@ class Startup:
         self: Self,
         exc_type: type[BaseException] | None,
         exc_value: BaseException | None,
-        traceback: object | None,
+        traceback: TracebackType | None,
     ) -> None:
         """
         Exit point for the asynchronous context manager.
