@@ -4,6 +4,7 @@ from httpx import AsyncClient
 # Re-implementing the session-specific tests from old test_auth.py
 # to ensure they are complete.
 
+
 @pytest.mark.asyncio
 async def test_get_sessions(client: AsyncClient, fake_session):
     """
@@ -15,6 +16,7 @@ async def test_get_sessions(client: AsyncClient, fake_session):
     assert isinstance(sessions, list)
     assert len(sessions) > 0
 
+
 @pytest.mark.asyncio
 async def test_me(client: AsyncClient, fake_session):
     """
@@ -23,6 +25,7 @@ async def test_me(client: AsyncClient, fake_session):
     response = await client.get("/api/v1/auth/me")
     assert response.status_code == 200
     assert response.json()["email"] == "test@example.com"
+
 
 @pytest.mark.asyncio
 async def test_refresh_token(client: AsyncClient, fake_login):
@@ -36,6 +39,7 @@ async def test_refresh_token(client: AsyncClient, fake_login):
     )
     assert response.status_code == 200
     assert "access_token" in response.json()["data"]
+
 
 @pytest.mark.asyncio
 async def test_revoke_session(client: AsyncClient, fake_login):
@@ -52,6 +56,7 @@ async def test_revoke_session(client: AsyncClient, fake_login):
     response = await client.get("/api/v1/auth/sessions")
     assert response.status_code == 401
 
+
 @pytest.mark.asyncio
 async def test_revoke_all_sessions(client: AsyncClient, fake_login):
     """
@@ -61,6 +66,7 @@ async def test_revoke_all_sessions(client: AsyncClient, fake_login):
     assert response.status_code == 200
     response = await client.get("/api/v1/auth/sessions")
     assert response.status_code == 401
+
 
 @pytest.mark.asyncio
 async def test_logout(client: AsyncClient, fake_login):
