@@ -15,4 +15,3 @@ class URLService:
         query = urlencode({"token": token})
 
         return f"{settings.FRONTEND_URL}/reset-password?{query}"
-
