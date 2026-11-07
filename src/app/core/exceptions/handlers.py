@@ -7,6 +7,8 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from app.core.exceptions.base import AppError
+from app.core.exceptions.resources import NotFoundError
+from app.core.i18n.types import T
 
 
 async def app_error_handler(
@@ -34,7 +36,7 @@ async def validation_error_handler(
     """
     Handle Pydantic and FastAPI request validation errors.
     """
-    if isinstance(exc, RequestValidationError) or isinstance(exc, ValidationError):
+    if isinstance(exc, (RequestValidationError, ValidationError)):
         errors = exc.errors()
     else:
         raise TypeError(f"Unsupported validation error: {type(exc)!r}")
@@ -44,4 +46,14 @@ async def validation_error_handler(
         content={
             "errors": jsonable_encoder(errors),
         },
+    )
+
+
+async def no_result_found_handler(
+    request: Request,
+    exc: Exception,
+) -> JSONResponse:
+    """Translate an uncaught ORM missing-row error into the API's 404 response."""
+    return await app_error_handler(
+        request, NotFoundError(message=T("errors:not_found"))
     )
