@@ -42,7 +42,6 @@ class SecurityService:
             The created SecurityEvent object.
         """
         event = SecurityEvent(
-
             user_id=user_id,
             event_type=event_type,
             ip_address=ip_address,
@@ -74,7 +73,6 @@ class SecurityService:
             user_agent: Optional user agent of the request.
         """
         await cls.log_event(
-
             db,
             event_type=SecurityEventType.LOGIN_SUCCESS,
             user_id=user_id,
@@ -101,7 +99,6 @@ class SecurityService:
             user_agent: Optional user agent of the request.
         """
         await cls.log_event(
-
             db,
             event_type=SecurityEventType.LOGIN_FAILED,
             user_id=user_id,
@@ -130,7 +127,6 @@ class SecurityService:
             reason: The reason why the login was flagged as suspicious.
         """
         await cls.log_event(
-
             db,
             event_type=SecurityEventType.SUSPICIOUS_LOGIN,
             user_id=user_id,
@@ -162,7 +158,6 @@ class SecurityService:
             attempts: The number of failed attempts that led to the lockout.
         """
         await cls.log_event(
-
             db,
             event_type=SecurityEventType.ACCOUNT_LOCKED,
             user_id=user_id,
@@ -192,7 +187,6 @@ class SecurityService:
             user_agent: Optional user agent of the request.
         """
         await cls.log_event(
-
             db,
             event_type=SecurityEventType.RATE_LIMIT_EXCEEDED,
             user_id=user_id,
