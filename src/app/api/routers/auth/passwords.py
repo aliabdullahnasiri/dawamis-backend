@@ -13,6 +13,7 @@ from app.services.auth.password_reset import PasswordResetService
 
 router = Router(tags=["Authentication - Passwords"])
 
+
 @router.post(
     "/password/forgot",
     response_model=PasswordResetResponse,
@@ -69,6 +70,7 @@ async def password_change(
     Change password while authenticated.
     """
     from app.services.user import UserService
+
     user = await UserService.get_by_uuid(
         db=db,
         user_uuid=session.user.uuid,
