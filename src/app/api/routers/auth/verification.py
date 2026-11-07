@@ -1,5 +1,8 @@
+from sqlalchemy.exc import NoResultFound
+
 from app.api.dependencies.db import DBSession
 from app.api.router import Router
+from app.core.exceptions import UserNotFound
 from app.core.i18n.types import T
 from app.schemas.auth import (
     EmailVerificationResponse,
@@ -41,7 +44,7 @@ async def resend_verification_email(
 ) -> ResendVerificationEmailResponse:
     try:
         user = await UserService.get_by_email(db=db, email=data.email)
-    except Exception:
+    except (UserNotFound, NoResultFound):
         # In a real app, we might return 404 or a generic message for security
         return ResendVerificationEmailResponse(
             message=T("messages:verification_email_sent")
