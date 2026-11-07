@@ -19,7 +19,6 @@ class AuthService:
     login, password management, and account-related notifications.
     """
 
-
     @staticmethod
     async def current_user(
         db: AsyncSession,
@@ -40,7 +39,6 @@ class AuthService:
             user_uuid=user_uuid,
         )
 
-
     @staticmethod
     async def register(
         db: AsyncSession,
@@ -60,7 +58,6 @@ class AuthService:
             db=db,
             data=data,
         )
-
 
     @staticmethod
     async def authenticate(
@@ -86,7 +83,6 @@ class AuthService:
             db=db,
             email=email,
         )
-
 
         if user is None or not user.check_password(password):
             raise AuthenticationError(T("auth:invalid_credentials"))
@@ -121,7 +117,6 @@ class AuthService:
             password=password,
         )
 
-
         access_token = JWTService.create_access_token(
             identity=str(user.uuid),
         )
@@ -148,7 +143,6 @@ class AuthService:
             user=user.to_json(),
         )
 
-
     @staticmethod
     async def change_password(
         db: AsyncSession,
@@ -172,7 +166,6 @@ class AuthService:
         """
         if not user.check_password(current_password):
             raise AuthenticationError(T("auth:invalid_current_password"))
-
 
         user.set_password(new_password)
         await db.commit()
