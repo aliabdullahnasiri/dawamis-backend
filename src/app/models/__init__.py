@@ -3,6 +3,7 @@ from app.models.associations.organization_user import OrganizationUser
 from app.models.base import Base
 from app.models.branch import Branch
 from app.models.organization import Organization
+from app.models.organization_membership import OrganizationMembership
 from app.models.permission import Permission
 from app.models.recovery_code import RecoveryCode
 from app.models.role import Role
@@ -14,6 +15,7 @@ __all__ = [
     "Base",
     "Branch",
     "Organization",
+    "OrganizationMembership",
     "OrganizationUser",
     "Permission",
     "RecoveryCode",
