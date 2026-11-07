@@ -1,7 +1,7 @@
 import hashlib
 import secrets
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,7 +28,7 @@ class TwoFactorService:
     """
 
     # Provider registry
-    _providers: dict[str, TwoFactorProvider] = {
+    _providers: ClassVar[dict[str, TwoFactorProvider]] = {
         "totp": TOTPProvider(),
         "otp": OTPProvider(),
     }
