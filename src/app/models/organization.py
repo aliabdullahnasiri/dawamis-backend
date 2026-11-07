@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import JSON, Boolean, ForeignKey, String
+from sqlalchemy.ext.mutable import MutableDict
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
@@ -29,6 +30,16 @@ class Organization(Base):
         Boolean,
         default=True,
         nullable=False,
+    )
+
+    # Nullable for legacy organizations; API-created organizations always have an owner.
+    owner_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="RESTRICT"),
+        nullable=True,
+        index=True,
+    )
+    settings: Mapped[dict] = mapped_column(
+        MutableDict.as_mutable(JSON), default=dict, nullable=False
     )
 
     memberships: Mapped[list[OrganizationUser]] = relationship(
