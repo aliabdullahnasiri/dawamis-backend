@@ -23,7 +23,6 @@ class PasswordResetService:
     and performing the actual password update.
     """
 
-
     TOKEN_EXPIRE_MINUTES = 60
 
     @staticmethod
@@ -39,7 +38,6 @@ class PasswordResetService:
         """
         return hashlib.sha256(token.encode()).hexdigest()
 
-
     @staticmethod
     def _generate_token() -> str:
         """
@@ -49,7 +47,6 @@ class PasswordResetService:
             A URL-safe random token string.
         """
         return secrets.token_urlsafe(32)
-
 
     @classmethod
     async def send_reset_email(
@@ -69,7 +66,7 @@ class PasswordResetService:
         try:
 
             user: User = await UserService.get_by_email(db=db, email=email)
-        except (UserNotFound, NoResultFound):
+        except UserNotFound, NoResultFound:
             # Generic failure for security to prevent email enumeration
             return
 
@@ -108,7 +105,6 @@ class PasswordResetService:
             new_password: The new password to set.
         """
         token_hash = cls._hash_token(token)
-
 
         user: User = await UserService.get_by_reset_token(db=db, token_hash=token_hash)
 
