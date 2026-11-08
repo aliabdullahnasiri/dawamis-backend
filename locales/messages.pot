@@ -480,3 +480,18 @@ msgstr ""
 
 msgid "emails:requester_user_id"
 msgstr ""
+
+msgid "role:not_found"
+msgstr ""
+
+msgid "role:system_protected"
+msgstr ""
+
+msgid "role:conflict"
+msgstr ""
+
+msgid "role:inactive_member"
+msgstr ""
+
+msgid "permission:unknown"
+msgstr ""
