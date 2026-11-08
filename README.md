@@ -222,6 +222,7 @@ All paths below are relative to `/api/v1`. The generated OpenAPI schema describe
 | PATCH | `/users/me/username` | Change username |
 | POST, GET | `/organizations` | Create or list accessible organizations |
 | GET, PATCH, DELETE | `/organizations/{organization_uuid}` | Read, update, or delete an organization |
+| POST | `/organizations/{organization_uuid}/join-requests` | Email the owner a request to join |
 | GET, POST | `/organizations/{organization_uuid}/members` | List or add members |
 | PATCH, DELETE | `/organizations/{organization_uuid}/members/{member_uuid}` | Update or remove membership |
 | POST | `/auth/organizations/{organization_uuid}/select` | Select the session's organization |
@@ -229,6 +230,8 @@ All paths below are relative to `/api/v1`. The generated OpenAPI schema describe
 | GET | `/health/` | Check the database using an authenticated session |
 
 Organization and member lists accept `offset` and `limit`; the default limit is 50 and the maximum is 100. Access and mutation rules are enforced by the organization service. Branch, role, and permission models exist, but there are no standalone CRUD routers for them.
+
+Organization resource endpoints enforce access through `PermissionRequired`: reading an organization requires `organizations.read`, listing its members requires `organizations.members.read`, updates/deletions require `organizations.update`/`organizations.delete`, and membership changes require `organizations.members.manage`. Organization owners pass these permission checks automatically after membership validation.
 
 ### Response conventions
 
@@ -280,6 +283,8 @@ When two-factor authentication is enabled, login returns `requires_2fa`, a `chal
 
 ### Organization selection and permissions
 
+An authenticated user can request access with `POST /api/v1/organizations/{organization_uuid}/join-requests` (no body). The endpoint returns 202 after queuing an email to the owner containing the requester's username, email, and user ID. It does not create membership or select the organization. The owner reviews the request and uses the existing member-management endpoint to add the user, or reactivate an existing inactive membership. Active members, inactive organizations, and organizations without an owner cannot receive a new join request through this endpoint.
+
 Organizations are selected per session:
 
 ```bash
@@ -290,7 +295,7 @@ curl http://127.0.0.1:8000/api/v1/auth/organization \
   -H 'Authorization: Bearer ACCESS_TOKEN'
 ```
 
-The current organization dependency rechecks membership and organization activity. Permission checks require an active session, a selected active organization, active membership, and every requested permission through roles in that organization. Grants are not merged across organizations, and the permission dependency provides no implicit owner or superuser bypass.
+The current organization dependency rechecks membership and organization activity. `PermissionRequired["permission", ...]` checks the organization identified by `organization_uuid` in the URL, or the session's selected organization when the URL has none. It requires an active session and active membership. The organization's owner passes permission checks automatically; other members need every requested permission through roles in that organization. Owners can manage inactive organizations; selected-organization context still requires an active organization. Grants are not merged across organizations, and there is no implicit superuser bypass.
 
 ## Database migrations
 
