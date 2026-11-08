@@ -9,6 +9,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.associations.organization_user import OrganizationUser
     from app.models.branch import Branch
+    from app.models.role import Role
 
 
 class Organization(Base):
@@ -40,6 +41,15 @@ class Organization(Base):
     )
     settings: Mapped[dict] = mapped_column(
         MutableDict.as_mutable(JSON), default=dict, nullable=False
+    )
+
+    # Changed in the same transaction as grants, making old cache keys unreachable.
+    rbac_version: Mapped[int] = mapped_column(
+        default=0, server_default="0", nullable=False
+    )
+
+    roles: Mapped[list[Role]] = relationship(
+        back_populates="organization", cascade="all, delete-orphan"
     )
 
     memberships: Mapped[list[OrganizationUser]] = relationship(
