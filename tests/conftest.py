@@ -87,7 +87,9 @@ def app():
 
 
 @pytest_asyncio.fixture
-async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
+async def client(
+    app: FastAPI, db_session: AsyncSession, fake_useragent: str, mock_redis
+):
     """
     Provides an asynchronous HTTPX client for making requests to the API.
     Overrides the database dependency to use the test session.
@@ -96,6 +98,9 @@ async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
     async def override_get_db():
         yield db_session
 
+    from app.api.dependencies.redis import get_redis
+
+    app.dependency_overrides[get_redis] = lambda: mock_redis
     app.dependency_overrides[get_db] = override_get_db
 
     try:
@@ -109,6 +114,7 @@ async def client(app: FastAPI, db_session: AsyncSession, fake_useragent: str):
             yield test_client
     finally:
         app.dependency_overrides.pop(get_db, None)
+        app.dependency_overrides.pop(get_redis, None)
 
 
 @pytest.fixture
