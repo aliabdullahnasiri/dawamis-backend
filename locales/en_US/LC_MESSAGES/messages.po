@@ -488,3 +488,18 @@ msgstr "Email"
 
 msgid "emails:requester_user_id"
 msgstr "User ID"
+
+msgid "role:not_found"
+msgstr "Role not found."
+
+msgid "role:system_protected"
+msgstr "System roles cannot be modified or deleted."
+
+msgid "role:conflict"
+msgstr "A role with this name already exists or the role assignment conflicts."
+
+msgid "role:inactive_member"
+msgstr "Roles can only be assigned to active members."
+
+msgid "permission:unknown"
+msgstr "One or more permissions are not registered."
