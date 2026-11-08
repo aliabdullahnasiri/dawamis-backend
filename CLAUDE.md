@@ -120,6 +120,12 @@ The model package includes:
 
 `current_user_can(*permissions)` and `PermissionRequired["permission", ...]` use the URL's `organization_uuid` when present, otherwise the session's selected active organization. Both require an active session and active membership. The organization's owner passes the permission check automatically and can manage inactive organizations through UUID routes; other users need an active organization and every named permission through roles scoped to it. Grants are not merged across organizations, and there is no implicit superuser bypass.
 
+### Organization RBAC
+
+Roles now have `organization_id` and tenant-local name uniqueness. Null organization IDs are retained legacy templates and never grant access. `RoleService` implements scoped CRUD, permission replacement, and membership role replacement; routers use UUID paths under `/organizations/{organization_uuid}`. System roles cannot be edited or deleted, and delegates cannot grant permissions they do not hold. Permission definitions live in `core/permissions.py` and are registered at startup.
+
+Permission checks cache scoped grants in Redis under the organization's `rbac_version`. All grant mutations, including membership removal, must increment that version through `PermissionService.invalidate` in the same database transaction. Membership and organization activity remain uncached. Do not mutate grant tables directly without invalidation. See README's Organization RBAC section for endpoints and request contracts.
+
 ### Base model
 
 `src/app/models/base.py` defines `DeclarativeBaseMeta` and shared SQLAlchemy `Base`. It provides an integer primary key, UUID, UTC `created_at`/`updated_at` timestamps, `to_dict()`, `to_json()`, and `__hidden_fields__`. Keep password hashes, tokens, private secrets, and authentication data out of API responses and logs. When changing models, check relationships, constraints, serialization, tests, and Alembic history.
@@ -220,7 +226,7 @@ When implementing features, match this repository's patterns instead of introduc
 11. **Security by default.** Never log passwords, raw OTP/recovery codes, JWTs, encryption keys, or secrets.
 12. **Useful comments.** Explain non-obvious choices and security reasoning; don't repeat the code in comments.
 13. **Tests are part of the change.** Cover normal behavior, invalid input, authorization, expiry/revocation, and failure paths where relevant.
-14. **Check for incomplete features.** Search for placeholders, `pass`, ellipses, TODOs, and empty methods before depending on a feature. Startup initialization methods and the permission-check dependency currently include placeholders.
+14. **Check for incomplete features.** Search for placeholders, `pass`, ellipses, TODOs, and empty methods before depending on a feature. Startup registers canonical permission definitions; default-role initialization remains a placeholder.
 
 ## 14. Environment and common commands
 
