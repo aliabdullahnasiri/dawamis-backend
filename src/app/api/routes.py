@@ -34,7 +34,7 @@ class AsyncValidationRoute(APIRoute):
 
 
 def create_app_router() -> APIRouter:
-    from app.api.routers import auth, health, organizations, users
+    from app.api.routers import auth, health, organizations, roles, users
 
     router = APIRouter(route_class=AsyncValidationRoute)
 
@@ -42,5 +42,6 @@ def create_app_router() -> APIRouter:
     router.include_router(health.router)
     router.include_router(users.router)
     router.include_router(organizations.router)
+    router.include_router(roles.router)
 
     return router
