@@ -50,6 +50,8 @@ class Settings(BaseSettings):
 
     DEFAULT_LANGUAGE: str = SUPPORTED_LANGUAGES["en"]
 
+    PERMISSION_CACHE_TTL_SECONDS: int = 300
+
     # Roles
     DEFAULT_ROLES: tuple = ("ADMIN", "USER")
 
