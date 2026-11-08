@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.models.associations.role_permission import RolePermission
+from app.models.organization import Organization
 from app.models.permission import Permission
 from app.models.role import Role
 
@@ -31,13 +32,16 @@ async def test_role_creation(db_session: AsyncSession):
 @pytest.mark.asyncio
 async def test_role_unique_name(db_session: AsyncSession):
     """
-    Test that Role names must be unique.
+    Test that Role names must be unique within an organization.
     """
-    role1 = Role(name="UniqueRole")
+    org = Organization(name="Test", slug="role-test")
+    db_session.add(org)
+    await db_session.flush()
+    role1 = Role(name="UniqueRole", organization_id=org.id)
     db_session.add(role1)
     await db_session.commit()
 
-    role2 = Role(name="UniqueRole")
+    role2 = Role(name="UniqueRole", organization_id=org.id)
     db_session.add(role2)
 
     with pytest.raises(IntegrityError):
