@@ -4,6 +4,8 @@ from typing import Self
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies.redis import RedisClient
+from app.core.permissions import PERMISSION_DEFINITIONS
+from app.services.permission import PermissionService
 
 
 class Startup:
@@ -66,3 +68,5 @@ class Startup:
         """
         Internal method to initialize system permissions in the database.
         """
+        if self.db is not None:
+            await PermissionService.ensure_exists(self.db, PERMISSION_DEFINITIONS)
