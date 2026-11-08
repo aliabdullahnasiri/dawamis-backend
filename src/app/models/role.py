@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Boolean, String
+from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.associations import RolePermission, UserRole
+    from app.models.organization import Organization
     from app.models.permission import Permission
     from app.models.user import User
 
@@ -21,8 +22,17 @@ class Role(Base):
     name: Mapped[str] = mapped_column(
         String(50),
         nullable=False,
-        unique=True,
         index=True,
+    )
+
+    # Null only for retained legacy templates; they never grant tenant access.
+    organization_id: Mapped[int | None] = mapped_column(
+        ForeignKey("organizations.id", ondelete="CASCADE"), index=True, nullable=True
+    )
+    organization: Mapped[Organization | None] = relationship(back_populates="roles")
+
+    __table_args__ = (
+        UniqueConstraint("organization_id", "name", name="uq_role_organization_name"),
     )
 
     description: Mapped[str | None] = mapped_column(
