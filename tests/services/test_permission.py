@@ -44,3 +44,20 @@ async def test_registration_survives_subsequent_request_rollback(tmp_path):
             ]
     finally:
         await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_startup_registers_definitions_without_granting_access(db_session):
+    from app.core.permissions import PERMISSION_DEFINITIONS
+    from app.core.startup import Startup
+    from app.models import Role
+
+    async with Startup(db_session):
+        pass
+    async with Startup(db_session):
+        pass
+    assert set(await db_session.scalars(select(Permission.name))) == set(
+        PERMISSION_DEFINITIONS
+    )
+    assert list(await db_session.scalars(select(Role))) == []
+    assert list(await db_session.scalars(select(RolePermission))) == []
