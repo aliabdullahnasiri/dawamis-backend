@@ -50,7 +50,7 @@ async def test_role_permissions_association(db_session: AsyncSession):
     Test associating roles with permissions.
     """
     role = Role(name="SuperAdmin")
-    perm = Permission(name="AllAccess", code=1)
+    perm = Permission(name="AllAccess")
     db_session.add_all([role, perm])
     await db_session.commit()
 

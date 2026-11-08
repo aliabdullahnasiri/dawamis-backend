@@ -452,3 +452,39 @@ msgstr "The worker event loop has not been initialized."
 
 #~ msgid "auth.email_exists"
 #~ msgstr "Email address already exists."
+
+msgid "organization:already_a_member"
+msgstr "You already belong to this organization."
+
+msgid "organization:owner_unavailable"
+msgstr "This organization has no owner to contact."
+
+msgid "organization:join_request_queued"
+msgstr "Your join request has been queued."
+
+msgid "emails:organization_join_request_subject"
+msgstr "Organization membership request"
+
+msgid "emails:organization_join_request_text"
+msgstr "A user has requested to join your organization.\n\nOrganization: {organization}\nOrganization UUID: {organization_uuid}\nUsername: {username}\nEmail: {email}\nUser ID: {user_id}\n\nReview this request before adding the user through organization member management. Sending this request grants no access."
+
+msgid "emails:organization_join_request_intro"
+msgstr "A user has requested to join your organization."
+
+msgid "emails:organization_join_request_review"
+msgstr "Review this request before adding the user through organization member management. Sending this request grants no access."
+
+msgid "emails:organization_name"
+msgstr "Organization"
+
+msgid "emails:organization_uuid"
+msgstr "Organization UUID"
+
+msgid "emails:requester_username"
+msgstr "Username"
+
+msgid "emails:requester_email"
+msgstr "Email"
+
+msgid "emails:requester_user_id"
+msgstr "User ID"

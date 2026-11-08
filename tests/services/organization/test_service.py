@@ -1,9 +1,34 @@
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ConflictError, NotFoundError
+from app.core.exceptions import AuthorizationError, ConflictError, NotFoundError
 from app.models import User
 from app.services.organization import OrganizationService
+
+
+@pytest.mark.asyncio
+async def test_owner_can_require_permissions_without_role_grants(db_session):
+    owner = User(user_name="owner", email="owner@example.com", password_hash="unused")
+    db_session.add(owner)
+    await db_session.commit()
+    owned = await OrganizationService.create(db_session, "Owned", "owned", owner=owner)
+    other = await OrganizationService.create(db_session, "Other", "other")
+
+    await OrganizationService.require_permissions(
+        db_session, owner.id, owned.id, ("stock.read", "stock.write")
+    )
+    with pytest.raises(AuthorizationError):
+        await OrganizationService.require_permissions(
+            db_session, owner.id, other.id, ("stock.read",)
+        )
+
+    # Ownership changes must take effect on the next check.
+    owned.owner_id = None
+    await db_session.commit()
+    with pytest.raises(AuthorizationError):
+        await OrganizationService.require_permissions(
+            db_session, owner.id, owned.id, ("stock.read",)
+        )
 
 
 @pytest.mark.asyncio

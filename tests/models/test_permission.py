@@ -17,7 +17,6 @@ async def test_permission_creation(db_session: AsyncSession):
     perm = Permission(
         name="Edit User",
         description="Allows editing users",
-        code=101,
     )
     db_session.add(perm)
     await db_session.commit()
@@ -25,7 +24,6 @@ async def test_permission_creation(db_session: AsyncSession):
 
     assert perm.id is not None
     assert perm.name == "Edit User"
-    assert perm.code == 101
 
 
 @pytest.mark.asyncio
@@ -33,11 +31,11 @@ async def test_permission_unique_name(db_session: AsyncSession):
     """
     Test that Permission names must be unique.
     """
-    perm1 = Permission(name="Unique", code=1)
+    perm1 = Permission(name="Unique")
     db_session.add(perm1)
     await db_session.commit()
 
-    perm2 = Permission(name="Unique", code=2)
+    perm2 = Permission(name="Unique")
     db_session.add(perm2)
 
     with pytest.raises(IntegrityError):
@@ -50,7 +48,7 @@ async def test_permission_role_association(db_session: AsyncSession):
     Test associating permissions with roles.
     """
     role = Role(name="Admin")
-    perm = Permission(name="AdminPerm", code=10)
+    perm = Permission(name="AdminPerm")
     db_session.add_all([role, perm])
     await db_session.commit()
 

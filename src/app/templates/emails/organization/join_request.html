@@ -1,0 +1,23 @@
+{% extends "emails/base.html" %}
+
+{% block title %}{{ T("emails:organization_join_request_subject") }}{% endblock %}
+
+{% block content %}
+<h2 style="margin: 0 0 20px; font-size: 24px; color: #111827;">
+    {{ T("emails:organization_join_request_subject") }}
+</h2>
+<p style="margin: 0 0 24px; font-size: 16px; line-height: 1.6; color: #4b5563;">
+    {{ T("emails:organization_join_request_intro") }}
+</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="8"
+       style="margin: 0 0 24px; font-size: 14px; text-align: left;">
+    <tr><th>{{ T("emails:organization_name") }}</th><td>{{ organization.name }}</td></tr>
+    <tr><th>{{ T("emails:organization_uuid") }}</th><td>{{ organization.uuid }}</td></tr>
+    <tr><th>{{ T("emails:requester_username") }}</th><td>{{ user.user_name }}</td></tr>
+    <tr><th>{{ T("emails:requester_email") }}</th><td>{{ user.email }}</td></tr>
+    <tr><th>{{ T("emails:requester_user_id") }}</th><td>{{ user.id }}</td></tr>
+</table>
+<p style="margin: 0; font-size: 14px; line-height: 1.6; color: #6b7280;">
+    {{ T("emails:organization_join_request_review") }}
+</p>
+{% endblock %}

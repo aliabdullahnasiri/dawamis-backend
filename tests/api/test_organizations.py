@@ -1,3 +1,4 @@
+import json
 from datetime import timedelta
 
 import pytest
@@ -7,6 +8,7 @@ from sqlalchemy import select
 
 from app.api.dependencies.auth import current_user_can
 from app.models import (
+    Organization,
     OrganizationMembership,
     Permission,
     Role,
@@ -17,6 +19,7 @@ from app.models import (
 )
 from app.services.auth.jwt import JWTService
 from app.services.datetime import DateTimeService
+from app.services.jinja import JinjaService
 
 
 @pytest_asyncio.fixture
@@ -47,6 +50,110 @@ async def create(client, slug="pharmacy"):
     )
     assert response.status_code == 201, response.text
     return response.json()["data"]
+
+
+@pytest.mark.asyncio
+async def test_join_request_emails_owner_without_granting_membership(
+    client, identity, db_session, mock_mail
+):
+    requester, session = identity
+    owner = User(
+        user_name="recipient", email="recipient@example.com", password_hash="unused"
+    )
+    db_session.add(owner)
+    await db_session.flush()
+    organization = Organization(
+        name="Requested pharmacy", slug="requested", owner_id=owner.id
+    )
+    db_session.add(organization)
+    await db_session.commit()
+
+    response = await client.post(
+        f"/api/v1/organizations/{organization.uuid}/join-requests"
+    )
+    assert response.status_code == 202, response.text
+    mock_mail["send_template"].assert_called_once()
+    message = mock_mail["send_template"].call_args.kwargs
+    assert message["template"] == "emails/organization/join_request.html"
+    assert message["user"] == {
+        "id": requester.id,
+        "user_name": requester.user_name,
+        "email": requester.email,
+    }
+    assert message["to"] == owner.email
+    assert message["subject"] == "Organization membership request"
+    assert message["organization"] == {
+        "name": organization.name,
+        "uuid": str(organization.uuid),
+    }
+    assert requester.email in message["text"]
+    assert organization.name in message["text"]
+    assert "{username}" not in message["text"]
+    assert json.loads(json.dumps(message)) == message
+    html = JinjaService.render(
+        message["template"],
+        user=message["user"],
+        organization={**message["organization"], "name": "<b>Pharmacy</b>"},
+    )
+    assert requester.email in html
+    assert "&lt;b&gt;Pharmacy&lt;/b&gt;" in html
+    assert "Organization membership request" in html
+    assert "emails:organization_" not in html
+    assert session.organization_id is None
+    assert (
+        await db_session.scalar(
+            select(OrganizationMembership.id).where(
+                OrganizationMembership.organization_id == organization.id,
+                OrganizationMembership.user_id == requester.id,
+            )
+        )
+        is None
+    )
+    assert (
+        await client.post(f"/api/v1/auth/organizations/{organization.uuid}/select")
+    ).status_code == 404
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "case, expected",
+    [
+        ("member", 409),
+        ("inactive", 403),
+        ("ownerless", 409),
+        ("missing", 404),
+        ("anonymous", 401),
+    ],
+)
+async def test_join_request_rejections(
+    client, identity, db_session, mock_mail, case, expected
+):
+    from uuid import uuid4
+
+    organization = await create(client)
+    target = await db_session.get(Organization, organization["id"])
+    organization_uuid = target.uuid
+    if case == "inactive":
+        target.is_active = False
+    elif case == "ownerless":
+        target.owner_id = None
+        membership = await db_session.scalar(
+            select(OrganizationMembership).where(
+                OrganizationMembership.organization_id == target.id
+            )
+        )
+        await db_session.delete(membership)
+    elif case == "missing":
+        organization_uuid = uuid4()
+    elif case == "anonymous":
+        del client.headers["Authorization"]
+    await db_session.commit()
+    response = await client.post(
+        f"/api/v1/organizations/{organization_uuid}/join-requests"
+    )
+    assert response.status_code == expected, response.text
+    mock_mail["send"].assert_not_called()
+    mock_mail["send_template"].assert_not_called()
 
 
 @pytest.mark.asyncio
@@ -134,7 +241,11 @@ async def test_permission_scope_and_revocation(client, identity, db_session, app
     user, session = identity
     org = await create(client)
     other = await create(client, "other")
-    permission = Permission(name="stock.read", code=1)
+    # Exercise role checks as a member rather than using the owner bypass.
+    for organization_id in (org["id"], other["id"]):
+        organization = await db_session.get(Organization, organization_id)
+        organization.owner_id = None
+    permission = Permission(name="stock.read")
     role = Role(name="reader")
     db_session.add_all([permission, role])
     await db_session.flush()
@@ -164,6 +275,15 @@ async def test_permission_scope_and_revocation(client, identity, db_session, app
         await client.post(f"/api/v1/auth/organizations/{org['uuid']}/select")
         assert (await client.get("/test-org-permission")).status_code == 200
         assert (await client.get("/test-org-all")).status_code == 403
+        registered = (
+            await db_session.scalars(
+                select(Permission.name).where(
+                    Permission.name.in_(("stock.read", "stock.write"))
+                )
+            )
+        ).all()
+        assert set(registered) == {"stock.read", "stock.write"}
+        assert (await client.get("/test-org-all")).status_code == 403
         await client.post(f"/api/v1/auth/organizations/{other['uuid']}/select")
         assert (await client.get("/test-org-permission")).status_code == 403
         await client.post(f"/api/v1/auth/organizations/{org['uuid']}/select")
@@ -185,6 +305,85 @@ async def test_permission_scope_and_revocation(client, identity, db_session, app
             if getattr(route, "path", "")
             not in {"/test-org-permission", "/test-org-all"}
         ]
+
+
+@pytest.mark.asyncio
+async def test_member_management_checks_url_organization_permissions(
+    client, identity, db_session
+):
+    user, _ = identity
+    selected = await create(client, "selected")
+    target = await create(client, "target")
+    target_model = await db_session.get(Organization, target["id"])
+    target_model.owner_id = None
+    role = Role(name="member-manager")
+    permission = Permission(name="organizations.members.manage")
+    candidate = User(
+        user_name="candidate", email="candidate@example.com", password_hash="unused"
+    )
+    db_session.add_all([role, permission, candidate])
+    await db_session.flush()
+    db_session.add_all(
+        [
+            RolePermission(role_id=role.id, permission_id=permission.id),
+            UserRole(user_id=user.id, role_id=role.id, organization_id=selected["id"]),
+        ]
+    )
+    await db_session.commit()
+    await client.post(f"/api/v1/auth/organizations/{selected['uuid']}/select")
+    path = f"/api/v1/organizations/{target['uuid']}/members"
+    response = await client.post(path, json={"user_id": candidate.id})
+    assert response.status_code == 403, response.text
+    assert (
+        await db_session.scalar(
+            select(OrganizationMembership.id).where(
+                OrganizationMembership.organization_id == target["id"],
+                OrganizationMembership.user_id == candidate.id,
+            )
+        )
+        is None
+    )
+
+    db_session.add(
+        UserRole(user_id=user.id, role_id=role.id, organization_id=target["id"])
+    )
+    await db_session.commit()
+    response = await client.post(path, json={"user_id": candidate.id})
+    assert response.status_code == 201, response.text
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "suffix, permission_name",
+    [("", "organizations.read"), ("/members", "organizations.members.read")],
+)
+async def test_organization_reads_require_permission(
+    client, identity, db_session, suffix, permission_name
+):
+    user, _ = identity
+    org = await create(client)
+    organization = await db_session.get(Organization, org["id"])
+    organization.owner_id = None
+    await db_session.commit()
+    path = f"/api/v1/organizations/{org['uuid']}{suffix}"
+    response = await client.get(path)
+    assert response.status_code == 403, response.text
+
+    permission = await db_session.scalar(
+        select(Permission).where(Permission.name == permission_name)
+    )
+    role = Role(name="organization-reader")
+    db_session.add(role)
+    await db_session.flush()
+    db_session.add_all(
+        [
+            RolePermission(role_id=role.id, permission_id=permission.id),
+            UserRole(user_id=user.id, role_id=role.id, organization_id=organization.id),
+        ]
+    )
+    await db_session.commit()
+    response = await client.get(path)
+    assert response.status_code == 200, response.text
 
 
 @pytest.mark.asyncio
@@ -260,6 +459,45 @@ async def test_outsider_and_member_removal(client, identity, db_session):
         await db_session.scalar(select(UserRole).where(UserRole.user_id == stranger.id))
         is None
     )
+
+
+@pytest.mark.asyncio
+async def test_selection_requires_active_membership_and_preserves_context(
+    client, identity, db_session
+):
+    user, session = identity
+    selected = await create(client, "selected")
+    target = await create(client, "target")
+    outsider = Organization(name="Private", slug="private")
+    db_session.add(outsider)
+    await db_session.commit()
+    response = await client.post(
+        f"/api/v1/auth/organizations/{selected['uuid']}/select"
+    )
+    assert response.status_code == 200, response.text
+
+    response = await client.post(f"/api/v1/auth/organizations/{outsider.uuid}/select")
+    assert response.status_code == 404, response.text
+    assert session.organization_id == selected["id"]
+
+    membership = await db_session.scalar(
+        select(OrganizationMembership).where(
+            OrganizationMembership.organization_id == target["id"],
+            OrganizationMembership.user_id == user.id,
+        )
+    )
+    membership.is_active = False
+    await db_session.commit()
+    # Even the owner cannot select with an inactive membership.
+    response = await client.post(f"/api/v1/auth/organizations/{target['uuid']}/select")
+    assert response.status_code == 404, response.text
+    assert session.organization_id == selected["id"]
+
+    membership.is_active = True
+    await db_session.commit()
+    response = await client.post(f"/api/v1/auth/organizations/{target['uuid']}/select")
+    assert response.status_code == 200, response.text
+    assert session.organization_id == target["id"]
 
 
 @pytest.mark.asyncio

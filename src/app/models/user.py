@@ -130,6 +130,21 @@ class User(Base):
         viewonly=True,
     )
 
+    # Aggregate role permissions; tenant authorization must use the scoped service.
+    permissions: Mapped[list[Permission]] = relationship(
+        "Permission",
+        secondary=lambda: Base.metadata.tables["user_roles"].join(
+            Base.metadata.tables["role_permissions"],
+            Base.metadata.tables["user_roles"].c.role_id
+            == Base.metadata.tables["role_permissions"].c.role_id,
+        ),
+        primaryjoin="User.id == user_roles.c.user_id",
+        secondaryjoin="Permission.id == role_permissions.c.permission_id",
+        viewonly=True,
+        lazy="selectin",
+        order_by="Permission.id",
+    )
+
     sessions: Mapped[list[UserSession]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
@@ -157,23 +172,12 @@ class User(Base):
     )
 
     @property
-    def permissions(self) -> list[Permission]:
-        """
-        Return all permissions granted to this user through their roles.
-        """
-        permissions: list[Permission] = []
-
-        for role in self.roles:
-            permissions.extend(role.permissions)
-
-        return permissions
-
-    @property
     def permissions_mask(self: Self) -> int:
+        """Encode aggregate permission IDs as distinct bits (ID 1 is bit 0)."""
         mask = 0x0
 
         for permission in self.permissions:
-            mask |= permission.code
+            mask |= 1 << (permission.id - 1)
 
         return mask
 

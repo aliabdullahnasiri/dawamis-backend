@@ -18,8 +18,7 @@ async def select_organization(
     organization_uuid: UUID, session: CurrentActiveSession, db: DBSession
 ) -> OrganizationResponse:
     """Select an active organization for subsequent requests on this session."""
-    organization = await OrganizationService.get_by_uuid(db, organization_uuid)
-    organization = await OrganizationService.select(db, session, organization.id)
+    organization = await OrganizationService.select(db, session, organization_uuid)
     return OrganizationResponse(data=OrganizationData.model_validate(organization))
 
 

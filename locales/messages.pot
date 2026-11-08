@@ -444,3 +444,39 @@ msgstr ""
 msgid "worker:event_loop_not_initialized"
 msgstr ""
 
+
+msgid "organization:already_a_member"
+msgstr ""
+
+msgid "organization:owner_unavailable"
+msgstr ""
+
+msgid "organization:join_request_queued"
+msgstr ""
+
+msgid "emails:organization_join_request_subject"
+msgstr ""
+
+msgid "emails:organization_join_request_text"
+msgstr ""
+
+msgid "emails:organization_join_request_intro"
+msgstr ""
+
+msgid "emails:organization_join_request_review"
+msgstr ""
+
+msgid "emails:organization_name"
+msgstr ""
+
+msgid "emails:organization_uuid"
+msgstr ""
+
+msgid "emails:requester_username"
+msgstr ""
+
+msgid "emails:requester_email"
+msgstr ""
+
+msgid "emails:requester_user_id"
+msgstr ""

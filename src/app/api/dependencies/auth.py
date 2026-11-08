@@ -2,11 +2,13 @@ from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import Depends, Request
+from pydantic import TypeAdapter
+from sqlalchemy import select
 
 from app.api.dependencies.db import DBSession
 from app.api.dependencies.oauth import OAuth2Token, RefreshToken
 from app.api.dependencies.redis import RedisClient
-from app.core.exceptions import AuthenticationError, AuthorizationError
+from app.core.exceptions import AuthenticationError, AuthorizationError, NotFoundError
 from app.core.i18n.types import T
 from app.core.security.manager import SecurityManager
 from app.models.organization import Organization
@@ -18,6 +20,7 @@ from app.services.auth.two_factor.challenge import (
     TwoFactorChallengeService,
 )
 from app.services.organization import OrganizationService
+from app.services.permission import PermissionService
 
 # Singleton instance of SecurityManager to be used by FastAPI dependencies
 security_manager = SecurityManager()
@@ -122,9 +125,8 @@ async def get_current_organization(
     """Resolve session context and revalidate tenant access on every request."""
     if session.organization_id is None:
         raise AuthorizationError(message=T("organization:selection_required"))
-    organization = await OrganizationService.authorize(
-        db, session.user, session.organization_id
-    )
+    organization = await OrganizationService.get_by_id(db, session.organization_id)
+    await OrganizationService.validate_membership(db, session.user, organization)
     if not organization.is_active:
         raise AuthorizationError()
     return organization
@@ -168,11 +170,33 @@ CurrentOrganization = Annotated[Organization, Depends(get_current_organization)]
 
 
 def current_user_can(*permissions: str):
-    """Require all named permissions in the selected organization, denying by default."""
+    """Check the URL's organization, falling back to the selected organization."""
 
     async def dependency(
-        db: DBSession, session: CurrentActiveSession, organization: CurrentOrganization
+        db: DBSession, session: CurrentActiveSession, request: Request
     ) -> None:
+        await PermissionService.ensure_exists(db, permissions)
+
+        if "organization_uuid" in request.path_params:
+            organization_uuid = TypeAdapter(UUID).validate_python(
+                request.path_params["organization_uuid"]
+            )
+            organization = await db.scalar(
+                select(Organization)
+                .where(Organization.uuid == organization_uuid)
+                .with_for_update()
+                .execution_options(populate_existing=True)
+            )
+            if organization is None:
+                raise NotFoundError(message=T("organization:not_found"))
+            await OrganizationService.validate_membership(
+                db, session.user, organization
+            )
+            if not organization.is_active and organization.owner_id != session.user_id:
+                raise AuthorizationError()
+        else:
+            organization = await get_current_organization(db, session)
+
         await OrganizationService.require_permissions(
             db, session.user_id, organization.id, permissions
         )

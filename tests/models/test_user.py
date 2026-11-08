@@ -1,9 +1,81 @@
 from datetime import date
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models import Organization, Permission, Role, RolePermission, UserRole
 from app.models.user import User
+
+
+@pytest.mark.asyncio
+async def test_user_permissions_relationship_and_mask(db_session: AsyncSession):
+    user = User(
+        user_name="permissions", email="permissions@example.com", password_hash="unused"
+    )
+    outsider = User(
+        user_name="outsider", email="outsider@example.com", password_hash="unused"
+    )
+    organizations = [
+        Organization(name="First", slug="first"),
+        Organization(name="Second", slug="second"),
+    ]
+    roles = [Role(name="reader"), Role(name="writer"), Role(name="outsider")]
+    permissions = [
+        Permission(id=1, name="read"),
+        Permission(id=2, name="ungranted"),
+        Permission(id=3, name="write"),
+    ]
+    db_session.add_all([user, outsider, *organizations, *roles, *permissions])
+    await db_session.flush()
+    db_session.add_all(
+        [
+            UserRole(
+                user_id=user.id,
+                role_id=roles[0].id,
+                organization_id=organizations[0].id,
+            ),
+            UserRole(
+                user_id=user.id,
+                role_id=roles[0].id,
+                organization_id=organizations[1].id,
+            ),
+            UserRole(
+                user_id=user.id,
+                role_id=roles[1].id,
+                organization_id=organizations[1].id,
+            ),
+            UserRole(
+                user_id=outsider.id,
+                role_id=roles[2].id,
+                organization_id=organizations[0].id,
+            ),
+            RolePermission(role_id=roles[0].id, permission_id=1),
+            RolePermission(role_id=roles[1].id, permission_id=1),
+            RolePermission(role_id=roles[1].id, permission_id=3),
+            RolePermission(role_id=roles[2].id, permission_id=2),
+        ]
+    )
+    await db_session.commit()
+
+    loaded = await db_session.scalar(select(User).where(User.id == user.id))
+    assert loaded is not None
+    assert [permission.name for permission in loaded.permissions] == ["read", "write"]
+    assert loaded.permissions_mask == 0b101
+    assert loaded.permissions_mask & (1 << (2 - 1)) == 0
+
+
+@pytest.mark.asyncio
+async def test_user_without_permissions_has_empty_mask(db_session: AsyncSession):
+    user = User(
+        user_name="no-permissions", email="none@example.com", password_hash="unused"
+    )
+    db_session.add(user)
+    await db_session.commit()
+    loaded = await db_session.scalar(select(User).where(User.id == user.id))
+    assert loaded is not None
+    assert loaded.permissions == []
+    assert loaded.permissions_mask == 0
 
 
 @pytest.mark.asyncio

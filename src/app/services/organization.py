@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
 from sqlalchemy import delete, select, update
@@ -16,6 +17,7 @@ from app.models import (
     UserRole,
     UserSession,
 )
+from app.workers.email import EmailSendWorker
 
 
 class OrganizationService:
@@ -25,6 +27,53 @@ class OrganizationService:
     This service handles organization creation, retrieval, membership management,
     and branch coordination.
     """
+
+    @staticmethod
+    async def request_to_join(
+        db: AsyncSession, user: User, organization_uuid: UUID
+    ) -> None:
+        """Email the owner a membership request without granting any access."""
+
+        organization = await OrganizationService.get_by_uuid(db, organization_uuid)
+
+        if not organization.is_active:
+            raise AuthorizationError()
+
+        membership = await db.scalar(
+            select(OrganizationUser.id).where(
+                OrganizationUser.organization_id == organization.id,
+                OrganizationUser.user_id == user.id,
+                OrganizationUser.is_active.is_(True),
+            )
+        )
+
+        if membership is not None or organization.owner_id == user.id:
+            raise ConflictError(message=T("organization:already_a_member"))
+
+        owner = (
+            await db.get(User, organization.owner_id)
+            if organization.owner_id is not None
+            else None
+        )
+
+        if owner is None:
+            raise ConflictError(message=T("organization:owner_unavailable"))
+
+        await EmailSendWorker.send_template(
+            to=owner.email,
+            subject=T("emails:organization_join_request_subject"),
+            text=T("emails:organization_join_request_text").format(
+                organization=organization.name,
+                organization_uuid=organization.uuid,
+                username=user.user_name,
+                email=user.email,
+                user_id=user.id,
+            ),
+            template="emails/organization/join_request.html",
+            user={"id": user.id, "user_name": user.user_name, "email": user.email},
+            organization={"name": organization.name, "uuid": str(organization.uuid)},
+            current_year=datetime.now(UTC).year,
+        )
 
     @staticmethod
     async def create(
@@ -370,7 +419,11 @@ class OrganizationService:
         organization_id: int,
         permissions: tuple[str, ...],
     ) -> None:
-        """Require every named permission from roles in this organization only."""
+        """Allow the organization owner, otherwise require every scoped grant."""
+        organization = await OrganizationService.get_by_id(db, organization_id)
+        if organization.owner_id == user_id:
+            return
+
         granted = set(
             (
                 await db.scalars(
@@ -391,54 +444,24 @@ class OrganizationService:
             raise AuthorizationError()
 
     @staticmethod
-    async def authorize_by_uuid(
-        db: AsyncSession,
-        user: User,
-        organization_uuid: UUID,
-        permission: str | None = None,
+    async def select(
+        db: AsyncSession, session: UserSession, organization_uuid: UUID
     ) -> Organization:
-        """Resolve a public UUID before authorizing with internal primary keys."""
-        organization = await OrganizationService.get_by_uuid(db, organization_uuid)
-        return await OrganizationService.authorize(
-            db, user, organization.id, permission
-        )
-
-    @staticmethod
-    async def authorize(
-        db: AsyncSession,
-        user: User,
-        organization_id: int,
-        permission: str | None = None,
-    ) -> Organization:
-        """Check membership before granting read or administrative access."""
-        if permission:
-            organization = await db.scalar(
+        """Select only an organization with an active membership for this session."""
+        organization = (
+            await db.execute(
                 select(Organization)
-                .where(Organization.id == organization_id)
-                .with_for_update()
+                .join(OrganizationUser)
+                .where(
+                    Organization.uuid == organization_uuid,
+                    OrganizationUser.user_id == session.user_id,
+                    OrganizationUser.is_active.is_(True),
+                )
                 .execution_options(populate_existing=True)
             )
-            if organization is None:
-                raise NotFoundError(message=T("organization:not_found"))
-        else:
-            organization = await OrganizationService.get_by_id(db, organization_id)
-        await OrganizationService.validate_membership(db, user, organization)
-        if permission and organization.owner_id != user.id:
-            if not organization.is_active:
-                raise AuthorizationError()
-            await OrganizationService.require_permissions(
-                db, user.id, organization_id, (permission,)
-            )
-        return organization
-
-    @staticmethod
-    async def select(
-        db: AsyncSession, session: UserSession, organization_id: int
-    ) -> Organization:
-        """Persist organization selection on this device's authenticated session."""
-        organization = await OrganizationService.authorize(
-            db, session.user, organization_id
-        )
+        ).scalar_one_or_none()
+        if organization is None:
+            raise NotFoundError(message=T("organization:not_found"))
         if not organization.is_active:
             raise AuthorizationError()
         session.organization_id = organization.id
