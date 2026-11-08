@@ -118,7 +118,7 @@ The model package includes:
 - `RecoveryCode`: one-time recovery-code records.
 - `RevokedToken`: token revocation records.
 
-`current_user_can(*permissions)` requires an active session, a selected active organization, an active membership, and every named permission through roles scoped to that organization. It does not merge grants across organizations or grant an implicit owner/superuser bypass.
+`current_user_can(*permissions)` and `PermissionRequired["permission", ...]` use the URL's `organization_uuid` when present, otherwise the session's selected active organization. Both require an active session and active membership. The organization's owner passes the permission check automatically and can manage inactive organizations through UUID routes; other users need an active organization and every named permission through roles scoped to it. Grants are not merged across organizations, and there is no implicit superuser bypass.
 
 ### Base model
 
