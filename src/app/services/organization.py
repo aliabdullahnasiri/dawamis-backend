@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from uuid import UUID
 
+from redis.asyncio import Redis
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,12 +12,11 @@ from app.models import (
     Branch,
     Organization,
     OrganizationUser,
-    Permission,
-    RolePermission,
     User,
     UserRole,
     UserSession,
 )
+from app.services.permission import PermissionService
 from app.workers.email import EmailSendWorker
 
 
@@ -418,28 +418,14 @@ class OrganizationService:
         user_id: int,
         organization_id: int,
         permissions: tuple[str, ...],
+        redis: Redis | None = None,
     ) -> None:
         """Allow the organization owner, otherwise require every scoped grant."""
         organization = await OrganizationService.get_by_id(db, organization_id)
         if organization.owner_id == user_id:
             return
 
-        granted = set(
-            (
-                await db.scalars(
-                    select(Permission.name)
-                    .join(
-                        RolePermission,
-                        RolePermission.permission_id == Permission.id,
-                    )
-                    .join(UserRole, UserRole.role_id == RolePermission.role_id)
-                    .where(
-                        UserRole.user_id == user_id,
-                        UserRole.organization_id == organization_id,
-                    )
-                )
-            ).all()
-        )
+        granted = await PermissionService.granted(db, user_id, organization_id, redis)
         if not set(permissions).issubset(granted):
             raise AuthorizationError()
 
@@ -507,6 +493,7 @@ class OrganizationService:
         db: AsyncSession, organization_id: int, user_id: int
     ) -> None:
         """Remove role grants and selected contexts when membership is removed."""
+        await PermissionService.invalidate(db, organization_id)
         await db.execute(
             delete(UserRole).where(
                 UserRole.organization_id == organization_id, UserRole.user_id == user_id
