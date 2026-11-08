@@ -2,7 +2,6 @@ import json
 from datetime import timedelta
 
 import pytest
-import pytest_asyncio
 from fastapi import Depends
 from sqlalchemy import select
 
@@ -20,27 +19,7 @@ from app.models import (
 from app.services.auth.jwt import JWTService
 from app.services.datetime import DateTimeService
 from app.services.jinja import JinjaService
-
-
-@pytest_asyncio.fixture
-async def identity(client, db_session):
-    user = User(
-        user_name="org-owner", email="owner@example.com", password_hash="unused"
-    )
-    db_session.add(user)
-    await db_session.flush()
-    session = UserSession(
-        user=user,
-        ip_address="127.0.0.1",
-        user_agent=client.headers["user-agent"],
-        expires_at=DateTimeService.utc_now() + timedelta(days=1),
-    )
-    db_session.add(session)
-    await db_session.commit()
-    client.headers["Authorization"] = (
-        f"Bearer {JWTService.create_access_token(user.uuid)}"
-    )
-    return user, session
+from app.services.permission import PermissionService
 
 
 async def create(client, slug="pharmacy"):
@@ -246,7 +225,7 @@ async def test_permission_scope_and_revocation(client, identity, db_session, app
         organization = await db_session.get(Organization, organization_id)
         organization.owner_id = None
     permission = Permission(name="stock.read")
-    role = Role(name="reader")
+    role = Role(name="reader", organization_id=org["id"])
     db_session.add_all([permission, role])
     await db_session.flush()
     db_session.add_all(
@@ -316,7 +295,7 @@ async def test_member_management_checks_url_organization_permissions(
     target = await create(client, "target")
     target_model = await db_session.get(Organization, target["id"])
     target_model.owner_id = None
-    role = Role(name="member-manager")
+    role = Role(name="member-manager", organization_id=selected["id"])
     permission = Permission(name="organizations.members.manage")
     candidate = User(
         user_name="candidate", email="candidate@example.com", password_hash="unused"
@@ -344,9 +323,18 @@ async def test_member_management_checks_url_organization_permissions(
         is None
     )
 
-    db_session.add(
-        UserRole(user_id=user.id, role_id=role.id, organization_id=target["id"])
+    target_role = Role(name="member-manager", organization_id=target["id"])
+    db_session.add(target_role)
+    await db_session.flush()
+    db_session.add_all(
+        [
+            RolePermission(role_id=target_role.id, permission_id=permission.id),
+            UserRole(
+                user_id=user.id, role_id=target_role.id, organization_id=target["id"]
+            ),
+        ]
     )
+    await PermissionService.invalidate(db_session, target["id"])
     await db_session.commit()
     response = await client.post(path, json={"user_id": candidate.id})
     assert response.status_code == 201, response.text
@@ -372,7 +360,7 @@ async def test_organization_reads_require_permission(
     permission = await db_session.scalar(
         select(Permission).where(Permission.name == permission_name)
     )
-    role = Role(name="organization-reader")
+    role = Role(name="organization-reader", organization_id=organization.id)
     db_session.add(role)
     await db_session.flush()
     db_session.add_all(
@@ -381,6 +369,7 @@ async def test_organization_reads_require_permission(
             UserRole(user_id=user.id, role_id=role.id, organization_id=organization.id),
         ]
     )
+    await PermissionService.invalidate(db_session, organization.id)
     await db_session.commit()
     response = await client.get(path)
     assert response.status_code == 200, response.text
@@ -444,7 +433,7 @@ async def test_outsider_and_member_removal(client, identity, db_session):
     member = (
         await client.post(path + "/members", json={"user_id": stranger.id})
     ).json()["data"]
-    role = Role(name="removed-role")
+    role = Role(name="removed-role", organization_id=org["id"])
     db_session.add(role)
     await db_session.flush()
     db_session.add(
