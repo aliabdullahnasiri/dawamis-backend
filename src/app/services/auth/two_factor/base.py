@@ -12,7 +12,7 @@ class TwoFactorProvider(ABC):
     """
 
     @abstractmethod
-    async def setup(self, db: AsyncSession, user: User) -> dict[str, Any] | None:
+    async def setup(self, db: AsyncSession, user: User) -> dict[str, Any]:
         """
         Initiate the 2FA setup process for a user.
 
