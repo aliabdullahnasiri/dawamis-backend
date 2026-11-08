@@ -93,7 +93,7 @@ Copy the outputs into `SECRET_KEY`, `JWT_SECRET_KEY`, and `TOTP_ENCRYPTION_KEY`,
 uv run alembic upgrade head
 ```
 
-Startup does not create the schema or seed default roles and permissions. The startup initialization methods are currently placeholders.
+Startup registers the permission definitions idempotently. It does not create the schema or default roles; organization owners create and assign roles through the RBAC endpoints.
 
 ### 5. Start the API
 
@@ -229,9 +229,36 @@ All paths below are relative to `/api/v1`. The generated OpenAPI schema describe
 | GET | `/auth/organization` | Read the selected organization |
 | GET | `/health/` | Check the database using an authenticated session |
 
-Organization and member lists accept `offset` and `limit`; the default limit is 50 and the maximum is 100. Access and mutation rules are enforced by the organization service. Branch, role, and permission models exist, but there are no standalone CRUD routers for them.
+Organization and member lists accept `offset` and `limit`; the default limit is 50 and the maximum is 100. Access and mutation rules are enforced by the organization service. Branches have no standalone CRUD router. Organization roles and permissions use the endpoints below.
 
 Organization resource endpoints enforce access through `PermissionRequired`: reading an organization requires `organizations.read`, listing its members requires `organizations.members.read`, updates/deletions require `organizations.update`/`organizations.delete`, and membership changes require `organizations.members.manage`. Organization owners pass these permission checks automatically after membership validation.
+
+### Organization RBAC
+
+Resource path identifiers are UUIDs, consistent with the organization API. These paths are relative to `/api/v1/organizations/{organization_uuid}`:
+
+| Method | Path | Required permission |
+| --- | --- | --- |
+| GET | `/roles` | `roles:read` |
+| POST | `/roles` | `roles:create` |
+| GET | `/roles/{role_uuid}` | `roles:read` |
+| PATCH | `/roles/{role_uuid}` | `roles:update` |
+| DELETE | `/roles/{role_uuid}` | `roles:delete` |
+| GET | `/permissions` | `permissions:read` |
+| GET | `/roles/{role_uuid}/permissions` | `roles:read` |
+| PUT | `/roles/{role_uuid}/permissions` | `roles:permissions:update` |
+| GET | `/members/{member_uuid}/roles` | `roles:read` |
+| PUT | `/members/{member_uuid}/roles` | `roles:assign` |
+
+Owners pass the permission checks after active membership validation. Other members need the listed permission in the URL's organization. Role names are unique within each organization; role lists support `offset` and `limit` (default 50, maximum 100). System roles are readable and assignable but cannot be edited or deleted.
+
+Create a role with `{"name": "Pharmacist", "description": "Dispenses medicine"}`. PATCH accepts `name` and `description`; a null description clears it. A new role has no grants. Replace its permissions with `{"permissions": ["medicine:read", "medicine:create"]}` and assign it to a membership with `{"role_uuids": ["ROLE_UUID"]}`. Both PUT operations replace the complete set, deduplicate entries, and accept an empty list to revoke the set. Assignment requires an active membership in the same organization. Delegates can only grant or assign permissions they already hold; owners can grant any registered definition.
+
+`GET /permissions` lists the shared definition catalog, not a user's effective grants. Definitions include medicine, supplier, purchase, invoice, and customer permissions from [permissions.py](src/app/core/permissions.py), plus existing organization and RBAC management permissions. Defining a permission never grants it, and unregistered names are rejected with 422. Pharmacy workflow endpoints remain future work.
+
+Effective grants are cached in Redis per organization, user, and database revision, with a `PERMISSION_CACHE_TTL_SECONDS` default of 300. Role, permission, assignment, and member-removal changes advance that revision in the same transaction; old cache entries cannot authorize subsequent requests. Membership, organization status, sessions, and ownership are checked separately on every request. Redis failures fall back to database queries. Code that directly changes grant tables must also call `PermissionService.invalidate` in its transaction.
+
+The RBAC migration copies each legacy shared role and its permissions into each organization that used it, preserving existing assignments. Original roles remain as legacy templates without tenant access. Downgrade preserves independent grants and renames duplicate role names to restore global uniqueness.
 
 ### Response conventions
 
@@ -345,7 +372,7 @@ uv run pyright
 
 Tests cover API routes, models, schemas, services, organization access, JWT, sessions, passwords, and OTP/TOTP. Shared fixtures use an in-memory SQLite database, transaction rollback, HTTPX ASGI transport, email-task mocks, and fake Redis where requested. Application imports still require valid settings, including the Fernet key.
 
-The test suite creates ORM tables directly; it does not replace migration testing on MySQL. The HTTP client fixture does not explicitly execute application lifespan. Redis and email fixtures are opt-in, so check the relevant fixture/dependency overrides when adding integration tests.
+The test suite creates ORM tables directly; it does not replace migration testing on MySQL. The HTTP client fixture does not explicitly execute application lifespan. The HTTP client fixture supplies fake Redis for permission checks. Email mocks remain opt-in; check dependency overrides when adding integration tests.
 
 Pytest uses strict asyncio mode and session-scoped default event loops and async fixtures. Reuse the established fixtures and restore dependency overrides after tests.
 
