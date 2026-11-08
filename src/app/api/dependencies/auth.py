@@ -173,7 +173,7 @@ def current_user_can(*permissions: str):
     """Check the URL's organization, falling back to the selected organization."""
 
     async def dependency(
-        db: DBSession, session: CurrentActiveSession, request: Request
+        db: DBSession, session: CurrentActiveSession, request: Request, redis: RedisClient
     ) -> None:
         await PermissionService.ensure_exists(db, permissions)
 
@@ -198,7 +198,7 @@ def current_user_can(*permissions: str):
             organization = await get_current_organization(db, session)
 
         await OrganizationService.require_permissions(
-            db, session.user_id, organization.id, permissions
+            db, session.user_id, organization.id, permissions, redis
         )
 
     return dependency
